@@ -117,8 +117,9 @@ class PlayerCard(Gtk.ListBoxRow):
         self.talk.set_ellipsize(Pango.EllipsizeMode.END)
         self.name.set_hexpand(True)
         self.model.set_hexpand(True)
-        text = vbox(3, hbox(6, self.name, self.dots, self.talk, self.poll),
-                    hbox(6, self.role, self.model, self.voters, self.votes))
+        # the pick count sits on the second line, so the talk chip beside the name reads whole at 1280
+        text = vbox(3, hbox(6, self.name, self.dots, self.talk),
+                    hbox(6, self.role, self.model, self.poll, self.voters, self.votes))
         text.set_hexpand(True)
         self.set_child(hbox(10, self.avatar, text))
 

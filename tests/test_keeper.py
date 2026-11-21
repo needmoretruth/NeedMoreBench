@@ -33,8 +33,12 @@ def alive(pid: int) -> bool:
         os.kill(pid, 0)
     except ProcessLookupError:
         return False
-    with open(f"/proc/{pid}/stat") as f:  # a zombie has ended; only its parent has not read the exit code yet
-        return f.read().rsplit(")", 1)[1].split()[0] != "Z"
+    # a zombie has ended; only its parent has not read the exit code yet. macOS has no /proc, so ask ps there.
+    if os.path.isdir("/proc"):
+        with open(f"/proc/{pid}/stat") as f:
+            return f.read().rsplit(")", 1)[1].split()[0] != "Z"
+    state = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True).stdout.strip()
+    return bool(state) and not state.startswith("Z")
 
 
 def wait_for(cond, seconds: float = 10.0) -> bool:  # noqa: ANN001

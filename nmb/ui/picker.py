@@ -118,7 +118,8 @@ class Picker(Adw.Dialog):
         view.add_top_bar(Adw.HeaderBar())
         self.search = Gtk.SearchEntry(placeholder_text=_("Search models"), hexpand=True)
         self.search.connect("search-changed", lambda *_a: (self.list.invalidate_filter(), self._pools_shown()))
-        self.pool_box: Gtk.Box | None = None
+        self.pool_box: Gtk.ListBox | None = None
+        self.pool_row: Adw.ExpanderRow | None = None
         self.chips = chips = Adw.ToggleGroup()
         for name, text in FILTERS:
             chips.add(Adw.Toggle(name=name, label=_(text)))
@@ -132,13 +133,10 @@ class Picker(Adw.Dialog):
 
         body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14, margin_start=16, margin_end=16,
                        margin_top=6, margin_bottom=16)
-        if pools:
-            self.pool_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
-            self.pool_list.add_css_class("boxed-list")
+        if pools:  # one folded row, so the models have the view when the picker opens
+            self.pool_box = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+            self.pool_box.add_css_class("boxed-list")
             self._fill_pools()
-            self.pool_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
-            self.pool_box.append(label(_("Random"), "section-title"))
-            self.pool_box.append(self.pool_list)
             body.append(self.pool_box)
         self.list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         self.list.add_css_class("boxed-list")
@@ -216,31 +214,34 @@ class Picker(Adw.Dialog):
     def _fill_pools(self) -> None:
         """Built-in pools, then the user's own with an edit button, then a row to make one."""
         from ..pools import USER, pool_models
-        lst = self.pool_list
-        while (child := lst.get_first_child()) is not None:
-            lst.remove(child)
+        opened = self.pool_row is not None and self.pool_row.get_expanded()
+        if self.pool_row is not None:
+            self.pool_box.remove(self.pool_row)
+        names = [_(text) for _n, text in POOLS] + list(self.user_pools or {})
+        self.pool_row = fold = Adw.ExpanderRow(title=_("Random"), subtitle=", ".join(names), expanded=opened)
+        fold.set_subtitle_lines(1)
+        fold.add_prefix(Gtk.Image.new_from_icon_name("media-playlist-shuffle-symbolic"))
+        self.pool_box.append(fold)
         for name, text in POOLS:
             n = len(pool_models(self.models, name, self.routes.usable))
             row = Adw.ActionRow(title=_(text), subtitle=counted(n, "{n} model now", "{n} models now"), activatable=n > 0)
-            row.add_prefix(Gtk.Image.new_from_icon_name("media-playlist-shuffle-symbolic"))
             row.connect("activated", self._pick_pool, name)
-            lst.append(row)
-        if self.user_pools is None:
-            return
-        for name, d in self.user_pools.items():
+            fold.add_row(row)
+        for name, d in (self.user_pools or {}).items():
             n = len(pool_models(self.models, "user", self.routes.usable, d))
             row = Adw.ActionRow(title=name, subtitle=counted(n, "My pool, {n} model now", "My pool, {n} models now"), activatable=n > 0)
-            row.add_prefix(Gtk.Image.new_from_icon_name("media-playlist-shuffle-symbolic"))
             edit = Gtk.Button(icon_name="document-edit-symbolic", valign=Gtk.Align.CENTER, tooltip_text=_("Edit"))
             edit.add_css_class("flat")
             edit.connect("clicked", lambda *_a, name=name: self._edit_pool(name))
             row.add_suffix(edit)
             row.connect("activated", self._pick_pool, USER + name)
-            lst.append(row)
+            fold.add_row(row)
+        if self.user_pools is None:
+            return
         new = Adw.ActionRow(title=_("New pool"), subtitle=_("Filters plus models you put in or leave out"), activatable=True)
         new.add_prefix(Gtk.Image.new_from_icon_name("list-add-symbolic"))
         new.connect("activated", lambda *_a: self._edit_pool(None))
-        lst.append(new)
+        fold.add_row(new)
 
     def _edit_pool(self, name: str | None) -> None:
         from .pool_edit import PoolEditor

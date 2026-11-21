@@ -793,7 +793,7 @@ msgstr "내보내기"
 
 #: nmb/ui/records.py:143
 msgid "Export to a folder"
-msgstr "내보낼 폴더"
+msgstr "폴더로 내보내기"
 
 #: table
 msgid "Exposer"

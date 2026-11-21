@@ -12,7 +12,7 @@ gi.require_version("Adw", "1")
 from gi.repository import GLib, Gtk  # noqa: E402
 
 from ..engine.state import Event  # noqa: E402
-from ..store import Saved, event_from_record  # noqa: E402
+from ..store import Saved, event_from_record, load  # noqa: E402
 from ..i18n import _  # noqa: E402
 from ..view import ViewState  # noqa: E402
 from .game_page import GamePage  # noqa: E402
@@ -26,6 +26,11 @@ class Replay:
 
     def __init__(self, saved: Saved, on_sound: Callable[[str], None] | None = None,
                  on_again: Callable[[], None] | None = None):
+        if saved.live:  # a game still being written is read again, so it opens at where it is now, not at the list's
+            try:  # older copy (which may be the empty start: 준비, 0/0)
+                saved = load(saved.path)
+            except (OSError, ValueError):
+                pass
         self.saved = saved
         self.on_again = on_again
         self.events: list[Event] = [event_from_record(d) for d in saved.events]
@@ -85,6 +90,10 @@ class Replay:
             mark = chip(_("God intervened"), "god")
             mark.set_tooltip_text(_("The god used powers in this game, so it is left out of the standings."))
             bits.insert(4, mark)
+        if self.saved.live:  # the header's line gives way to the cost, so the bar itself says the game goes on
+            going = chip(_("Playing now"), "plain")
+            going.set_tooltip_text(_("Game in progress, shown up to now"))
+            bits.insert(4, going)
         if self.blind_for_owner:
             sw = Gtk.Switch(active=self.reveal, valign=Gtk.Align.CENTER)
             sw.connect("notify::active", lambda s, _p: self._set_reveal(s.get_active()))
