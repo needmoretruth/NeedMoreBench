@@ -42,15 +42,17 @@ jobs:
         run: flatpak install -y --noninteractive --bundle NeedMoreBench-linux-x86_64.flatpak
 
       - name: Tests (inside the app, on the runtime's Python)
+        # the checkout belongs to the runner's user and the sandbox drops root's right to write anywhere,
+        # so the folders the sandbox writes are made writable for everyone first
         run: |
+          mkdir -p .ci-site smoke && chmod a+rwx .ci-site smoke
           flatpak run --command=pip3 --share=network --filesystem="$PWD" org.gnome.Sdk//51 \
             install --no-cache-dir --target "$PWD/.ci-site" pytest==9.2.0
           dbus-run-session -- flatpak run --command=python3 --filesystem="$PWD" --cwd="$PWD" \
-            --env=PYTHONPATH="$PWD:$PWD/.ci-site" org.needmorebench.NeedMoreBench -P -m pytest -q
+            --env=PYTHONPATH="$PWD:$PWD/.ci-site" org.needmorebench.NeedMoreBench -P -m pytest -q -p no:cacheprovider
 
       - name: Smoke (start the installed app and save its screens)
         run: |
-          mkdir -p smoke
           xvfb-run -a -s "-screen 0 1800x1200x24" dbus-run-session -- \
             flatpak run --socket=x11 --nosocket=wayland --filesystem="$PWD" --cwd="$PWD" \
             org.needmorebench.NeedMoreBench --smoke "$PWD/smoke" --record tests/data/smoke.nmb.jsonl

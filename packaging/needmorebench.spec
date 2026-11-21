@@ -28,7 +28,8 @@ a = Analysis(  # noqa: F821
     pathex=[str(ROOT)],
     datas=datas,
     hiddenimports=hidden,
-    excludes=["tkinter", "pytest", "IPython", "matplotlib"],
+    # Pillow is only for building the icons; bundled, its own HarfBuzz stood in for GTK's and GTK failed to load
+    excludes=["tkinter", "pytest", "IPython", "matplotlib", "PIL"],
     hooksconfig={"gi": {"icons": ["Adwaita", "hicolor"], "themes": ["Adwaita"], "languages": ["en", "ko"],
                         "module-versions": {"Gtk": "4.0"}}},
 )
