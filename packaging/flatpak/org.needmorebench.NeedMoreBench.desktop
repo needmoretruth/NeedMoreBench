@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=NeedMoreBench
+Comment=Language models play mafia while you watch, meddle or play
+Comment[ko]=언어 모델들의 마피아 게임을 관전하고 끼어들고 함께 하기
+Exec=needmorebench
+Icon=org.needmorebench.NeedMoreBench
+Terminal=false
+Categories=Game;
+StartupNotify=true
+StartupWMClass=org.needmorebench.NeedMoreBench

@@ -1,0 +1,60 @@
+# Linux: build the Flatpak on the GNOME runtime, run the tests inside it, and start the installed app once
+# (smoke: it opens its screens, saves a picture of each and exits with 0).
+name: Linux
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6.8
+        with:
+          manifest-path: packaging/flatpak/org.needmorebench.NeedMoreBench.yml
+          bundle: NeedMoreBench-linux-x86_64.flatpak
+          upload-artifact: false
+          cache-key: flatpak-builder-${{ hashFiles('packaging/flatpak/python-deps.json') }}
+
+      - name: Install the bundle
+        run: flatpak install -y --noninteractive --bundle NeedMoreBench-linux-x86_64.flatpak
+
+      - name: Tests (inside the app, on the runtime's Python)
+        run: |
+          flatpak run --command=pip3 --share=network --filesystem="$PWD" org.gnome.Sdk//51 \
+            install --no-cache-dir --target "$PWD/.ci-site" pytest==9.2.0
+          dbus-run-session -- flatpak run --command=python3 --filesystem="$PWD" --cwd="$PWD" \
+            --env=PYTHONPATH="$PWD:$PWD/.ci-site" org.needmorebench.NeedMoreBench -P -m pytest -q
+
+      - name: Smoke (start the installed app and save its screens)
+        run: |
+          mkdir -p smoke
+          xvfb-run -a -s "-screen 0 1800x1200x24" dbus-run-session -- \
+            flatpak run --socket=x11 --nosocket=wayland --filesystem="$PWD" --cwd="$PWD" \
+            org.needmorebench.NeedMoreBench --smoke "$PWD/smoke" --record tests/data/smoke.nmb.jsonl
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: smoke-linux
+          path: smoke/
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: NeedMoreBench-linux-x86_64.flatpak
+          path: NeedMoreBench-linux-x86_64.flatpak
+          retention-days: 7

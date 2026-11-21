@@ -1,0 +1,8 @@
+NeedMoreBench
+Copyright 2026 needmoretruth
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The downloadable apps for Windows and macOS include GTK, libadwaita, GLib, Pango, PyGObject and other
+libraries under the GNU Lesser General Public License and other licenses. Their license texts are in the
+app's "licenses" folder, and the release notes link to the exact source archives of those libraries.

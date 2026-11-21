@@ -1,0 +1,308 @@
+/* NeedMoreBench: white cream and black cream. Only libadwaita's colour variables are
+   recoloured, so every stock widget follows; meaning colours stay small and desaturated. */
+
+:root {
+  --window-bg-color: #F7F1E6;
+  --window-fg-color: #2A241D;
+  --view-bg-color: #FCF8F1;
+  --view-fg-color: #2A241D;
+  --headerbar-bg-color: #F7F1E6;
+  --headerbar-fg-color: #2A241D;
+  --headerbar-backdrop-color: #F7F1E6;
+  --sidebar-bg-color: #EFE8DB;
+  --sidebar-fg-color: #2A241D;
+  --secondary-sidebar-bg-color: #F3EDE1;
+  --card-bg-color: #FFFCF7;
+  --card-fg-color: #2A241D;
+  --popover-bg-color: #FFFCF7;
+  --popover-fg-color: #2A241D;
+  --dialog-bg-color: #F7F1E6;
+  --dialog-fg-color: #2A241D;
+  --accent-bg-color: #2E2821;
+  --accent-fg-color: #FBF6EC;
+  --accent-color: #2E2821;
+  --border-color: rgba(42, 36, 29, 0.12);
+  --thumbnail-bg-color: #FFFCF7;
+  --nmb-dim: rgba(42, 36, 29, 0.62);
+  --nmb-line: rgba(42, 36, 29, 0.12);
+  --nmb-bubble: #FFFCF7;
+  --nmb-bubble-mine: #2E2821;
+  --nmb-bubble-mine-fg: #FBF6EC;
+  --nmb-mafia: #9C4A43;
+  --nmb-town: #5E7A5F;
+  --nmb-cult: #7B6790;
+  --nmb-god: #A88B45;
+  --nmb-death: #7A6F62;
+  --nmb-bar-bg: rgba(42, 36, 29, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --window-bg-color: #1E1A15;
+    --window-fg-color: #F3EBDD;
+    --view-bg-color: #24201A;
+    --view-fg-color: #F3EBDD;
+    --headerbar-bg-color: #1E1A15;
+    --headerbar-fg-color: #F3EBDD;
+    --headerbar-backdrop-color: #1E1A15;
+    --sidebar-bg-color: #191612;
+    --sidebar-fg-color: #F3EBDD;
+    --secondary-sidebar-bg-color: #1B1814;
+    --card-bg-color: #2B261F;
+    --card-fg-color: #F3EBDD;
+    --popover-bg-color: #2B261F;
+    --popover-fg-color: #F3EBDD;
+    --dialog-bg-color: #1E1A15;
+    --dialog-fg-color: #F3EBDD;
+    --accent-bg-color: #F1E7D6;
+    --accent-fg-color: #221D17;
+    --accent-color: #F1E7D6;
+    --border-color: rgba(243, 235, 221, 0.10);
+    --thumbnail-bg-color: #2B261F;
+    --nmb-dim: rgba(243, 235, 221, 0.62);
+    --nmb-line: rgba(243, 235, 221, 0.10);
+    --nmb-bubble: #2B261F;
+    --nmb-bubble-mine: #F1E7D6;
+    --nmb-bubble-mine-fg: #221D17;
+    --nmb-mafia: #C9776F;
+    --nmb-town: #8FAE90;
+    --nmb-cult: #A895BD;
+    --nmb-god: #CDB073;
+    --nmb-death: #9A8F82;
+    --nmb-bar-bg: rgba(243, 235, 221, 0.10);
+  }
+}
+
+/* ---- night inside a game: the game surfaces turn black cream (one step deeper in the dark scheme) ---- */
+.game.night {
+  --window-bg-color: #1E1A15;
+  --window-fg-color: #F3EBDD;
+  --view-bg-color: #24201A;
+  --view-fg-color: #F3EBDD;
+  --headerbar-bg-color: #1E1A15;
+  --headerbar-fg-color: #F3EBDD;
+  --sidebar-bg-color: #191612;
+  --sidebar-fg-color: #F3EBDD;
+  --card-bg-color: #2B261F;
+  --card-fg-color: #F3EBDD;
+  --popover-bg-color: #2B261F;
+  --popover-fg-color: #F3EBDD;
+  --accent-bg-color: #F1E7D6;
+  --accent-fg-color: #221D17;
+  --accent-color: #F1E7D6;
+  --border-color: rgba(243, 235, 221, 0.10);
+  --nmb-dim: rgba(243, 235, 221, 0.62);
+  --nmb-line: rgba(243, 235, 221, 0.10);
+  --nmb-bubble: #2B261F;
+  --nmb-bubble-mine: #F1E7D6;
+  --nmb-bubble-mine-fg: #221D17;
+  --nmb-mafia: #C9776F;
+  --nmb-town: #8FAE90;
+  --nmb-god: #CDB073;
+  --nmb-bar-bg: rgba(243, 235, 221, 0.10);
+}
+
+@media (prefers-color-scheme: dark) {
+  .game.night {
+    --window-bg-color: #15120E;
+    --view-bg-color: #19160F;
+    --sidebar-bg-color: #110F0B;
+    --card-bg-color: #221E18;
+    --headerbar-bg-color: #15120E;
+  }
+}
+
+.game, .game .timeline-view, .game .players-pane, .game .inspector-pane, .game headerbar, .game .card,
+.game .bubble, .game .turns-bar, .game .action-card {
+  transition: background-color 1000ms ease, color 1000ms ease, border-color 1000ms ease;
+}
+
+.game { background-color: var(--window-bg-color); color: var(--window-fg-color); }
+.game .timeline-view { background-color: var(--view-bg-color); color: var(--view-fg-color); }
+.game .players-pane { background-color: var(--sidebar-bg-color); color: var(--sidebar-fg-color); }
+.game .inspector-pane { background-color: var(--sidebar-bg-color); color: var(--sidebar-fg-color); }
+
+/* ---- shapes ---- */
+.card { border-radius: 16px; }
+button { border-radius: 12px; }
+button.pill { border-radius: 999px; padding: 10px 28px; }
+.dim { color: var(--nmb-dim); }
+.meta { font-size: 12px; color: var(--nmb-dim); }
+.name { font-size: 13px; font-weight: 600; }
+
+/* ---- header: phase and turns ---- */
+.phase-title { font-weight: 700; font-size: 15px; }
+.phase-sub { font-size: 12px; color: var(--nmb-dim); }
+.turns-bar { padding: 6px 18px 8px 18px; background-color: var(--window-bg-color); border-bottom: 1px solid var(--nmb-line); }
+.turns-bar levelbar trough { min-height: 6px; border-radius: 3px; background-color: var(--nmb-bar-bg); }
+.turns-bar levelbar block.filled { border-radius: 3px; background-color: var(--accent-bg-color); }
+.turns-bar levelbar block.empty { background-color: transparent; }
+.turns-bar.low levelbar block.filled { background-color: var(--nmb-mafia); }
+.turns-label { font-size: 12px; font-feature-settings: "tnum"; }
+
+/* ---- players ---- */
+.players-pane { border-right: 1px solid var(--nmb-line); }
+.player-row { padding: 8px 10px; border-radius: 14px; margin: 2px 6px; }
+.player-row:hover { background-color: alpha(currentColor, 0.05); }
+.player-row.selected { background-color: alpha(currentColor, 0.09); }
+.player-row.dead .name { text-decoration: line-through; color: var(--nmb-dim); }
+.player-row.dead avatar { opacity: 0.45; }
+.player-row.speaking { background-color: alpha(currentColor, 0.07); }
+.poll-count { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px;
+  background-color: alpha(currentColor, 0.10); font-feature-settings: "tnum"; }
+.vote-count { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  background-color: var(--accent-bg-color); color: var(--accent-fg-color); font-feature-settings: "tnum"; }
+.voter-dots avatar { margin-left: -4px; }
+.thinking-dots { font-size: 14px; color: var(--nmb-dim); letter-spacing: 1px; }
+
+.chip { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
+.chip.mafia { background-color: alpha(var(--nmb-mafia), 0.16); color: var(--nmb-mafia); }
+.chip.town { background-color: alpha(var(--nmb-town), 0.16); color: var(--nmb-town); }
+.chip.cult { background-color: alpha(var(--nmb-cult), 0.16); color: var(--nmb-cult); }
+.chip.plain { background-color: alpha(currentColor, 0.08); }
+.chip.god { background-color: alpha(var(--nmb-god), 0.18); color: var(--nmb-god); }
+
+/* ---- timeline ---- */
+.timeline { padding: 14px 18px 24px 18px; }
+.line-row { margin: 3px 0; }
+.bubble { background-color: var(--nmb-bubble); border-radius: 18px; border-top-left-radius: 6px; padding: 8px 13px;
+  border: 1px solid var(--nmb-line); }
+.bubble.mine { background-color: var(--nmb-bubble-mine); color: var(--nmb-bubble-mine-fg); border-top-left-radius: 18px;
+  border-top-right-radius: 6px; }
+/* a whisper reads as private at a glance: sunk into the page, dashed outline, lock and the receiver */
+.bubble.whisper { border: 1.5px dashed alpha(currentColor, 0.38); background-color: alpha(currentColor, 0.045);
+  box-shadow: inset 0 1px 3px alpha(black, 0.06); }
+.whisper-lock { color: var(--nmb-dim); -gtk-icon-size: 12px; }
+.whisper-to { font-size: 11px; font-weight: 600; color: var(--nmb-dim); }
+.bubble.mafia { border-color: alpha(var(--nmb-mafia), 0.45); }
+/* the other night chats are private too: 연인 like a whisper, the dead's chat faded */
+.bubble.lover { border: 1.5px dashed alpha(currentColor, 0.38); background-color: alpha(currentColor, 0.045); }
+.bubble.dead { border: 1px dashed alpha(currentColor, 0.3); background-color: transparent; opacity: 0.8; }
+.bubble.defense { border-width: 2px; border-color: alpha(currentColor, 0.35); }
+/* a 속마음 is a muted note under its speaker's line, never a bubble */
+.thought-note { margin: 0 0 4px 42px; padding: 1px 0 3px 10px; border-left: 2px solid alpha(currentColor, 0.16); }
+.thought-text { font-size: 13px; font-style: italic; color: var(--nmb-dim); }
+.thought-who { font-size: 10px; color: alpha(var(--nmb-dim), 0.85); }
+.channel.thought { font-size: 10px; }
+.channel.reasoning { font-size: 10px; font-family: monospace; }
+.reasoning-note .thought-text { font-style: normal; font-family: monospace; font-size: 12px; }
+.line-row.thought-row { margin-top: 0; }
+.bubble-text { font-size: 15px; }
+.channel { font-size: 11px; font-weight: 600; color: var(--nmb-dim); }
+.channel.mafia { color: var(--nmb-mafia); }
+.system-line { font-size: 13px; color: var(--nmb-dim); padding: 4px 12px; }
+.system-line.strong { color: var(--window-fg-color); font-weight: 600; }
+.system-line.death { color: var(--nmb-death); font-weight: 600; }
+.system-line.god { color: var(--nmb-god); font-weight: 600; }
+.phase-line { margin: 18px 0 10px 0; }
+.phase-line separator { background-color: alpha(currentColor, 0.16); min-height: 1px; }
+.phase-divider { font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 999px;
+  background-color: alpha(currentColor, 0.08); }
+.phase-line.night .phase-divider { background-color: var(--accent-bg-color); color: var(--accent-fg-color); }
+.phase-icon { -gtk-icon-size: 14px; }
+.note-row.mine-whisper { border-style: dashed; }
+.result-card { padding: 12px 16px; }
+.result-card .section-title { margin: 0 0 2px 0; }
+.result-card .tally { font-size: 14px; font-weight: 600; }
+.thinking-row { font-size: 13px; color: var(--nmb-dim); padding: 4px 12px; }
+
+.banner-overlay { background-color: alpha(var(--window-bg-color), 0.92); border-radius: 24px; padding: 22px 44px;
+  box-shadow: 0 8px 30px alpha(black, 0.14); }
+.banner-text { font-size: 28px; font-weight: 700; }
+
+/* ---- inspector ---- */
+.inspector-pane { border-left: 1px solid var(--nmb-line); }
+/* five tabs in a 370px pane: English words need the room the default padding takes */
+.inspector-tabs toggle { font-size: 13px; font-weight: 600; min-width: 0; }
+.inspector-tabs indicatorbin { padding-left: 2px; padding-right: 2px; }
+.inspector-tabs indicatorbin > label { padding: 0 2px; }
+.section-title { font-size: 12px; font-weight: 700; color: var(--nmb-dim); margin: 14px 4px 6px 4px; }
+.ledger-row { padding: 8px 10px; border-radius: 12px; background-color: var(--card-bg-color); border: 1px solid var(--nmb-line); }
+.ledger-row.flash { background-color: alpha(var(--nmb-god), 0.18); }
+.ledger-row { transition: background-color 700ms ease; }
+.sus-num { font-size: 13px; font-weight: 700; font-feature-settings: "tnum"; min-width: 28px; }
+.sus-bar trough { min-height: 7px; border-radius: 4px; background-color: var(--nmb-bar-bg); }
+/* two creams only: black cream fill on a white-cream track by day, reversed at night */
+.sus-bar block.filled { border-radius: 4px; background-color: var(--accent-bg-color); transition: background-color 1000ms ease; }
+.sus-bar block.empty { background-color: transparent; }
+.note-row { padding: 8px 10px; border-radius: 12px; background-color: var(--card-bg-color); border: 1px solid var(--nmb-line); }
+.note-id { font-size: 11px; color: var(--nmb-dim); font-feature-settings: "tnum"; }
+
+/* ---- human seat ---- */
+.composer { padding: 10px 14px; border-top: 1px solid var(--nmb-line); background-color: var(--window-bg-color); }
+.composer entry { border-radius: 999px; min-height: 38px; }
+.action-card { padding: 14px 16px; margin: 8px 14px; border-radius: 16px; background-color: var(--card-bg-color);
+  border: 1px solid var(--nmb-line); }
+.action-card { color: var(--card-fg-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
+.action-title { font-size: 15px; font-weight: 700; }
+.action-card entry { border-radius: 12px; min-height: 38px; }
+.action-card togglebutton.choice { padding: 5px 14px; font-weight: 600; }
+.action-card togglebutton.choice:checked { background-color: var(--accent-bg-color); color: var(--accent-fg-color); }
+.action-card togglebutton.choice.skip { color: var(--nmb-dim); }
+.action-card togglebutton.choice.skip:checked { color: var(--accent-fg-color); }
+
+/* ---- god powers ---- */
+.god-button { color: var(--nmb-god); }
+.god-shimmer { background-color: alpha(var(--nmb-god), 0.16); }
+
+/* ---- lobby ---- */
+.start-bar { padding: 10px 18px 12px 18px; }
+.lobby-numbers { padding: 4px; }
+.lobby-number { padding: 10px 14px; border-radius: 14px; background-color: var(--card-bg-color); border: 1px solid var(--nmb-line); }
+.lobby-number .value { font-size: 18px; font-weight: 700; font-feature-settings: "tnum"; }
+.lobby-number .label { font-size: 12px; color: var(--nmb-dim); }
+.seat-row { padding: 6px 4px; }
+.price { font-size: 12px; font-feature-settings: "tnum"; color: var(--nmb-dim); }
+.badge { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background-color: alpha(currentColor, 0.09); }
+
+/* ---- standings ---- */
+.standings-frame { border-radius: 14px; background-color: var(--card-bg-color); border: 1px solid var(--nmb-line); }
+.table-head { font-size: 12px; font-weight: 700; color: var(--nmb-dim); padding: 12px 10px 8px 10px; }
+.edge-start { padding-left: 16px; }
+.edge-end { padding-right: 16px; }
+.table-cell { font-size: 14px; font-feature-settings: "tnum"; padding: 9px 10px; border-top: 1px solid var(--nmb-line); }
+.table-cell .strong, .table-cell.strong { font-weight: 700; }
+.table-cell .prelim, .table-cell.prelim { color: var(--nmb-dim); }
+.table-cell.edge-start { padding-left: 16px; }  /* after .table-cell, so the row lines up with its head */
+.table-cell.edge-end { padding-right: 16px; }
+.table-cell.advance { font-weight: 700; background-color: alpha(currentColor, 0.05); }
+
+/* ---- bench ---- */
+.bench-card { padding: 18px 20px; }
+.bench-champion { padding: 10px 14px; }
+
+/* ---- avatars: warm desaturated tones instead of the stock palette (no other hue in the chrome) ---- */
+avatar.color1 { background-image: none; background-color: #C9B79C; color: #3B3024; }
+avatar.color2 { background-image: none; background-color: #A89A86; color: #211B15; }
+avatar.color3 { background-image: none; background-color: #B59B7A; color: #211B15; }
+avatar.color4 { background-image: none; background-color: #8E8272; color: #FBF6EC; }
+avatar.color5 { background-image: none; background-color: #D8C8AE; color: #3B3024; }
+avatar.color6 { background-image: none; background-color: #9C8C7A; color: #1E1913; }
+avatar.color7 { background-image: none; background-color: #BFA98C; color: #2B241C; }
+avatar.color8 { background-image: none; background-color: #7D7062; color: #FBF6EC; }
+avatar.color9 { background-image: none; background-color: #CDBFA8; color: #3B3024; }
+avatar.color10 { background-image: none; background-color: #A08870; color: #1E1913; }
+avatar.color11 { background-image: none; background-color: #E1D5C1; color: #3B3024; }
+avatar.color12 { background-image: none; background-color: #8A7B69; color: #FBF6EC; }
+avatar.color13 { background-image: none; background-color: #B8A890; color: #2B241C; }
+avatar.color14 { background-image: none; background-color: #6F6357; color: #FBF6EC; }
+
+/* end screen */
+.end-head { padding: 18px 20px; border-radius: 16px; background-color: alpha(currentColor, 0.05); }
+.end-head.mafia { background-color: alpha(var(--nmb-mafia), 0.12); }
+.end-head.mafia .title-1 { color: var(--nmb-mafia); }
+.end-head.town { background-color: alpha(var(--nmb-town), 0.14); }
+.end-head.town .title-1 { color: var(--nmb-town); }
+.chip.win { background-color: var(--nmb-bubble-mine); color: var(--nmb-bubble-mine-fg); }
+.end-dialog row.dead .title { color: var(--nmb-dim); }
+.end-dialog row.dead avatar { opacity: 0.5; }
+.end-actions { padding: 12px 16px 16px 16px; }
+.saved-link { font-size: 13px; color: var(--nmb-dim); }
+
+/* the person's own ledger */
+.sus-scale { padding: 0; margin: 0 -2px; }
+.sus-scale trough { min-height: 7px; border-radius: 4px; background-color: var(--nmb-bar-bg); }
+.sus-scale highlight { border-radius: 4px; background-color: var(--accent-bg-color); }
+.sus-scale slider { min-width: 16px; min-height: 16px; margin: -5px; }
+.ledger-row.own dropdown > button { padding: 2px 8px; min-height: 24px; font-size: 12px; font-weight: 600; }
+.own-note { min-height: 30px; font-size: 13px; }

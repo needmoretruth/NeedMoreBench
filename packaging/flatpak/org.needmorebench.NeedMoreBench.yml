@@ -1,0 +1,44 @@
+# Flatpak of NeedMoreBench on the GNOME runtime (GTK, libadwaita, PyGObject and libsecret come from it).
+#   flatpak-builder --user --install --force-clean build/flatpak packaging/flatpak/org.needmorebench.NeedMoreBench.yml
+#   flatpak build-bundle ~/.local/share/flatpak/repo NeedMoreBench.flatpak org.needmorebench.NeedMoreBench
+app-id: org.needmorebench.NeedMoreBench
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: needmorebench
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # keys in the desktop's keyring (GNOME Keyring, KWallet)
+  - --talk-name=org.freedesktop.secrets
+  # the local opencode server: its address and password, and keys the user gave opencode (read on first start)
+  - --filesystem=~/.local/state/opencode:ro
+  - --filesystem=~/.config/opencode:ro
+  - --filesystem=~/.local/share/opencode:ro
+modules:
+  - python-deps.json
+  - name: needmorebench
+    buildsystem: simple
+    build-commands:
+      - install -d ${FLATPAK_DEST}/share/needmorebench
+      - cp -r nmb po data LICENSE NOTICE ${FLATPAK_DEST}/share/needmorebench/
+      - find ${FLATPAK_DEST}/share/needmorebench -name __pycache__ -prune -exec rm -rf {} +
+      - install -Dm755 packaging/flatpak/needmorebench.sh ${FLATPAK_DEST}/bin/needmorebench
+      - for d in data/icons/hicolor/*/apps; do install -Dm644 $d/${FLATPAK_ID}.png ${FLATPAK_DEST}/share/icons/hicolor/$(basename $(dirname $d))/apps/${FLATPAK_ID}.png; done
+      - install -Dm644 packaging/flatpak/${FLATPAK_ID}.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
+      - install -Dm644 packaging/flatpak/${FLATPAK_ID}.metainfo.xml ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml
+    sources:
+      - type: dir
+        path: ../..
+        skip:  # only nmb, po, data, LICENSE and NOTICE are installed; skip what is large or being built
+          - .venv
+          - .scratch
+          - .git
+          - build
+          - flatpak_app
+          - repo
+          - .flatpak-builder
+          - smoke

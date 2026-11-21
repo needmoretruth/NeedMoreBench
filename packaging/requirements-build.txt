@@ -1,0 +1,5 @@
+# Tools that build the Windows and macOS apps (not shipped in them).
+pyinstaller==6.22.3
+pyinstaller-hooks-contrib==2026.10
+pillow==12.3.0
+pytest==9.2.0

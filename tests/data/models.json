@@ -1,0 +1,2974 @@
+[
+{
+"key": "anthropic:anthropic/claude-fable-5",
+"name": "Claude Fable 5"
+},
+{
+"key": "anthropic:anthropic/claude-fable-5-1",
+"name": "Claude Fable 5.1"
+},
+{
+"key": "anthropic:anthropic/claude-fable-5-2",
+"name": "Claude Fable 5.2"
+},
+{
+"key": "anthropic:anthropic/claude-haiku-4-5-20251001",
+"name": "Claude Haiku 4.5"
+},
+{
+"key": "anthropic:anthropic/claude-haiku-5-5",
+"name": "Claude Haiku 5.5"
+},
+{
+"key": "anthropic:anthropic/claude-opus-4-5-20251101",
+"name": "Claude Opus 4.5"
+},
+{
+"key": "anthropic:anthropic/claude-opus-4-6",
+"name": "Claude Opus 4.6"
+},
+{
+"key": "anthropic:anthropic/claude-opus-4-7",
+"name": "Claude Opus 4.7"
+},
+{
+"key": "anthropic:anthropic/claude-opus-4-8",
+"name": "Claude Opus 4.8"
+},
+{
+"key": "anthropic:anthropic/claude-opus-5",
+"name": "Claude Opus 5"
+},
+{
+"key": "anthropic:anthropic/claude-opus-5-5",
+"name": "Claude Opus 5.5"
+},
+{
+"key": "anthropic:anthropic/claude-sonnet-4-6",
+"name": "Claude Sonnet 4.6"
+},
+{
+"key": "anthropic:anthropic/claude-sonnet-5",
+"name": "Claude Sonnet 5"
+},
+{
+"key": "anthropic:anthropic/claude-sonnet-5-5",
+"name": "Claude Sonnet 5.5"
+},
+{
+"key": "lmstudio:lmstudio/google/gemma-4-26b-a4b-qat",
+"name": "gemma-4-26b-a4b-qat"
+},
+{
+"key": "lmstudio:lmstudio/lfm3-1.7b-uncensored",
+"name": "lfm3-1.7b-uncensored"
+},
+{
+"key": "lmstudio:lmstudio/lfm3-vl-2b",
+"name": "lfm3-vl-2b"
+},
+{
+"key": "lmstudio:lmstudio/qwen/qwen3.6-35b-a3b",
+"name": "qwen3.6-35b-a3b"
+},
+{
+"key": "lmstudio:lmstudio/qwen3.6-35b-a3b-mtp",
+"name": "qwen3.6-35b-a3b-mtp"
+},
+{
+"key": "lmstudio:lmstudio/qwen3.6-35b-a3b-uncensored-hauhaucs-aggressive",
+"name": "qwen3.6-35b-a3b-uncensored-hauhaucs-aggressive"
+},
+{
+"key": "lmstudio:lmstudio/thinkingmachines/inkling-2-mini",
+"name": "inkling-2-mini"
+},
+{
+"key": "opencode:abliteration-ai/abliterated-model",
+"name": "Abliterated Model"
+},
+{
+"key": "opencode:abliteration-ai/abliterated-model-large",
+"name": "GLM 5.2 Uncensored (Abliterated Large)"
+},
+{
+"key": "opencode:abliteration-ai/abliterated-model-large-flash",
+"name": "Abliterated Model Large Flash"
+},
+{
+"key": "opencode:abliteration-ai/abliterated-model-large-v2",
+"name": "GLM 5.3 Uncensored (Abliterated Large V2)"
+},
+{
+"key": "opencode:opencode-go/beam-free",
+"name": "Beam Free"
+},
+{
+"key": "opencode:opencode-go/claude-haiku-5-5",
+"name": "Claude Haiku 5.5"
+},
+{
+"key": "opencode:opencode-go/deepseek-v4-flash",
+"name": "deepseek-v4-flash"
+},
+{
+"key": "opencode:opencode-go/deepseek-v4-pro",
+"name": "DeepSeek V4 Pro"
+},
+{
+"key": "opencode:opencode-go/deepseek-v4.1-flash",
+"name": "DeepSeek V4.1 Flash 1017"
+},
+{
+"key": "opencode:opencode-go/gemini-4-argon",
+"name": "Gemini 4 Argon"
+},
+{
+"key": "opencode:opencode-go/glm-5.3",
+"name": "GLM-5.3"
+},
+{
+"key": "opencode:opencode-go/glm-5.3-flash",
+"name": "GLM-5.3-Flash"
+},
+{
+"key": "opencode:opencode-go/gpt-5.6-luna",
+"name": "GPT-5.6 Luna"
+},
+{
+"key": "opencode:opencode-go/gpt-6-luna",
+"name": "GPT-6 Luna"
+},
+{
+"key": "opencode:opencode-go/grok-4.7",
+"name": "Grok 4.7"
+},
+{
+"key": "opencode:opencode-go/hy3",
+"name": "Hy3"
+},
+{
+"key": "opencode:opencode-go/hy4",
+"name": "Hy4"
+},
+{
+"key": "opencode:opencode-go/hy4-flash-free",
+"name": "Hy4 flash Free"
+},
+{
+"key": "opencode:opencode-go/hy4-preview",
+"name": "Hy4 preview"
+},
+{
+"key": "opencode:opencode-go/iceman-contributor-free",
+"name": "Iceman Contributor Free"
+},
+{
+"key": "opencode:opencode-go/kimi-k2.7-code",
+"name": "Kimi K2.7 Code"
+},
+{
+"key": "opencode:opencode-go/kimi-k3",
+"name": "Kimi K3"
+},
+{
+"key": "opencode:opencode-go/kimi-k3.1-pro",
+"name": "Kimi K3.1 Pro"
+},
+{
+"key": "opencode:opencode-go/longcat-2.0",
+"name": "LongCat-2.0"
+},
+{
+"key": "opencode:opencode-go/longcat-2.5-free",
+"name": "LongCat 2.5 Free"
+},
+{
+"key": "opencode:opencode-go/mimo-v2.5",
+"name": "MiMo V2.5"
+},
+{
+"key": "opencode:opencode-go/mimo-v2.5-pro",
+"name": "MiMo V2.5 Pro"
+},
+{
+"key": "opencode:opencode-go/mimo-v2.6-flash",
+"name": "MiMo-V2.6-Flash"
+},
+{
+"key": "opencode:opencode-go/mimo-v2.6-pro",
+"name": "MiMo-V2.6-Pro"
+},
+{
+"key": "opencode:opencode-go/minimax-m3",
+"name": "MiniMax-M3"
+},
+{
+"key": "opencode:opencode-go/minimax-m3.1-flash",
+"name": "MiniMax M3.1 Flash"
+},
+{
+"key": "opencode:opencode-go/muse-spark-1.2-contributor",
+"name": "Muse Spark 1.2 Contributor"
+},
+{
+"key": "opencode:opencode-go/muse-spark-1.3-contributor",
+"name": "Muse Spark 1.3 Contributor"
+},
+{
+"key": "opencode:opencode-go/qwen3.7-plus",
+"name": "Qwen3.7 Plus"
+},
+{
+"key": "opencode:opencode-go/qwen3.8-flash",
+"name": "Qwen3.8 Flash"
+},
+{
+"key": "opencode:opencode-go/qwen3.8-max",
+"name": "Qwen3.8 Max"
+},
+{
+"key": "opencode:opencode-go/qwen4-max",
+"name": "Qwen4 Max"
+},
+{
+"key": "opencode:opencode-go/step-5-preview",
+"name": "Step 5 Preview"
+},
+{
+"key": "opencode:opencode/beam-free",
+"name": "Beam Free"
+},
+{
+"key": "opencode:opencode/big-pickle",
+"name": "Big Pickle"
+},
+{
+"key": "opencode:opencode/claude-fable-5-1",
+"name": "Claude Fable 5.1"
+},
+{
+"key": "opencode:opencode/claude-fable-5-2",
+"name": "Claude Fable 5.2"
+},
+{
+"key": "opencode:opencode/claude-haiku-5-5",
+"name": "Claude Haiku 5.5"
+},
+{
+"key": "opencode:opencode/claude-opus-5-5",
+"name": "Claude Opus 5.5"
+},
+{
+"key": "opencode:opencode/claude-sonnet-5-5",
+"name": "Claude Sonnet 5.5"
+},
+{
+"key": "opencode:opencode/deepseek-v4-pro",
+"name": "DeepSeek V4 Pro"
+},
+{
+"key": "opencode:opencode/deepseek-v4.1-flash",
+"name": "DeepSeek V4.1 Flash 1017"
+},
+{
+"key": "opencode:opencode/deepseek-v4.1-flash-free",
+"name": "DeepSeek V4.1 Flash Free"
+},
+{
+"key": "opencode:opencode/flint-40b-free",
+"name": "Flint 40B Free"
+},
+{
+"key": "opencode:opencode/gemini-3.5-flash-lite",
+"name": "Gemini 3.5 Flash Lite"
+},
+{
+"key": "opencode:opencode/gemini-3.8-flash",
+"name": "Gemini 3.8 Flash"
+},
+{
+"key": "opencode:opencode/gemini-4-argon",
+"name": "Gemini 4 Argon"
+},
+{
+"key": "opencode:opencode/gemini-4-carbon",
+"name": "Gemini 4 Carbon"
+},
+{
+"key": "opencode:opencode/gemini-4-hydrogen",
+"name": "Gemini 4 Hydrogen"
+},
+{
+"key": "opencode:opencode/gemini-4-neon",
+"name": "Gemini 4 Neon"
+},
+{
+"key": "opencode:opencode/glm-5.3",
+"name": "GLM-5.3"
+},
+{
+"key": "opencode:opencode/glm-5.3-flash",
+"name": "GLM-5.3-Flash"
+},
+{
+"key": "opencode:opencode/gpt-5.3-codex",
+"name": "GPT-5.3 Codex"
+},
+{
+"key": "opencode:opencode/gpt-5.3-codex-spark",
+"name": "GPT-5.3 Codex Spark"
+},
+{
+"key": "opencode:opencode/gpt-5.4-mini",
+"name": "GPT-5.4 Mini"
+},
+{
+"key": "opencode:opencode/gpt-5.4-nano",
+"name": "GPT-5.4 Nano"
+},
+{
+"key": "opencode:opencode/gpt-5.5",
+"name": "GPT-5.5"
+},
+{
+"key": "opencode:opencode/gpt-5.5-pro",
+"name": "GPT-5.5 Pro"
+},
+{
+"key": "opencode:opencode/gpt-5.6-terra",
+"name": "GPT-5.6 Terra"
+},
+{
+"key": "opencode:opencode/gpt-6-astra",
+"name": "GPT-6 Astra"
+},
+{
+"key": "opencode:opencode/gpt-6-luna",
+"name": "GPT-6 Luna"
+},
+{
+"key": "opencode:opencode/gpt-6.1-sol",
+"name": "GPT-6.1 Sol"
+},
+{
+"key": "opencode:opencode/gpt-6.2-astra",
+"name": "GPT-6.2 Astra"
+},
+{
+"key": "opencode:opencode/gpt-6.2-sol",
+"name": "GPT-6.2 Sol"
+},
+{
+"key": "opencode:opencode/grok-4.7",
+"name": "Grok 4.7"
+},
+{
+"key": "opencode:opencode/grok-build-0.1",
+"name": "Grok Build 0.1"
+},
+{
+"key": "opencode:opencode/hy4-flash-free",
+"name": "Hy4 flash Free"
+},
+{
+"key": "opencode:opencode/iceman-free",
+"name": "Iceman Free"
+},
+{
+"key": "opencode:opencode/kimi-k2.7-code",
+"name": "Kimi K2.7 Code"
+},
+{
+"key": "opencode:opencode/kimi-k3",
+"name": "Kimi K3"
+},
+{
+"key": "opencode:opencode/longcat-2.5-free",
+"name": "LongCat 2.5 Free"
+},
+{
+"key": "opencode:opencode/mimo-v2.6-flash-free",
+"name": "MiMo-V2.6-Flash Free"
+},
+{
+"key": "opencode:opencode/minimax-m3",
+"name": "MiniMax-M3"
+},
+{
+"key": "opencode:opencode/mistral-large-4",
+"name": "Mistral Large 4"
+},
+{
+"key": "opencode:opencode/muse-ember-1.0",
+"name": "Muse Ember 1.0"
+},
+{
+"key": "opencode:opencode/muse-spark-1.3",
+"name": "Muse Spark 1.3"
+},
+{
+"key": "opencode:opencode/muse-wonder-1.0",
+"name": "Muse Wonder"
+},
+{
+"key": "opencode:opencode/nemotron-3.5-lightning-free",
+"name": "Nemotron 3.5 Lightning Free"
+},
+{
+"key": "opencode:opencode/nemotron-3.5-super-vl-free",
+"name": "Nemotron 3.5 Super VL Free"
+},
+{
+"key": "opencode:opencode/qwen3.6-plus",
+"name": "Qwen3.6 Plus"
+},
+{
+"key": "opencode:opencode/qwen3.8-flash",
+"name": "Qwen3.8 Flash"
+},
+{
+"key": "opencode:opencode/tidepool-alpha-free",
+"name": "Tidepool Alpha Free"
+},
+{
+"key": "opencode:phala/deepseek/deepseek-v3.2",
+"name": "DeepSeek V3.2"
+},
+{
+"key": "opencode:phala/deepseek/deepseek-v4-flash-0731",
+"name": "DeepSeek: DeepSeek V4 Flash 0731"
+},
+{
+"key": "opencode:phala/deepseek/deepseek-v4.1-flash-1017",
+"name": "DeepSeek V4.1 Flash 1017"
+},
+{
+"key": "opencode:phala/google/gemma-4-31b-it",
+"name": "Google: Gemma 4 31B"
+},
+{
+"key": "opencode:phala/meta-llama/llama-3.3-70b-instruct",
+"name": "Llama-3.3-70B-Instruct"
+},
+{
+"key": "opencode:phala/meta/muse-glimmer-30b",
+"name": "Meta: Muse Glimmer 30B"
+},
+{
+"key": "opencode:phala/moonshotai/kimi-k2.6",
+"name": "Kimi K2.6"
+},
+{
+"key": "opencode:phala/moonshotai/kimi-k3",
+"name": "MoonshotAI: Kimi K3"
+},
+{
+"key": "opencode:phala/openai/gpt-oss-120b",
+"name": "GPT OSS 120B"
+},
+{
+"key": "opencode:phala/phala/gemma-4-26b-a4b-uncensored",
+"name": "Phala: Gemma-4 26B-A4B Uncensored (Heretic)"
+},
+{
+"key": "opencode:phala/phala/qwen3.6-35b-a3b-uncensored",
+"name": "Phala: Qwen3.6 35B-A3B Uncensored (Aggressive)"
+},
+{
+"key": "opencode:phala/phala/qwen3.8-27b-uncensored",
+"name": "Phala: Qwen3.8 27B Uncensored (Aggressive)"
+},
+{
+"key": "opencode:phala/qwen/qwen-2.5-7b-instruct",
+"name": "Qwen2.5 7B Instruct"
+},
+{
+"key": "opencode:phala/qwen/qwen3-vl-30b-a3b-instruct",
+"name": "Qwen3 VL 30B A3B Instruct"
+},
+{
+"key": "opencode:phala/qwen/qwen3.5-27b",
+"name": "Qwen3.5 27B"
+},
+{
+"key": "opencode:phala/qwen/qwen3.5-397b-a17b",
+"name": "Qwen3.5 397B-A17B"
+},
+{
+"key": "opencode:phala/qwen/qwen3.6-27b",
+"name": "Qwen3.6 27B"
+},
+{
+"key": "opencode:phala/qwen/qwen3.6-35b-a3b",
+"name": "Qwen3.6 35B-A3B"
+},
+{
+"key": "opencode:phala/qwen/qwen3.8-27b",
+"name": "Qwen: Qwen3.8 27B"
+},
+{
+"key": "opencode:phala/z-ai/glm-5.1",
+"name": "GLM-5.1"
+},
+{
+"key": "opencode:phala/z-ai/glm-5.2",
+"name": "GLM-5.2"
+},
+{
+"key": "opencode:phala/z-ai/glm-5.3",
+"name": "GLM-5.3"
+},
+{
+"key": "opencode:phala/z-ai/glm-5.3-flash",
+"name": "Z.ai: GLM 5.3 Flash"
+},
+{
+"key": "opencode:venice/abliteration-abliterated-model-large-flash",
+"name": "Abliterated Large Flash"
+},
+{
+"key": "opencode:venice/abliteration-abliterated-model-large-v2",
+"name": "Abliterated Large V2"
+},
+{
+"key": "opencode:venice/aion-labs-aion-3-0",
+"name": "Aion 3.0"
+},
+{
+"key": "opencode:venice/aion-labs-aion-3-0-mini",
+"name": "Aion 3.0 Mini"
+},
+{
+"key": "opencode:venice/aion-labs-aion-3-5",
+"name": "Aion 3.5"
+},
+{
+"key": "opencode:venice/aion-labs-aion-3-5-mini",
+"name": "Aion 3.5 Mini"
+},
+{
+"key": "opencode:venice/claude-fable-5",
+"name": "Claude Fable 5"
+},
+{
+"key": "opencode:venice/claude-fable-5-1",
+"name": "Claude Fable 5.1"
+},
+{
+"key": "opencode:venice/claude-fable-5-2",
+"name": "Claude Fable 5.2"
+},
+{
+"key": "opencode:venice/claude-haiku-5-5",
+"name": "Claude Haiku 5.5"
+},
+{
+"key": "opencode:venice/claude-opus-4-5",
+"name": "Claude Opus 4.5"
+},
+{
+"key": "opencode:venice/claude-opus-4-6",
+"name": "Claude Opus 4.6"
+},
+{
+"key": "opencode:venice/claude-opus-4-7",
+"name": "Claude Opus 4.7"
+},
+{
+"key": "opencode:venice/claude-opus-4-8",
+"name": "Claude Opus 4.8"
+},
+{
+"key": "opencode:venice/claude-opus-5",
+"name": "Claude Opus 5"
+},
+{
+"key": "opencode:venice/claude-opus-5-5",
+"name": "Claude Opus 5.5"
+},
+{
+"key": "opencode:venice/claude-opus-5-5-fast",
+"name": "Claude Opus 5.5 Fast"
+},
+{
+"key": "opencode:venice/claude-opus-5-fast",
+"name": "Claude Opus 5 Fast"
+},
+{
+"key": "opencode:venice/claude-sonnet-4-6",
+"name": "Claude Sonnet 4.6"
+},
+{
+"key": "opencode:venice/claude-sonnet-5",
+"name": "Claude Sonnet 5"
+},
+{
+"key": "opencode:venice/claude-sonnet-5-5",
+"name": "Claude Sonnet 5.5"
+},
+{
+"key": "opencode:venice/deepseek-v4-1-flash-1017",
+"name": "DeepSeek v4.1 Flash (1017)"
+},
+{
+"key": "opencode:venice/deepseek-v4-1-flash-1017-ultrafast",
+"name": "DeepSeek V4.1 Flash 1017 Ultrafast"
+},
+{
+"key": "opencode:venice/deepseek-v4-1-flash-1017-uncensored",
+"name": "DeepSeek V4.1 Flash 1017 Uncensored"
+},
+{
+"key": "opencode:venice/deepseek-v4-1-flash-uncensored",
+"name": "DeepSeek V4.1 Flash Uncensored"
+},
+{
+"key": "opencode:venice/deepseek-v4-flash",
+"name": "DeepSeek V4 Flash 0423"
+},
+{
+"key": "opencode:venice/deepseek-v4-flash-0731",
+"name": "DeepSeek V4 Flash 0731"
+},
+{
+"key": "opencode:venice/deepseek-v4-flash-0731-fast",
+"name": "DeepSeek V4 Flash 0731 Fast"
+},
+{
+"key": "opencode:venice/deepseek-v4-pro",
+"name": "DeepSeek V4 Pro"
+},
+{
+"key": "opencode:venice/deepseek-v4-pro-0813",
+"name": "DeepSeek V4 Pro 0813"
+},
+{
+"key": "opencode:venice/e2ee-deepseek-v4-1-flash-1017-abliterated",
+"name": "DeepSeek V4.1 Flash 1017 Abliterated (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-deepseek-v4-flash",
+"name": "DeepSeek V4 Flash (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-gemma-4-26b-a4b-uncensored-p",
+"name": "Gemma 4 26B A4B Uncensored (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-glm-5-2-p",
+"name": "GLM 5.2 (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-glm-5-3-flash",
+"name": "GLM 5.3 Flash (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-glm-5-3-p",
+"name": "GLM 5.3 (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-gpt-oss-120b-p",
+"name": "GPT OSS 120B (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-kimi-k2-6",
+"name": "Kimi K2.6 (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-kimi-k3-p",
+"name": "Kimi K3 (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-qwen-2-5-7b-p",
+"name": "Qwen 2.5 7B (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-qwen3-6-35b-a3b",
+"name": "Qwen 3.6 35B A3B FP8 (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-qwen3-8-27b",
+"name": "Qwen 3.8 27B (E2EE)"
+},
+{
+"key": "opencode:venice/e2ee-qwen3-vl-30b-a3b-p",
+"name": "Qwen3 VL 30B A3B (E2EE)"
+},
+{
+"key": "opencode:venice/gemini-3-1-pro-preview",
+"name": "Gemini 3.1 Pro Preview"
+},
+{
+"key": "opencode:venice/gemini-3-5-flash",
+"name": "Gemini 3.5 Flash"
+},
+{
+"key": "opencode:venice/gemini-3-5-flash-lite",
+"name": "Gemini 3.5 Flash-Lite"
+},
+{
+"key": "opencode:venice/gemini-3-6-flash",
+"name": "Gemini 3.6 Flash"
+},
+{
+"key": "opencode:venice/gemini-3-7-flash",
+"name": "Gemini 3.7 Flash"
+},
+{
+"key": "opencode:venice/gemini-3-8-flash",
+"name": "Gemini 3.8 Flash"
+},
+{
+"key": "opencode:venice/gemini-3-flash-preview",
+"name": "Gemini 3 Flash Preview"
+},
+{
+"key": "opencode:venice/gemini-4-argon",
+"name": "Gemini 4 Argon"
+},
+{
+"key": "opencode:venice/gemini-4-carbon",
+"name": "Gemini 4 Carbon"
+},
+{
+"key": "opencode:venice/gemini-4-hydrogen",
+"name": "Gemini 4 Hydrogen"
+},
+{
+"key": "opencode:venice/gemini-4-neon",
+"name": "Gemini 4 Neon"
+},
+{
+"key": "opencode:venice/glm-5-3-flash-uncensored",
+"name": "GLM 5.3 Flash Uncensored"
+},
+{
+"key": "opencode:venice/google-gemma-3-27b-it",
+"name": "Google Gemma 3 27B Instruct"
+},
+{
+"key": "opencode:venice/google-gemma-4-26b-a4b-it",
+"name": "Google Gemma 4 26B A4B Instruct"
+},
+{
+"key": "opencode:venice/google-gemma-4-31b-it",
+"name": "Google Gemma 4 31B Instruct"
+},
+{
+"key": "opencode:venice/grok-4-20",
+"name": "Grok 4.20"
+},
+{
+"key": "opencode:venice/grok-4-20-multi-agent",
+"name": "Grok 4.20 Multi-Agent"
+},
+{
+"key": "opencode:venice/grok-4-3",
+"name": "Grok 4.3"
+},
+{
+"key": "opencode:venice/grok-4-5",
+"name": "Grok 4.5"
+},
+{
+"key": "opencode:venice/grok-4-6",
+"name": "Grok 4.6"
+},
+{
+"key": "opencode:venice/grok-4-7",
+"name": "Grok 4.7"
+},
+{
+"key": "opencode:venice/grok-build-0-1",
+"name": "Grok Build 0.1"
+},
+{
+"key": "opencode:venice/hy4-preview",
+"name": "Hy4 Preview"
+},
+{
+"key": "opencode:venice/kimi-k2-6",
+"name": "Kimi K2.6"
+},
+{
+"key": "opencode:venice/kimi-k2-7-code",
+"name": "Kimi K2.7 Code"
+},
+{
+"key": "opencode:venice/kimi-k3",
+"name": "Kimi K3"
+},
+{
+"key": "opencode:venice/kimi-k3-1-pro",
+"name": "Kimi K3.1 Pro"
+},
+{
+"key": "opencode:venice/kimi-k3-1-pro-highspeed",
+"name": "Kimi K3.1 Pro Highspeed"
+},
+{
+"key": "opencode:venice/kimi-k3-fast-api",
+"name": "Kimi K3 Fast"
+},
+{
+"key": "opencode:venice/llama-3.2-3b",
+"name": "Llama 3.2 3B"
+},
+{
+"key": "opencode:venice/llama-3.3-70b",
+"name": "Llama 3.3 70B"
+},
+{
+"key": "opencode:venice/minimax-m25",
+"name": "MiniMax M2.5"
+},
+{
+"key": "opencode:venice/minimax-m27",
+"name": "MiniMax M2.7"
+},
+{
+"key": "opencode:venice/minimax-m3-1-flash",
+"name": "MiniMax M3.1 Flash"
+},
+{
+"key": "opencode:venice/minimax-m3-preview",
+"name": "MiniMax M3 Preview"
+},
+{
+"key": "opencode:venice/mistral-small-3-2-24b-instruct",
+"name": "Mistral Small 3.2 24B Instruct"
+},
+{
+"key": "opencode:venice/muse-spark-open",
+"name": "Muse Spark Open"
+},
+{
+"key": "opencode:venice/muse-wonder",
+"name": "Muse Wonder"
+},
+{
+"key": "opencode:venice/nvidia-nemotron-3-5-super-vl-120b-a12b",
+"name": "NVIDIA Nemotron 3.5 Super VL 120B"
+},
+{
+"key": "opencode:venice/nvidia-nemotron-3-nano-30b-a3b",
+"name": "NVIDIA Nemotron 3 Nano 30B"
+},
+{
+"key": "opencode:venice/nvidia-nemotron-3-ultra-550b-a55b",
+"name": "NVIDIA Nemotron 3 Ultra"
+},
+{
+"key": "opencode:venice/olafangensan-glm-4.7-flash-heretic",
+"name": "GLM 4.7 Flash Heretic"
+},
+{
+"key": "opencode:venice/openai-gpt-4o-2024-11-20",
+"name": "GPT-4o"
+},
+{
+"key": "opencode:venice/openai-gpt-4o-mini-2024-07-18",
+"name": "GPT-4o Mini"
+},
+{
+"key": "opencode:venice/openai-gpt-52",
+"name": "GPT-5.2"
+},
+{
+"key": "opencode:venice/openai-gpt-53-codex",
+"name": "GPT-5.3 Codex"
+},
+{
+"key": "opencode:venice/openai-gpt-54",
+"name": "GPT-5.4"
+},
+{
+"key": "opencode:venice/openai-gpt-54-mini",
+"name": "GPT-5.4 Mini"
+},
+{
+"key": "opencode:venice/openai-gpt-54-pro",
+"name": "GPT-5.4 Pro"
+},
+{
+"key": "opencode:venice/openai-gpt-55",
+"name": "GPT-5.5"
+},
+{
+"key": "opencode:venice/openai-gpt-55-pro",
+"name": "GPT-5.5 Pro"
+},
+{
+"key": "opencode:venice/openai-gpt-56-luna",
+"name": "GPT-5.6 Luna"
+},
+{
+"key": "opencode:venice/openai-gpt-56-luna-pro",
+"name": "GPT-5.6 Luna Pro"
+},
+{
+"key": "opencode:venice/openai-gpt-56-sol",
+"name": "GPT-5.6 Sol"
+},
+{
+"key": "opencode:venice/openai-gpt-56-sol-pro",
+"name": "GPT-5.6 Sol Pro"
+},
+{
+"key": "opencode:venice/openai-gpt-56-terra",
+"name": "GPT-5.6 Terra"
+},
+{
+"key": "opencode:venice/openai-gpt-56-terra-pro",
+"name": "GPT-5.6 Terra Pro"
+},
+{
+"key": "opencode:venice/openai-gpt-6-astra",
+"name": "GPT-6 Astra"
+},
+{
+"key": "opencode:venice/openai-gpt-6-astra-pro",
+"name": "GPT-6 Astra Pro"
+},
+{
+"key": "opencode:venice/openai-gpt-6-luna",
+"name": "GPT-6 Luna"
+},
+{
+"key": "opencode:venice/openai-gpt-6-sol",
+"name": "GPT-6 Sol"
+},
+{
+"key": "opencode:venice/openai-gpt-61-sol",
+"name": "GPT-6.1 Sol"
+},
+{
+"key": "opencode:venice/openai-gpt-61-sol-ultrafast",
+"name": "GPT-6.1 Sol Ultrafast"
+},
+{
+"key": "opencode:venice/openai-gpt-61-terra",
+"name": "GPT-6.1 Terra"
+},
+{
+"key": "opencode:venice/openai-gpt-62-astra",
+"name": "GPT-6.2 Astra"
+},
+{
+"key": "opencode:venice/openai-gpt-62-astra-pro",
+"name": "GPT-6.2 Astra Pro"
+},
+{
+"key": "opencode:venice/openai-gpt-62-sol",
+"name": "GPT-6.2 Sol"
+},
+{
+"key": "opencode:venice/openai-gpt-62-sol-pro",
+"name": "GPT-6.2 Sol Pro"
+},
+{
+"key": "opencode:venice/openai-gpt-oss-120b",
+"name": "OpenAI GPT OSS 120B"
+},
+{
+"key": "opencode:venice/pareto",
+"name": "Pareto"
+},
+{
+"key": "opencode:venice/qwen-3-6-plus",
+"name": "Qwen 3.6 Plus Uncensored"
+},
+{
+"key": "opencode:venice/qwen-3-7-max",
+"name": "Qwen 3.7 Max"
+},
+{
+"key": "opencode:venice/qwen-3-7-plus",
+"name": "Qwen 3.7 Plus"
+},
+{
+"key": "opencode:venice/qwen-3-8-2-4t-a95b",
+"name": "Qwen 3.8 2.4T"
+},
+{
+"key": "opencode:venice/qwen-3-8-27b",
+"name": "Qwen 3.8 27B"
+},
+{
+"key": "opencode:venice/qwen-3-8-flash",
+"name": "Qwen 3.8 Flash"
+},
+{
+"key": "opencode:venice/qwen-3-8-max",
+"name": "Qwen 3.8 Max"
+},
+{
+"key": "opencode:venice/qwen-4-max",
+"name": "Qwen 4 Max"
+},
+{
+"key": "opencode:venice/qwen3-235b-a22b-instruct-2507",
+"name": "Qwen 3 235B A22B Instruct 2507"
+},
+{
+"key": "opencode:venice/qwen3-235b-a22b-thinking-2507",
+"name": "Qwen 3 235B A22B Thinking 2507"
+},
+{
+"key": "opencode:venice/qwen3-5-35b-a3b",
+"name": "Qwen 3.5 35B A3B"
+},
+{
+"key": "opencode:venice/qwen3-5-397b-a17b",
+"name": "Qwen 3.5 397B"
+},
+{
+"key": "opencode:venice/qwen3-6-27b",
+"name": "Qwen 3.6 27B"
+},
+{
+"key": "opencode:venice/qwen3-6-35b-a3b",
+"name": "Qwen 3.6 35B A3B"
+},
+{
+"key": "opencode:venice/qwen3-coder-480b-a35b-instruct-turbo",
+"name": "Qwen 3 Coder 480B Turbo"
+},
+{
+"key": "opencode:venice/qwen3-next-80b",
+"name": "Qwen 3 Next 80b"
+},
+{
+"key": "opencode:venice/qwen3-vl-235b-a22b",
+"name": "Qwen3 VL 235B"
+},
+{
+"key": "opencode:venice/seed-2-1-turbo",
+"name": "Seed 2.1 Turbo"
+},
+{
+"key": "opencode:venice/venice-uncensored-1-2",
+"name": "Venice Uncensored 1.2"
+},
+{
+"key": "opencode:venice/venice-uncensored-role-play",
+"name": "Venice Role Play Uncensored"
+},
+{
+"key": "opencode:venice/xiaomi-mimo-v2-5",
+"name": "MiMo-V2.5"
+},
+{
+"key": "opencode:venice/xiaomi-mimo-v2-6-flash",
+"name": "MiMo-V2.6-Flash"
+},
+{
+"key": "opencode:venice/z-ai-glm-5-3",
+"name": "GLM 5.3"
+},
+{
+"key": "opencode:venice/z-ai-glm-5-3-flash",
+"name": "GLM 5.3 Flash"
+},
+{
+"key": "opencode:venice/z-ai-glm-5-turbo",
+"name": "GLM 5 Turbo"
+},
+{
+"key": "opencode:venice/z-ai-glm-5v-turbo",
+"name": "GLM 5V Turbo"
+},
+{
+"key": "opencode:venice/zai-org-glm-4.6",
+"name": "GLM 4.6"
+},
+{
+"key": "opencode:venice/zai-org-glm-4.7",
+"name": "GLM 4.7"
+},
+{
+"key": "opencode:venice/zai-org-glm-5",
+"name": "GLM 5"
+},
+{
+"key": "opencode:venice/zai-org-glm-5-1",
+"name": "GLM 5.1"
+},
+{
+"key": "opencode:venice/zai-org-glm-5-2",
+"name": "GLM 5.2"
+},
+{
+"key": "openrouter:openrouter/aion-labs/aion-2.0",
+"name": "Aion-2.0"
+},
+{
+"key": "openrouter:openrouter/aion-labs/aion-3.0",
+"name": "Aion-3.0"
+},
+{
+"key": "openrouter:openrouter/aion-labs/aion-3.0-mini",
+"name": "Aion-3.0-Mini"
+},
+{
+"key": "openrouter:openrouter/aion-labs/aion-3.5",
+"name": "Aion 3.5"
+},
+{
+"key": "openrouter:openrouter/aion-labs/aion-3.5-mini",
+"name": "Aion 3.5 Mini"
+},
+{
+"key": "openrouter:openrouter/aion-labs/aion-rp-llama-3.1-8b",
+"name": "Aion-RP 1.0 (8B)"
+},
+{
+"key": "openrouter:openrouter/amazon/nova-2-lite-v1",
+"name": "Nova 2 Lite"
+},
+{
+"key": "openrouter:openrouter/amazon/nova-lite-v1",
+"name": "Nova Lite 1.0"
+},
+{
+"key": "openrouter:openrouter/amazon/nova-micro-v1",
+"name": "Nova Micro 1.0"
+},
+{
+"key": "openrouter:openrouter/amazon/nova-premier-v1",
+"name": "Nova Premier 1.0"
+},
+{
+"key": "openrouter:openrouter/amazon/nova-pro-v1",
+"name": "Nova Pro 1.0"
+},
+{
+"key": "openrouter:openrouter/anthracite-org/magnum-v4-72b",
+"name": "Magnum v4 72B"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-fable-5",
+"name": "Claude Fable 5"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-fable-5.1",
+"name": "Claude Fable 5.1"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-fable-5.1:batch",
+"name": "Claude Fable 5.1 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-fable-5.2",
+"name": "Claude Fable 5.2"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-fable-5.2:batch",
+"name": "Claude Fable 5.2 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-fable-5:batch",
+"name": "Claude Fable 5 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-haiku-4.5",
+"name": "Claude Haiku 4.5"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-haiku-4.5:batch",
+"name": "Claude Haiku 4.5 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-haiku-5.5",
+"name": "Claude Haiku 5.5"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-haiku-5.5:batch",
+"name": "Claude Haiku 5.5 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.1",
+"name": "Claude Opus 4.1"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.1:batch",
+"name": "Claude Opus 4.1 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.5",
+"name": "Claude Opus 4.5"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.5:batch",
+"name": "Claude Opus 4.5 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.6",
+"name": "Claude Opus 4.6"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.6:batch",
+"name": "Claude Opus 4.6 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.7",
+"name": "Claude Opus 4.7"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.7:batch",
+"name": "Claude Opus 4.7 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.8",
+"name": "Claude Opus 4.8"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-4.8:batch",
+"name": "Claude Opus 4.8 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-5",
+"name": "Claude Opus 5"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-5.5",
+"name": "Claude Opus 5.5"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-5.5:batch",
+"name": "Claude Opus 5.5 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-opus-5:batch",
+"name": "Claude Opus 5 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-sonnet-4.5",
+"name": "Claude Sonnet 4.5"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-sonnet-4.5:batch",
+"name": "Claude Sonnet 4.5 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-sonnet-4.6",
+"name": "Claude Sonnet 4.6"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-sonnet-4.6:batch",
+"name": "Claude Sonnet 4.6 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-sonnet-5",
+"name": "Claude Sonnet 5"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-sonnet-5.5",
+"name": "Claude Sonnet 5.5"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-sonnet-5.5:batch",
+"name": "Claude Sonnet 5.5 (batch)"
+},
+{
+"key": "openrouter:openrouter/anthropic/claude-sonnet-5:batch",
+"name": "Claude Sonnet 5 (batch)"
+},
+{
+"key": "openrouter:openrouter/baidu/ernie-5.5-flash-preview:free",
+"name": "ERNIE-5.5-Flash-Preview (free)"
+},
+{
+"key": "openrouter:openrouter/baidu/ernie-light-dt-1.0-intl",
+"name": "ERNIE-Light-DT-1.0"
+},
+{
+"key": "openrouter:openrouter/bytedance-seed/seed-2-1-turbo",
+"name": "Seed 2.1 Turbo"
+},
+{
+"key": "openrouter:openrouter/bytedance-seed/seed-2.0-lite",
+"name": "Seed-2.0-Lite"
+},
+{
+"key": "openrouter:openrouter/bytedance-seed/seed-2.0-mini",
+"name": "Seed-2.0-Mini"
+},
+{
+"key": "openrouter:openrouter/bytedance/ui-tars-1.5-7b",
+"name": "UI-TARS 7B "
+},
+{
+"key": "openrouter:openrouter/cognitivecomputations/dolphin-mistral-24b-venice-edition",
+"name": "Uncensored"
+},
+{
+"key": "openrouter:openrouter/cohere/command-a",
+"name": "Command A"
+},
+{
+"key": "openrouter:openrouter/cohere/command-a-plus",
+"name": "Command A+"
+},
+{
+"key": "openrouter:openrouter/cohere/command-r-08-2024",
+"name": "Command R (08-2024)"
+},
+{
+"key": "openrouter:openrouter/cohere/command-r-plus-08-2024",
+"name": "Command R+ (08-2024)"
+},
+{
+"key": "openrouter:openrouter/cohere/command-r7b-12-2024",
+"name": "Command R7B (12-2024)"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-chat",
+"name": "DeepSeek V3"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-chat-v3-0324",
+"name": "DeepSeek V3 0324"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-chat-v3.1",
+"name": "DeepSeek V3.1"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-r1-0528",
+"name": "R1 0528"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v3.1-terminus",
+"name": "DeepSeek V3.1 Terminus"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v3.2",
+"name": "DeepSeek V3.2"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v3.2-exp",
+"name": "DeepSeek V3.2 Exp"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4-flash",
+"name": "DeepSeek V4 Flash 0423"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4-flash-0731",
+"name": "DeepSeek V4 Flash 0731"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4-flash-0731:batch",
+"name": "DeepSeek V4 Flash 0731 (batch)"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4-flash-vision-exp",
+"name": "DeepSeek V4 Flash Vision Exp"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4-pro",
+"name": "DeepSeek V4 Pro 0423"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4-pro-0813",
+"name": "DeepSeek V4 Pro 0813"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4.1-flash",
+"name": "DeepSeek V4.1 Flash"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4.1-flash-1017",
+"name": "DeepSeek V4.1 Flash 1017"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4.1-flash-1017:batch",
+"name": "DeepSeek V4.1 Flash 1017 (batch)"
+},
+{
+"key": "openrouter:openrouter/deepseek/deepseek-v4.1-flash:batch",
+"name": "DeepSeek V4.1 Flash (batch)"
+},
+{
+"key": "openrouter:openrouter/elorian/glimpse",
+"name": "Glimpse"
+},
+{
+"key": "openrouter:openrouter/fireworks/ember-1",
+"name": "Ember-1"
+},
+{
+"key": "openrouter:openrouter/google/gemini-2.5-flash",
+"name": "Gemini 2.5 Flash"
+},
+{
+"key": "openrouter:openrouter/google/gemini-2.5-flash-image",
+"name": "Nano Banana (Gemini 2.5 Flash Image)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-2.5-flash-lite",
+"name": "Gemini 2.5 Flash Lite"
+},
+{
+"key": "openrouter:openrouter/google/gemini-2.5-pro",
+"name": "Gemini 2.5 Pro"
+},
+{
+"key": "openrouter:openrouter/google/gemini-2.5-pro-preview",
+"name": "Gemini 2.5 Pro Preview 06-05"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3-flash-preview",
+"name": "Gemini 3 Flash Preview"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3-flash-preview:batch",
+"name": "Gemini 3 Flash Preview (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3-pro-image",
+"name": "Nano Banana Pro (Gemini 3 Pro Image)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3-pro-image-preview",
+"name": "Nano Banana Pro (Gemini 3 Pro Image Preview)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.1-flash-image",
+"name": "Nano Banana 2 (Gemini 3.1 Flash Image)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.1-flash-image-preview",
+"name": "Nano Banana 2 (Gemini 3.1 Flash Image Preview)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.1-flash-lite",
+"name": "Gemini 3.1 Flash Lite"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.1-flash-lite-image",
+"name": "Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.1-flash-lite-preview",
+"name": "Gemini 3.1 Flash Lite Preview"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.1-flash-lite:batch",
+"name": "Gemini 3.1 Flash Lite (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.1-pro-preview",
+"name": "Gemini 3.1 Pro Preview"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.1-pro-preview-customtools",
+"name": "Gemini 3.1 Pro Preview Custom Tools"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.1-pro-preview:batch",
+"name": "Gemini 3.1 Pro Preview (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.5-flash",
+"name": "Gemini 3.5 Flash"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.5-flash-lite",
+"name": "Gemini 3.5 Flash Lite"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.5-flash-lite:batch",
+"name": "Gemini 3.5 Flash Lite (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.5-flash:batch",
+"name": "Gemini 3.5 Flash (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.6-flash",
+"name": "Gemini 3.6 Flash"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.6-flash:batch",
+"name": "Gemini 3.6 Flash (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.7-flash",
+"name": "Gemini 3.7 Flash"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.7-flash:batch",
+"name": "Gemini 3.7 Flash (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.8-flash",
+"name": "Gemini 3.8 Flash"
+},
+{
+"key": "openrouter:openrouter/google/gemini-3.8-flash:batch",
+"name": "Gemini 3.8 Flash (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-4-argon",
+"name": "Gemini 4 Argon"
+},
+{
+"key": "openrouter:openrouter/google/gemini-4-argon:batch",
+"name": "Gemini 4 Argon (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-4-carbon",
+"name": "Gemini 4 Carbon"
+},
+{
+"key": "openrouter:openrouter/google/gemini-4-carbon:batch",
+"name": "Gemini 4 Carbon (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-4-hydrogen",
+"name": "Gemini 4 Hydrogen"
+},
+{
+"key": "openrouter:openrouter/google/gemini-4-hydrogen:batch",
+"name": "Gemini 4 Hydrogen (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-4-neon",
+"name": "Gemini 4 Neon"
+},
+{
+"key": "openrouter:openrouter/google/gemini-4-neon:batch",
+"name": "Gemini 4 Neon (batch)"
+},
+{
+"key": "openrouter:openrouter/google/gemini-nano-banana-2.1",
+"name": "Nano Banana 2.1"
+},
+{
+"key": "openrouter:openrouter/google/gemini-omni-1.1-flash",
+"name": "Gemini Omni 1.1 Flash"
+},
+{
+"key": "openrouter:openrouter/google/gemini-omni-1.2-flash",
+"name": "Gemini Omni 1.2 Flash"
+},
+{
+"key": "openrouter:openrouter/google/gemma-2-27b-it",
+"name": "Gemma 2 27B"
+},
+{
+"key": "openrouter:openrouter/google/gemma-3-12b-it",
+"name": "Gemma 3 12B"
+},
+{
+"key": "openrouter:openrouter/google/gemma-3-27b-it",
+"name": "Gemma 3 27B"
+},
+{
+"key": "openrouter:openrouter/google/gemma-3-4b-it",
+"name": "Gemma 3 4B"
+},
+{
+"key": "openrouter:openrouter/google/gemma-4-26b-a4b-it",
+"name": "Gemma 4 26B A4B "
+},
+{
+"key": "openrouter:openrouter/google/gemma-4-26b-a4b-it:free",
+"name": "Gemma 4 26B A4B  (free)"
+},
+{
+"key": "openrouter:openrouter/google/gemma-4-31b-it",
+"name": "Gemma 4 31B"
+},
+{
+"key": "openrouter:openrouter/google/gemma-4-31b-it:free",
+"name": "Gemma 4 31B (free)"
+},
+{
+"key": "openrouter:openrouter/google/lyria-3-clip-preview",
+"name": "Lyria 3 Clip Preview"
+},
+{
+"key": "openrouter:openrouter/google/lyria-3-pro-preview",
+"name": "Lyria 3 Pro Preview"
+},
+{
+"key": "openrouter:openrouter/gryphe/mythomax-l2-13b",
+"name": "MythoMax 13B"
+},
+{
+"key": "openrouter:openrouter/ibm-granite/granite-4.2-8b",
+"name": "Granite 4.2 8B"
+},
+{
+"key": "openrouter:openrouter/inclusionai/ling-3.0-flash",
+"name": "Ling 3.0 Flash"
+},
+{
+"key": "openrouter:openrouter/inclusionai/ling-3.0-flash-vl",
+"name": "Ling 3.0 Flash VL"
+},
+{
+"key": "openrouter:openrouter/inclusionai/ling-3.0-tiny",
+"name": "Ling 3.0 Tiny"
+},
+{
+"key": "openrouter:openrouter/inclusionai/ling-3.1-flash",
+"name": "Ling 3.1 Flash"
+},
+{
+"key": "openrouter:openrouter/inclusionai/ling-3.2-flash:free",
+"name": "Ling 3.2 Flash (free)"
+},
+{
+"key": "openrouter:openrouter/inference-net/schematron-v2-small",
+"name": "Schematron V2 Small"
+},
+{
+"key": "openrouter:openrouter/inference-net/schematron-v2-turbo",
+"name": "Schematron V2 Turbo"
+},
+{
+"key": "openrouter:openrouter/kt/midm-k-3.0-pro",
+"name": "Mi:dm K 3.0 Pro"
+},
+{
+"key": "openrouter:openrouter/liquid/lfm-2.5-24b-a2b",
+"name": "LFM2.5-24B-A2B"
+},
+{
+"key": "openrouter:openrouter/liquid/lfm-3-1.7b",
+"name": "LFM3-1.7B"
+},
+{
+"key": "openrouter:openrouter/liquid/lfm-3-1.7b:free",
+"name": "LFM3-1.7B (free)"
+},
+{
+"key": "openrouter:openrouter/mancer/weaver",
+"name": "Weaver (alpha)"
+},
+{
+"key": "openrouter:openrouter/meta-llama/llama-3.1-70b-instruct",
+"name": "Llama 3.1 70B Instruct"
+},
+{
+"key": "openrouter:openrouter/meta-llama/llama-3.1-8b-instruct",
+"name": "Llama 3.1 8B Instruct"
+},
+{
+"key": "openrouter:openrouter/meta-llama/llama-3.2-3b-instruct",
+"name": "Llama 3.2 3B Instruct"
+},
+{
+"key": "openrouter:openrouter/meta-llama/llama-3.3-70b-instruct",
+"name": "Llama 3.3 70B Instruct"
+},
+{
+"key": "openrouter:openrouter/meta-llama/llama-4-maverick",
+"name": "Llama 4 Maverick"
+},
+{
+"key": "openrouter:openrouter/meta-llama/llama-4-scout",
+"name": "Llama 4 Scout"
+},
+{
+"key": "openrouter:openrouter/meta-llama/llama-guard-4-12b",
+"name": "Llama Guard 4 12B"
+},
+{
+"key": "openrouter:openrouter/meta/muse-ember",
+"name": "Muse Ember"
+},
+{
+"key": "openrouter:openrouter/meta/muse-glimmer-30b",
+"name": "Muse Glimmer 30B"
+},
+{
+"key": "openrouter:openrouter/meta/muse-glimmer-30b:batch",
+"name": "Muse Glimmer 30B (batch)"
+},
+{
+"key": "openrouter:openrouter/meta/muse-spark-1.1",
+"name": "Muse Spark 1.1"
+},
+{
+"key": "openrouter:openrouter/meta/muse-spark-1.2",
+"name": "Muse Spark 1.2"
+},
+{
+"key": "openrouter:openrouter/meta/muse-spark-1.2-contributor",
+"name": "Muse Spark 1.2 Contributor"
+},
+{
+"key": "openrouter:openrouter/meta/muse-spark-1.3",
+"name": "Muse Spark 1.3"
+},
+{
+"key": "openrouter:openrouter/meta/muse-spark-1.3-contributor",
+"name": "Muse Spark 1.3 Contributor"
+},
+{
+"key": "openrouter:openrouter/meta/muse-spark-open",
+"name": "Muse Spark Open"
+},
+{
+"key": "openrouter:openrouter/meta/muse-wonder",
+"name": "Muse Wonder"
+},
+{
+"key": "openrouter:openrouter/microsoft/phi-4",
+"name": "Phi 4"
+},
+{
+"key": "openrouter:openrouter/minimax/minimax-m2.5",
+"name": "MiniMax M2.5"
+},
+{
+"key": "openrouter:openrouter/minimax/minimax-m2.7",
+"name": "MiniMax M2.7"
+},
+{
+"key": "openrouter:openrouter/minimax/minimax-m3",
+"name": "MiniMax M3"
+},
+{
+"key": "openrouter:openrouter/minimax/minimax-m3.1-flash",
+"name": "MiniMax M3.1 Flash"
+},
+{
+"key": "openrouter:openrouter/minimax/minimax-m3:batch",
+"name": "MiniMax M3 (batch)"
+},
+{
+"key": "openrouter:openrouter/mistralai/codestral-2508",
+"name": "Codestral 2508"
+},
+{
+"key": "openrouter:openrouter/mistralai/devstral-2512",
+"name": "Devstral 2 2512"
+},
+{
+"key": "openrouter:openrouter/mistralai/ministral-14b-2512",
+"name": "Ministral 3 14B 2512"
+},
+{
+"key": "openrouter:openrouter/mistralai/ministral-3b-2512",
+"name": "Ministral 3 3B 2512"
+},
+{
+"key": "openrouter:openrouter/mistralai/ministral-8b-2512",
+"name": "Ministral 3 8B 2512"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-large",
+"name": "Mistral Large"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-large-2407",
+"name": "Mistral Large 2407"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-large-2512",
+"name": "Mistral Large 3 2512"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-large-4-0",
+"name": "Mistral Large 4"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-medium-3",
+"name": "Mistral Medium 3"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-medium-3-5",
+"name": "Mistral Medium 3.5"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-medium-3-5:batch",
+"name": "Mistral Medium 3.5 (batch)"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-medium-3.1",
+"name": "Mistral Medium 3.1"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-nemo",
+"name": "Mistral Nemo"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-saba",
+"name": "Saba"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-small-24b-instruct-2501",
+"name": "Mistral Small 3"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-small-2603",
+"name": "Mistral Small 4"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-small-3.1-24b-instruct",
+"name": "Mistral Small 3.1 24B"
+},
+{
+"key": "openrouter:openrouter/mistralai/mistral-small-3.2-24b-instruct",
+"name": "Mistral Small 3.2 24B"
+},
+{
+"key": "openrouter:openrouter/mistralai/mixtral-8x22b-instruct",
+"name": "Mixtral 8x22B Instruct"
+},
+{
+"key": "openrouter:openrouter/mistralai/pixtral-large-2502",
+"name": "Pixtral Large 2502"
+},
+{
+"key": "openrouter:openrouter/mistralai/voxtral-small-24b-2507",
+"name": "Voxtral Small 24B 2507"
+},
+{
+"key": "openrouter:openrouter/moondream/moondream3-preview",
+"name": "Moondream 3 Preview"
+},
+{
+"key": "openrouter:openrouter/moondream/moondream3.1-9b-a2b",
+"name": "Moondream 3.1"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k2",
+"name": "Kimi K2 0711"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k2-0905",
+"name": "Kimi K2 0905"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k2-thinking",
+"name": "Kimi K2 Thinking"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k2.5",
+"name": "Kimi K2.5"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k2.6",
+"name": "Kimi K2.6"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k2.7-code",
+"name": "Kimi K2.7 Code"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k3",
+"name": "Kimi K3"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k3.1-pro",
+"name": "Kimi K3.1 Pro"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k3.1-pro:batch",
+"name": "Kimi K3.1 Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/moonshotai/kimi-k3:batch",
+"name": "Kimi K3 (batch)"
+},
+{
+"key": "openrouter:openrouter/morph/morph-v3-fast",
+"name": "Morph V3 Fast"
+},
+{
+"key": "openrouter:openrouter/morph/morph-v3-fast:batch",
+"name": "Morph V3 Fast (batch)"
+},
+{
+"key": "openrouter:openrouter/morph/morph-v3-large",
+"name": "Morph V3 Large"
+},
+{
+"key": "openrouter:openrouter/morph/morph-v3-large:batch",
+"name": "Morph V3 Large (batch)"
+},
+{
+"key": "openrouter:openrouter/motif-technologies/motif-3",
+"name": "Motif 3"
+},
+{
+"key": "openrouter:openrouter/nex-agi/nex-n2.5-mini",
+"name": "Nex-N2.5-Mini"
+},
+{
+"key": "openrouter:openrouter/nex-agi/nex-n2.5-pro",
+"name": "Nex-N2.5-Pro"
+},
+{
+"key": "openrouter:openrouter/nex-agi/nex-n2.6",
+"name": "Nex-N2.6"
+},
+{
+"key": "openrouter:openrouter/nousresearch/hermes-4-405b",
+"name": "Hermes 4 405B"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3-nano-30b-a3b",
+"name": "Nemotron 3 Nano 30B A3B"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+"name": "Nemotron 3 Nano Omni (free)"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3-super-120b-a12b",
+"name": "Nemotron 3 Super"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3-ultra-550b-a55b",
+"name": "Nemotron 3 Ultra"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+"name": "Nemotron 3 Ultra (free)"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3.5-content-safety",
+"name": "Nemotron 3.5 Content Safety"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3.5-lightning",
+"name": "Nemotron 3.5 Lightning"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3.5-lightning:free",
+"name": "Nemotron 3.5 Lightning (free)"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3.5-super-vl",
+"name": "Nemotron 3.5 Super VL"
+},
+{
+"key": "openrouter:openrouter/nvidia/nemotron-3.5-super-vl:free",
+"name": "Nemotron 3.5 Super VL (free)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-3.5-turbo-0613",
+"name": "GPT-3.5 Turbo (older v0613)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-3.5-turbo-16k",
+"name": "GPT-3.5 Turbo 16k"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4",
+"name": "GPT-4"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4-turbo:batch",
+"name": "GPT-4 Turbo (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4.1",
+"name": "GPT-4.1"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4.1-mini",
+"name": "GPT-4.1 Mini"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4.1-mini:batch",
+"name": "GPT-4.1 Mini (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4.1-nano",
+"name": "GPT-4.1 Nano"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4.1-nano:batch",
+"name": "GPT-4.1 Nano (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4.1:batch",
+"name": "GPT-4.1 (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4o",
+"name": "GPT-4o"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4o-2024-05-13",
+"name": "GPT-4o (2024-05-13)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4o-2024-08-06",
+"name": "GPT-4o (2024-08-06)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4o-2024-11-20",
+"name": "GPT-4o (2024-11-20)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4o-mini",
+"name": "GPT-4o-mini"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4o-mini-2024-07-18",
+"name": "GPT-4o-mini (2024-07-18)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4o-mini:batch",
+"name": "GPT-4o-mini (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-4o:batch",
+"name": "GPT-4o (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5",
+"name": "GPT-5"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5-image",
+"name": "GPT-5 Image"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5-image-mini",
+"name": "GPT-5 Image Mini"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5-mini",
+"name": "GPT-5 Mini"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5-mini:batch",
+"name": "GPT-5 Mini (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5-nano",
+"name": "GPT-5 Nano"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5-nano:batch",
+"name": "GPT-5 Nano (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5-pro",
+"name": "GPT-5 Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5-pro:batch",
+"name": "GPT-5 Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.1",
+"name": "GPT-5.1"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.1-codex",
+"name": "GPT-5.1-Codex"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.1-codex-max",
+"name": "GPT-5.1-Codex-Max"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.1-codex-mini",
+"name": "GPT-5.1-Codex-Mini"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.1:batch",
+"name": "GPT-5.1 (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.2",
+"name": "GPT-5.2"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.2-chat",
+"name": "GPT-5.2 Chat"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.2-codex",
+"name": "GPT-5.2-Codex"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.2-pro",
+"name": "GPT-5.2 Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.2-pro:batch",
+"name": "GPT-5.2 Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.2:batch",
+"name": "GPT-5.2 (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.3-codex",
+"name": "GPT-5.3-Codex"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.4",
+"name": "GPT-5.4"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.4-image-2",
+"name": "GPT-5.4 Image 2"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.4-mini",
+"name": "GPT-5.4 Mini"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.4-mini:batch",
+"name": "GPT-5.4 Mini (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.4-nano",
+"name": "GPT-5.4 Nano"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.4-nano:batch",
+"name": "GPT-5.4 Nano (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.4-pro",
+"name": "GPT-5.4 Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.4-pro:batch",
+"name": "GPT-5.4 Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.4:batch",
+"name": "GPT-5.4 (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.5",
+"name": "GPT-5.5"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.5-pro",
+"name": "GPT-5.5 Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.5-pro:batch",
+"name": "GPT-5.5 Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.5:batch",
+"name": "GPT-5.5 (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-luna",
+"name": "GPT-5.6 Luna"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-luna-pro",
+"name": "GPT-5.6 Luna Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-luna-pro:batch",
+"name": "GPT-5.6 Luna Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-luna:batch",
+"name": "GPT-5.6 Luna (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-sol",
+"name": "GPT-5.6 Sol"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-sol-pro",
+"name": "GPT-5.6 Sol Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-sol-pro:batch",
+"name": "GPT-5.6 Sol Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-sol:batch",
+"name": "GPT-5.6 Sol (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-terra",
+"name": "GPT-5.6 Terra"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-terra-pro",
+"name": "GPT-5.6 Terra Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-terra-pro:batch",
+"name": "GPT-5.6 Terra Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5.6-terra:batch",
+"name": "GPT-5.6 Terra (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-5:batch",
+"name": "GPT-5 (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-astra",
+"name": "GPT-6 Astra"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-astra-pro",
+"name": "GPT-6 Astra Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-astra-pro:batch",
+"name": "GPT-6 Astra Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-astra:batch",
+"name": "GPT-6 Astra (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-luna",
+"name": "GPT-6 Luna"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-luna-pro",
+"name": "GPT-6 Luna Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-luna-pro:batch",
+"name": "GPT-6 Luna Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-luna:batch",
+"name": "GPT-6 Luna (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-sol",
+"name": "GPT-6 Sol"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-sol-pro",
+"name": "GPT-6 Sol Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-sol-pro:batch",
+"name": "GPT-6 Sol Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6-sol:batch",
+"name": "GPT-6 Sol (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.1-sol",
+"name": "GPT-6.1 Sol"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.1-sol-pro",
+"name": "GPT-6.1 Sol Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.1-sol-pro:batch",
+"name": "GPT-6.1 Sol Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.1-sol:batch",
+"name": "GPT-6.1 Sol (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.1-terra",
+"name": "GPT-6.1 Terra"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.1-terra-pro",
+"name": "GPT-6.1 Terra Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.1-terra-pro:batch",
+"name": "GPT-6.1 Terra Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.1-terra:batch",
+"name": "GPT-6.1 Terra (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.2-astra",
+"name": "GPT-6.2 Astra"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.2-astra-pro",
+"name": "GPT-6.2 Astra Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.2-astra-pro:batch",
+"name": "GPT-6.2 Astra Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.2-astra:batch",
+"name": "GPT-6.2 Astra (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.2-sol",
+"name": "GPT-6.2 Sol"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.2-sol-pro",
+"name": "GPT-6.2 Sol Pro"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.2-sol-pro:batch",
+"name": "GPT-6.2 Sol Pro (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-6.2-sol:batch",
+"name": "GPT-6.2 Sol (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-audio",
+"name": "GPT Audio"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-audio-mini",
+"name": "GPT Audio Mini"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-chat-latest",
+"name": "GPT Chat Latest"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-oss-120b",
+"name": "gpt-oss-120b"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-oss-120b:batch",
+"name": "gpt-oss-120b (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-oss-20b",
+"name": "gpt-oss-20b"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-oss-20b:batch",
+"name": "gpt-oss-20b (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/gpt-oss-safeguard-20b",
+"name": "gpt-oss-safeguard-20b"
+},
+{
+"key": "openrouter:openrouter/openai/o3",
+"name": "o3"
+},
+{
+"key": "openrouter:openrouter/openai/o3-mini:batch",
+"name": "o3 Mini (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/o3-pro",
+"name": "o3 Pro"
+},
+{
+"key": "openrouter:openrouter/openai/o3:batch",
+"name": "o3 (batch)"
+},
+{
+"key": "openrouter:openrouter/openai/o4-mini:batch",
+"name": "o4 Mini (batch)"
+},
+{
+"key": "openrouter:openrouter/openrouter/free",
+"name": "Free Models Router"
+},
+{
+"key": "openrouter:openrouter/particle-ai/particle-1",
+"name": "Particle-1"
+},
+{
+"key": "openrouter:openrouter/particle-ai/particle-1:free",
+"name": "Particle-1 (free)"
+},
+{
+"key": "openrouter:openrouter/perceptron/perceptron-mk1",
+"name": "Perceptron Mk1"
+},
+{
+"key": "openrouter:openrouter/perceptron/perceptron-mk1.5",
+"name": "Perceptron Mk1.5"
+},
+{
+"key": "openrouter:openrouter/perplexity/sonar",
+"name": "Sonar"
+},
+{
+"key": "openrouter:openrouter/perplexity/sonar-deep-research",
+"name": "Sonar Deep Research"
+},
+{
+"key": "openrouter:openrouter/perplexity/sonar-pro",
+"name": "Sonar Pro"
+},
+{
+"key": "openrouter:openrouter/perplexity/sonar-pro-search",
+"name": "Sonar Pro Search"
+},
+{
+"key": "openrouter:openrouter/perplexity/sonar-reasoning-pro",
+"name": "Sonar Reasoning Pro"
+},
+{
+"key": "openrouter:openrouter/prism-ml/ternary-bonsai-2-27b",
+"name": "Ternary Bonsai 2 27B"
+},
+{
+"key": "openrouter:openrouter/prism-ml/ternary-bonsai-2-9b",
+"name": "Ternary Bonsai 2 9B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen-2.5-72b-instruct",
+"name": "Qwen2.5 72B Instruct"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen-2.5-coder-32b-instruct",
+"name": "Qwen2.5 Coder 32B Instruct"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen-plus",
+"name": "Qwen-Plus"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen2.5-vl-72b-instruct",
+"name": "Qwen2.5 VL 72B Instruct"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-14b",
+"name": "Qwen3 14B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-235b-a22b-2507",
+"name": "Qwen3 235B A22B Instruct 2507"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-235b-a22b-thinking-2507",
+"name": "Qwen3 235B A22B Thinking 2507"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-30b-a3b",
+"name": "Qwen3 30B A3B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-30b-a3b-instruct-2507",
+"name": "Qwen3 30B A3B Instruct 2507"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-32b",
+"name": "Qwen3 32B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-coder",
+"name": "Qwen3 Coder 480B A35B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-coder-30b-a3b-instruct",
+"name": "Qwen3 Coder 30B A3B Instruct"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-coder-flash",
+"name": "Qwen3 Coder Flash"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-coder-next",
+"name": "Qwen3 Coder Next"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-next-80b-a3b-instruct",
+"name": "Qwen3 Next 80B A3B Instruct"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-vl-235b-a22b-instruct",
+"name": "Qwen3 VL 235B A22B Instruct"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-vl-30b-a3b-instruct",
+"name": "Qwen3 VL 30B A3B Instruct"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3-vl-8b-instruct",
+"name": "Qwen3 VL 8B Instruct"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.5-122b-a10b",
+"name": "Qwen3.5-122B-A10B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.5-27b",
+"name": "Qwen3.5-27B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.5-35b-a3b",
+"name": "Qwen3.5-35B-A3B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.5-397b-a17b",
+"name": "Qwen3.5 397B A17B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.5-9b",
+"name": "Qwen3.5-9B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.5-flash-02-23",
+"name": "Qwen3.5-Flash"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.5-plus-02-15",
+"name": "Qwen3.5 Plus 2026-02-15"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.5-plus-20260420",
+"name": "Qwen3.5 Plus 2026-04-20"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.6-27b",
+"name": "Qwen3.6 27B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.6-35b-a3b",
+"name": "Qwen3.6 35B A3B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.6-flash",
+"name": "Qwen3.6 Flash"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.6-plus",
+"name": "Qwen3.6 Plus"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.7-flash",
+"name": "Qwen3.7 Flash"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.7-max",
+"name": "Qwen3.7 Max"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.7-plus",
+"name": "Qwen3.7 Plus"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.7-plus:batch",
+"name": "Qwen3.7 Plus (batch)"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.8-2.4t-a95b",
+"name": "Qwen3.8 2.4T A95B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.8-27b",
+"name": "Qwen3.8 27B"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.8-27b:batch",
+"name": "Qwen3.8 27B (batch)"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.8-flash",
+"name": "Qwen3.8 Flash"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.8-max-0902",
+"name": "Qwen3.8 Max (0902)"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.8-max-0902:batch",
+"name": "Qwen3.8 Max (0902) (batch)"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.8-max-prime",
+"name": "Qwen3.8 Max Prime"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen3.8-omni-flash",
+"name": "Qwen3.8 Omni Flash"
+},
+{
+"key": "openrouter:openrouter/qwen/qwen4-max",
+"name": "Qwen4 Max"
+},
+{
+"key": "openrouter:openrouter/radixark/daisyrose-27b",
+"name": "DaisyRose 27B"
+},
+{
+"key": "openrouter:openrouter/recursive/flint-v1.0:free",
+"name": "Flint (free)"
+},
+{
+"key": "openrouter:openrouter/reflection/beam-1.0-501b-a23b",
+"name": "Beam 1.0 501B A23B"
+},
+{
+"key": "openrouter:openrouter/rekaai/reka-edge",
+"name": "Reka Edge"
+},
+{
+"key": "openrouter:openrouter/rekaai/reka-flash-3",
+"name": "Reka Flash 3"
+},
+{
+"key": "openrouter:openrouter/relace/relace-apply-3",
+"name": "Relace Apply 3"
+},
+{
+"key": "openrouter:openrouter/relace/relace-search",
+"name": "Relace Search"
+},
+{
+"key": "openrouter:openrouter/ricursiveai/ripple-65b-preview",
+"name": "Ripple 65B Preview"
+},
+{
+"key": "openrouter:openrouter/sakana/fugu-max",
+"name": "Fugu Max"
+},
+{
+"key": "openrouter:openrouter/sakana/fugu-ultra",
+"name": "Fugu Ultra"
+},
+{
+"key": "openrouter:openrouter/sakana/fugu-ultra-v2",
+"name": "Fugu Ultra v2"
+},
+{
+"key": "openrouter:openrouter/sakana/sakana-namazu",
+"name": "Sakana Namazu"
+},
+{
+"key": "openrouter:openrouter/sao10k/l3-lunaris-8b",
+"name": "Llama 3 8B Lunaris"
+},
+{
+"key": "openrouter:openrouter/sao10k/l3.1-euryale-70b",
+"name": "Llama 3.1 Euryale 70B v2.2"
+},
+{
+"key": "openrouter:openrouter/scaledown/extract",
+"name": "Extract"
+},
+{
+"key": "openrouter:openrouter/scaledown/summarize",
+"name": "Summarize"
+},
+{
+"key": "openrouter:openrouter/stepfun/step-3.7-flash",
+"name": "Step 3.7 Flash"
+},
+{
+"key": "openrouter:openrouter/stepfun/step-5-preview",
+"name": "Step 5 Preview"
+},
+{
+"key": "openrouter:openrouter/tencent/hy-mt2-1.8b",
+"name": "Hy-MT2-1.8B"
+},
+{
+"key": "openrouter:openrouter/tencent/hy-mt2-30b-a3b",
+"name": "Hy-MT2-30B-A3B"
+},
+{
+"key": "openrouter:openrouter/tencent/hy-mt2-7b",
+"name": "Hy-MT2-7B"
+},
+{
+"key": "openrouter:openrouter/tencent/hy3",
+"name": "Hy3"
+},
+{
+"key": "openrouter:openrouter/tencent/hy4",
+"name": "Hy4"
+},
+{
+"key": "openrouter:openrouter/tencent/hy4-flash",
+"name": "Hy4 flash"
+},
+{
+"key": "openrouter:openrouter/tencent/hy4-preview",
+"name": "Hy4 preview"
+},
+{
+"key": "openrouter:openrouter/thedrummer/cydonia-24b-v4.1",
+"name": "Cydonia 24B V4.1"
+},
+{
+"key": "openrouter:openrouter/thedrummer/skyfall-36b-v2",
+"name": "Skyfall 36B V2"
+},
+{
+"key": "openrouter:openrouter/thedrummer/unslopnemo-12b",
+"name": "UnslopNemo 12B"
+},
+{
+"key": "openrouter:openrouter/thinkingmachines/inkling",
+"name": "Inkling"
+},
+{
+"key": "openrouter:openrouter/thinkingmachines/inkling-2-mini",
+"name": "Inkling 2 Mini"
+},
+{
+"key": "openrouter:openrouter/thinkingmachines/inkling-2-small",
+"name": "Inkling 2 Small"
+},
+{
+"key": "openrouter:openrouter/thinkingmachines/inkling-small",
+"name": "Inkling Small"
+},
+{
+"key": "openrouter:openrouter/thinkingmachines/inkling-small:batch",
+"name": "Inkling Small (batch)"
+},
+{
+"key": "openrouter:openrouter/unbiased/pareto-26.10",
+"name": "Pareto 26.10"
+},
+{
+"key": "openrouter:openrouter/unbiased/pareto-26.10-preview",
+"name": "Pareto 26.10 Preview"
+},
+{
+"key": "openrouter:openrouter/unbiased/pareto-26.9",
+"name": "Pareto 26.9"
+},
+{
+"key": "openrouter:openrouter/undi95/remm-slerp-l2-13b",
+"name": "ReMM SLERP 13B"
+},
+{
+"key": "openrouter:openrouter/upstage/solar-mini4",
+"name": "Solar Mini 4"
+},
+{
+"key": "openrouter:openrouter/upstage/solar-pro4",
+"name": "Solar Pro 4"
+},
+{
+"key": "openrouter:openrouter/writer/palmyra-x5",
+"name": "Palmyra X5"
+},
+{
+"key": "openrouter:openrouter/x-ai/grok-4.20",
+"name": "Grok 4.20"
+},
+{
+"key": "openrouter:openrouter/x-ai/grok-4.20-multi-agent",
+"name": "Grok 4.20 Multi-Agent"
+},
+{
+"key": "openrouter:openrouter/x-ai/grok-4.3",
+"name": "Grok 4.3"
+},
+{
+"key": "openrouter:openrouter/x-ai/grok-4.3:batch",
+"name": "Grok 4.3 (batch)"
+},
+{
+"key": "openrouter:openrouter/x-ai/grok-4.5",
+"name": "Grok 4.5"
+},
+{
+"key": "openrouter:openrouter/x-ai/grok-4.6",
+"name": "Grok 4.6"
+},
+{
+"key": "openrouter:openrouter/x-ai/grok-4.6:batch",
+"name": "Grok 4.6 (batch)"
+},
+{
+"key": "openrouter:openrouter/x-ai/grok-4.7",
+"name": "Grok 4.7"
+},
+{
+"key": "openrouter:openrouter/x-ai/grok-4.7:batch",
+"name": "Grok 4.7 (batch)"
+},
+{
+"key": "openrouter:openrouter/xiaomi/mimo-v2.5",
+"name": "MiMo-V2.5"
+},
+{
+"key": "openrouter:openrouter/xiaomi/mimo-v2.5-pro",
+"name": "MiMo-V2.5-Pro"
+},
+{
+"key": "openrouter:openrouter/xiaomi/mimo-v2.6-flash",
+"name": "MiMo-V2.6-Flash"
+},
+{
+"key": "openrouter:openrouter/xiaomi/mimo-v2.6-pro",
+"name": "MiMo-V2.6-Pro"
+},
+{
+"key": "openrouter:openrouter/xiaomi/mimo-v2.6-pro-ultraspeed",
+"name": "MiMo-V2.6-Pro-UltraSpeed"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-4.5",
+"name": "GLM 4.5"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-4.5-air",
+"name": "GLM 4.5 Air"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-4.5v",
+"name": "GLM 4.5V"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-4.6",
+"name": "GLM 4.6"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-4.6v",
+"name": "GLM 4.6V"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-4.7",
+"name": "GLM 4.7"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-4.7-flash",
+"name": "GLM 4.7 Flash"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5",
+"name": "GLM 5"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5-turbo",
+"name": "GLM 5 Turbo"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.1",
+"name": "GLM 5.1"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.2",
+"name": "GLM 5.2"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.2:batch",
+"name": "GLM 5.2 (batch)"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.3",
+"name": "GLM 5.3"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.3-flash",
+"name": "GLM 5.3 Flash"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.3-flash:batch",
+"name": "GLM 5.3 Flash (batch)"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.3-flashx",
+"name": "GLM 5.3 FlashX"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.3-flashx-legal",
+"name": "GLM 5.3 FlashX Legal"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.3-prime",
+"name": "GLM 5.3 Prime"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5.3:batch",
+"name": "GLM 5.3 (batch)"
+},
+{
+"key": "openrouter:openrouter/z-ai/glm-5v-turbo",
+"name": "GLM 5V Turbo"
+},
+{
+"key": "openrouter:openrouter/~anthropic/claude-fable-latest",
+"name": "Claude Fable Latest"
+},
+{
+"key": "openrouter:openrouter/~anthropic/claude-haiku-latest",
+"name": "Claude Haiku Latest"
+},
+{
+"key": "openrouter:openrouter/~anthropic/claude-opus-latest",
+"name": "Claude Opus Latest"
+},
+{
+"key": "openrouter:openrouter/~anthropic/claude-sonnet-latest",
+"name": "Claude Sonnet Latest"
+},
+{
+"key": "openrouter:openrouter/~deepseek/deepseek-flash-latest",
+"name": "DeepSeek Flash Latest"
+},
+{
+"key": "openrouter:openrouter/~deepseek/deepseek-pro-latest",
+"name": "DeepSeek Pro Latest"
+},
+{
+"key": "openrouter:openrouter/~deepseek/deepseek-v4-flash-latest",
+"name": "DeepSeek V4 Flash Latest"
+},
+{
+"key": "openrouter:openrouter/~google/gemini-flash-latest",
+"name": "Gemini Flash Latest"
+},
+{
+"key": "openrouter:openrouter/~google/gemini-pro-latest",
+"name": "Gemini Pro Latest"
+},
+{
+"key": "openrouter:openrouter/~moonshotai/kimi-latest",
+"name": "Kimi Latest"
+},
+{
+"key": "openrouter:openrouter/~openai/gpt-astra-latest",
+"name": "GPT Astra Latest"
+},
+{
+"key": "openrouter:openrouter/~openai/gpt-luna-latest",
+"name": "GPT Luna Latest"
+},
+{
+"key": "openrouter:openrouter/~openai/gpt-mini-latest",
+"name": "GPT Mini Latest"
+},
+{
+"key": "openrouter:openrouter/~openai/gpt-sol-latest",
+"name": "GPT Sol Latest"
+},
+{
+"key": "openrouter:openrouter/~openai/gpt-terra-latest",
+"name": "GPT Terra Latest"
+},
+{
+"key": "openrouter:openrouter/~unbiased/pareto-latest",
+"name": "Pareto Latest"
+},
+{
+"key": "openrouter:openrouter/~x-ai/grok-latest",
+"name": "Grok Latest"
+},
+{
+"key": "openrouter:openrouter/~z-ai/glm-flash-latest",
+"name": "GLM Flash Latest"
+},
+{
+"key": "openrouter:openrouter/~z-ai/glm-latest",
+"name": "GLM Latest"
+}
+]

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+.scratch/
+.pytest_cache/
+/build/
+/dist/
+/smoke/
+*.flatpak
+flatpak_app/
+.flatpak-builder/

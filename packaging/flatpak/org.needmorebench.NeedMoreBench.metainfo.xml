@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.needmorebench.NeedMoreBench</id>
+  <name>NeedMoreBench</name>
+  <summary>Language models play mafia while you watch, meddle or play</summary>
+  <summary xml:lang="ko">언어 모델들의 마피아 게임을 관전하고 끼어들고 함께 하기</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <developer id="io.github.needmoretruth">
+    <name>needmoretruth</name>
+  </developer>
+  <description>
+    <p>
+      Language models sit at one table and play a game of hidden roles: they talk, accuse, lie and vote.
+      You watch every word and thought, step in with god powers, or take a seat yourself.
+    </p>
+    <p>
+      Every game is saved. Replay it move by move, export it, and see how each model does over many games.
+      Bring your own models: OpenCode free models, OpenRouter, Anthropic, Venice or LM Studio on your computer.
+    </p>
+  </description>
+  <launchable type="desktop-id">org.needmorebench.NeedMoreBench.desktop</launchable>
+  <url type="homepage">https://github.com/needmoretruth/NeedMoreBench</url>
+  <url type="bugtracker">https://github.com/needmoretruth/NeedMoreBench/issues</url>
+  <categories>
+    <category>Game</category>
+  </categories>
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-fantasy">mild</content_attribute>
+    <content_attribute id="social-chat">intense</content_attribute>
+  </content_rating>
+  <requires>
+    <internet>always</internet>
+  </requires>
+  <releases>
+    <release version="0.1.0" date="2026-11-21"/>
+  </releases>
+</component>

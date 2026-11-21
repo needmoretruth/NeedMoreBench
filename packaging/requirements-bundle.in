@@ -1,0 +1,6 @@
+# What the packaged apps carry besides GTK and PyGObject. Pinned with:
+#   uv pip compile packaging/requirements-bundle.in --universal -p 3.14 --generate-hashes -o packaging/requirements-bundle.txt
+anthropic==2.12.0
+httpx==0.28.1
+keyring==25.7.0
+numpy==2.5.5

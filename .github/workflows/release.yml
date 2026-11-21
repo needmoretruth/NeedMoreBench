@@ -1,0 +1,39 @@
+# A version tag (v1.2.3) builds every download and opens a draft GitHub Release with them and its notes.
+# Nothing is published until someone reviews the draft and presses Publish.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    uses: ./.github/workflows/linux.yml
+
+  desktop:
+    uses: ./.github/workflows/desktop.yml
+    with:
+      version: ${{ github.ref_name }}
+      release: true
+
+  draft:
+    needs: [linux, desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+      - name: Collect the downloads and write the notes
+        env:
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: python3 packaging/release_notes.py --tag "$TAG" --repo "$REPO" --artifacts artifacts --out release
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" --draft --title "NeedMoreBench $TAG" --notes-file release/NOTES.md release/files/*

@@ -1,0 +1,8 @@
+# pip packages; GTK 4, libadwaita and PyGObject come from the system (see README). On Linux make the venv with
+# --system-site-packages so it sees them (and the system's numpy and httpx when it has them).
+# The packaged apps pin exact versions in packaging/requirements-bundle.txt.
+anthropic==2.12.0
+httpx>=0.28
+keyring>=25.6
+numpy>=2.3
+pytest==9.2.0

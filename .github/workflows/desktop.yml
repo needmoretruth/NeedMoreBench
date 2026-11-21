@@ -1,0 +1,110 @@
+# Windows and macOS: tests, the packaged app, and one start of it (smoke: it saves a picture of each screen and
+# exits with 0). Runs when packaging or dependencies change, by hand, and for a release (which adds Intel Macs).
+name: Windows and macOS
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "packaging/**"
+      - ".github/**"
+      - "requirements*.txt"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: ci
+      release:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  GVSBUILD: "2026.10.0"
+  GVSBUILD_SHA256: 8005b860447e73b10c7f508b1f348e2b6390e01dd61fd5c617b8190a046022fe
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.15"
+          cache: pip
+          cache-dependency-path: packaging/requirements-*.txt
+
+      - name: GTK (gvsbuild), cached
+        id: gtk
+        uses: actions/cache@v6
+        with:
+          path: C:\gtk
+          key: gvsbuild-${{ env.GVSBUILD }}-x64
+
+      - name: Download GTK
+        if: steps.gtk.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $zip = "$env:RUNNER_TEMP\gtk.zip"
+          Invoke-WebRequest "https://github.com/wingtk/gvsbuild/releases/download/$env:GVSBUILD/GTK4_Gvsbuild_${env:GVSBUILD}_x64.zip" -OutFile $zip
+          if ((Get-FileHash $zip -Algorithm SHA256).Hash -ne $env:GVSBUILD_SHA256) { throw "GTK download does not match its checksum" }
+          Expand-Archive $zip -DestinationPath C:\gtk
+
+      - name: Build, test and smoke
+        shell: pwsh
+        run: packaging\windows\build.ps1 -Version "${{ inputs.version || 'ci' }}" -Gtk C:\gtk
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: smoke-windows
+          path: smoke/
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v7
+        if: inputs.release
+        with:
+          name: package-windows
+          path: |
+            dist/*.exe
+            dist/*.zip
+            build/licenses/SOURCES.md
+          retention-days: 7
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: ${{ fromJSON(inputs.release && '["macos-15", "macos-15-intel"]' || '["macos-15"]') }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Homebrew downloads, cached
+        uses: actions/cache@v6
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: brew-${{ matrix.runner }}-${{ hashFiles('packaging/macos/build.sh') }}
+          restore-keys: brew-${{ matrix.runner }}-
+
+      - name: Build, test and smoke
+        run: bash packaging/macos/build.sh "${{ inputs.version || 'ci' }}" "$(uname -m)"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: smoke-${{ matrix.runner }}
+          path: smoke/
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v7
+        if: inputs.release
+        with:
+          name: package-${{ matrix.runner }}
+          path: |
+            dist/*.dmg
+            build/licenses/SOURCES.md
+          retention-days: 7

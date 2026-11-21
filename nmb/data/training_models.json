@@ -1,0 +1,38 @@
+{
+  "source": "OpenCode docs, Zen and Go pages, section Privacy",
+  "urls": [
+    "https://opencode.ai/docs/zen/#privacy",
+    "https://opencode.ai/docs/go/#privacy"
+  ],
+  "read": "2026-11-21",
+  "note": "Models whose provider may use prompts and answers to improve its models. Matched by display name without the word Free and case.",
+  "names": [
+    "Big Pickle",
+    "Iceman Free",
+    "Inkling 2 Small Free",
+    "Flint 40B Free",
+    "Nemotron 3.5 Lightning Free",
+    "Nemotron 3.5 Super VL Free",
+    "Muse Spark 1.3 Contributor",
+    "Muse Spark 1.2 Contributor",
+    "Iceman Contributor Free"
+  ],
+  "openrouter": "Requests carry provider.data_collection = deny while the switch is off (https://openrouter.ai/docs/guides/routing/provider-selection, read 2026-11-21).",
+  "zen_free_documented": [
+    "Hy4 flash",
+    "LongCat 2.5",
+    "DeepSeek V4.1 Flash",
+    "Beam",
+    "MiMo-V2.6-Flash",
+    "Big Pickle",
+    "Iceman Free",
+    "Inkling 2 Small Free",
+    "Flint 40B Free",
+    "Nemotron 3.5 Lightning Free",
+    "Nemotron 3.5 Super VL Free",
+    "Muse Spark 1.3 Contributor",
+    "Muse Spark 1.2 Contributor",
+    "Iceman Contributor Free"
+  ],
+  "zen_free_note": "Zen and Go free models the docs list (as not training, or in names above). A free model in neither list is unknown and counts as training (Tidepool Alpha)."
+}
