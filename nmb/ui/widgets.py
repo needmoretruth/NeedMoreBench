@@ -14,10 +14,15 @@ from ..view import (LINE_STYLE, SPEECH, SeatView, ViewState, line_text, power_la
                     team_class)
 
 
+PILLS = frozenset({"badge", "chip"})  # style.css gives these a rounded background
+
+
 def label(text: str = "", *classes: str, wrap: bool = False, xalign: float = 0.0, selectable: bool = False) -> Gtk.Label:
     lb = Gtk.Label(label=text, xalign=xalign)
     for c in classes:
         lb.add_css_class(c)
+    if PILLS.intersection(classes):  # a pill stretched to the row's height reads as a tall capsule (picker)
+        lb.set_valign(Gtk.Align.CENTER)
     if wrap:
         lb.set_wrap(True)
         lb.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
