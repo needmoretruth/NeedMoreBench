@@ -51,6 +51,16 @@ jobs:
           dbus-run-session -- flatpak run --command=python3 --filesystem="$PWD" --cwd="$PWD" \
             --env=PYTHONPATH="$PWD:$PWD/.ci-site" org.needmorebench.NeedMoreBench -P -m pytest -q -p no:cacheprovider
 
+      # a Flatpak draws with the host's fonts and this container has none for Korean; a Korean user's computer does
+      - name: Korean fonts on the host (as a Korean user's computer has)
+        run: |
+          d=/usr/share/fonts/noto-cjk && mkdir -p "$d"
+          base=https://github.com/notofonts/noto-cjk/raw/Sans2.004/Sans/OTF/Korean
+          curl -sSfL -o "$d/NotoSansCJKkr-Regular.otf" "$base/NotoSansCJKkr-Regular.otf"
+          curl -sSfL -o "$d/NotoSansCJKkr-Bold.otf" "$base/NotoSansCJKkr-Bold.otf"
+          echo "6bcb2a0703aa137e874fc2dffa85f6c21ba9a67fa329e81b8c801663af7e992a  $d/NotoSansCJKkr-Regular.otf" | sha256sum -c
+          echo "26d0c6748500a0444844280b308f5b62c7ae92ac6c6ac88148e502dd211eb52a  $d/NotoSansCJKkr-Bold.otf" | sha256sum -c
+
       - name: Smoke (start the installed app and save its screens)
         run: |
           xvfb-run -a -s "-screen 0 1800x1200x24" dbus-run-session -- \

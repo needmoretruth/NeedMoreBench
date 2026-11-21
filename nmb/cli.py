@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-from .engine.roles import DEFAULT_PLAYERS
+from .engine.roles import DEFAULT_PLAYERS, GAME_ROLES
 from .engine.setup import GameSetup, SeatSpec
 from .engine.state import Event
 from .providers.registry import Routes
@@ -45,6 +45,11 @@ async def cmd_run(a: argparse.Namespace) -> int:
         return 2
     seats = [SeatSpec(model_key=keys[i % len(keys)] if keys else f"offline:random/seat{i}",
                       model_name=None if keys else f"Random {i + 1}") for i in range(n)]
+    for s, role in zip(seats, [r.strip() for r in (a.roles or "").split(",") if r.strip()]):
+        if role not in GAME_ROLES[a.game]:
+            print(f"{role}: 이 게임에 없는 직업입니다", file=sys.stderr)
+            return 2
+        s.role = role
     setup = GameSetup(kind=a.game, seats=seats, named=not a.blind, seed=a.seed, language=a.lang,
                       turns_per_player=a.turns, vote_public=a.public_votes, role_pool=a.pool, expert=a.expert)
     routes = None if a.offline else Routes.standard(allow_training=a.allow_training)
@@ -120,6 +125,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--lang", default="ko")
     r.add_argument("--turns", type=int, default=2)
     r.add_argument("--pool", default="classic")
+    r.add_argument("--roles", help="comma separated roles for the first seats, as the lobby's per-seat choice")
     r.add_argument("--public-votes", action="store_true")
     r.add_argument("--allow-training", action="store_true")
     r.add_argument("--expert", action="store_true", help="전문가 모드 for every seat")
