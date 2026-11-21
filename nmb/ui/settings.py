@@ -40,6 +40,11 @@ def _lmstudio_installed() -> bool:
     return lmstudio_ctl.home() is not None
 
 
+def bundled_opencode() -> str | None:
+    from ..providers.opencode import bundled
+    return bundled()
+
+
 def status_text(reason: str, text: str) -> str:
     """The route's own line when it has one (credit left, model count), else the plain status."""
     return text or _(STATUS_TEXT.get(reason, reason))
@@ -217,6 +222,8 @@ class SettingsDialog(Adw.PreferencesDialog):
                 state = _("Checking")
             elif not reason and name in KEYED and not keys.has(name):
                 reason, state = "nokey", status_text("nokey", "")
+            elif not reason and name == "opencode" and bundled_opencode():  # not checked, but it ships with NMB
+                reason, state = "ok", _("Ready, with the OpenCode inside NeedMoreBench")
             elif not reason and name in ("opencode", "lmstudio"):  # not checked (offline): what is on this computer
                 from ..providers.opencode import executable
                 reason = "off" if (executable() if name == "opencode" else _lmstudio_installed()) else "missing"

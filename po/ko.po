@@ -163,7 +163,7 @@ msgstr "전체 모델"
 msgid "All powers"
 msgstr "권능 목록"
 
-#: nmb/ui/settings.py:164
+#: nmb/ui/settings.py:169
 msgid "Allow models that train on prompts"
 msgstr "학습 모델 허용"
 
@@ -395,11 +395,11 @@ msgstr "낮에, 오늘 말할 수 있는 살아 있는 플레이어에게 쓸 �
 msgid "By day, while both are alive. Pick the receiver as Player and the seeming sender as Second player."
 msgstr "낮에, 두 사람이 모두 살아 있을 때 쓸 수 있습니다. 받는 사람을 대상으로, 보낸 것처럼 보일 사람을 둘째 대상으로 고릅니다."
 
-#: nmb/ui/widgets.py:290
+#: nmb/ui/widgets.py:291
 msgid "by itself"
 msgstr "스스로"
 
-#: nmb/ui/widgets.py:290
+#: nmb/ui/widgets.py:291
 msgid "by the engine"
 msgstr "엔진이"
 
@@ -431,7 +431,7 @@ msgstr "역할 바꾸기"
 msgid "Cheats"
 msgstr "치트"
 
-#: nmb/ui/settings.py:159
+#: nmb/ui/settings.py:164
 msgid "Check again"
 msgstr "다시 확인"
 
@@ -439,7 +439,7 @@ msgstr "다시 확인"
 msgid "Check for Mafia (once a game)"
 msgstr "마피아 조사 (한 번)"
 
-#: nmb/ui/picker.py:149
+#: nmb/ui/picker.py:147
 msgid "Check the connections in Settings"
 msgstr "설정에서 연결을 확인하세요"
 
@@ -523,7 +523,7 @@ msgstr "모델 연결"
 msgid "Connected"
 msgstr "연결됨"
 
-#: nmb/ui/settings.py:131
+#: nmb/ui/settings.py:136
 msgid "Connections"
 msgstr "연결"
 
@@ -595,7 +595,7 @@ msgstr "낮과 밤"
 msgid "Day {n}"
 msgstr "{n}번째 낮"
 
-#: nmb/ui/widgets.py:129
+#: nmb/ui/widgets.py:130
 msgid "Dead"
 msgstr "죽음"
 
@@ -627,7 +627,7 @@ msgstr "토론"
 msgid "Doctor"
 msgstr "의사"
 
-#: nmb/ui/settings.py:153
+#: nmb/ui/settings.py:158
 msgid "Download"
 msgstr "다운로드"
 
@@ -691,7 +691,7 @@ msgstr "두 사람은 자기의 새 직업만 듣고, 누구와 바꿨는지는 
 msgid "Earlier versions ({n})"
 msgstr "이전 기록 {n}개"
 
-#: nmb/ui/picker.py:234
+#: nmb/ui/picker.py:233
 msgid "Edit"
 msgstr "고치기"
 
@@ -811,7 +811,7 @@ msgstr "관상가"
 msgid "Failed"
 msgstr "실패"
 
-#: nmb/ui/widgets.py:356
+#: nmb/ui/widgets.py:357
 msgid "False result"
 msgstr "거짓 결과"
 
@@ -839,7 +839,7 @@ msgstr "남는 자리"
 msgid "Filters"
 msgstr "필터"
 
-#: nmb/ui/picker.py:240
+#: nmb/ui/picker.py:241
 msgid "Filters plus models you put in or leave out"
 msgstr "필터와 직접 넣거나 뺀 모델"
 
@@ -855,7 +855,7 @@ msgstr "끝"
 msgid "Finished and stopped games show up here."
 msgstr "끝났거나 멈춘 판이 여기에 나옵니다."
 
-#: nmb/ui/replay.py:97
+#: nmb/ui/replay.py:106
 msgid "Finished game"
 msgstr "끝난 판"
 
@@ -871,7 +871,7 @@ msgstr "해결사"
 msgid "Flagbearer"
 msgstr "기수"
 
-#: nmb/ui/settings.py:72
+#: nmb/ui/settings.py:77
 msgid "Follow system"
 msgstr "시스템 따라"
 
@@ -879,7 +879,7 @@ msgstr "시스템 따라"
 msgid "Foreman"
 msgstr "배심장"
 
-#: nmb/ui/widgets.py:254
+#: nmb/ui/widgets.py:255
 msgid "Forged"
 msgstr "위조"
 
@@ -887,7 +887,7 @@ msgstr "위조"
 msgid "Forged whisper"
 msgstr "속삭임 위조"
 
-#: nmb/ui/settings.py:175
+#: nmb/ui/settings.py:180
 msgid "Found on first start"
 msgstr "처음 열 때 찾은 키"
 
@@ -939,7 +939,7 @@ msgstr "게임"
 msgid "Game flow"
 msgstr "진행"
 
-#: nmb/ui/replay.py:97
+#: nmb/ui/replay.py:95
 msgid "Game in progress, shown up to now"
 msgstr "진행 중인 판: 지금까지"
 
@@ -967,7 +967,7 @@ msgstr "동시 진행"
 msgid "Games per group and final"
 msgstr "조별, 결승 판 수"
 
-#: nmb/ui/settings.py:65
+#: nmb/ui/settings.py:70
 msgid "General"
 msgstr "일반"
 
@@ -1003,7 +1003,7 @@ msgstr "Go 요금제 모델을 추론과 함께 씁니다. OpenCode 로그인으
 msgid "Go subscription"
 msgstr "Go 구독"
 
-#: nmb/ui/widgets.py:363
+#: nmb/ui/widgets.py:364
 msgid "God"
 msgstr "신"
 
@@ -1019,7 +1019,7 @@ msgstr "신의 권능"
 msgid "God powers are how a spectator, or a player with cheats, steps into the game to see how the models take pressure, lies and luck. Pick a player, type the words or pick the role a power needs, then tap it. A power that makes no sense right now stays grey and says why. Every use leaves a line in the god colour on your screen."
 msgstr "신의 권능은 관전자나 치트를 켠 참가자가 게임에 끼어드는 방법입니다. 모델이 압박, 거짓말, 운에 어떻게 반응하는지 볼 수 있습니다. 대상을 고르고, 권능에 필요한 말을 쓰거나 직업을 고른 다음 누르면 됩니다. 지금 쓸 수 없는 권능은 회색으로 바뀌고 이유가 나옵니다. 쓸 때마다 화면에 신의 색으로 한 줄이 남습니다."
 
-#: nmb/ui/widgets.py:365
+#: nmb/ui/widgets.py:366
 msgid "God's question to you"
 msgstr "나에게 온 신의 질문"
 
@@ -1163,7 +1163,7 @@ msgstr "정보원"
 msgid "Information"
 msgstr "정보"
 
-#: nmb/ui/settings.py:73
+#: nmb/ui/settings.py:78
 msgid "Interface language"
 msgstr "화면 언어"
 
@@ -1171,7 +1171,7 @@ msgstr "화면 언어"
 msgid "Introduce yourself"
 msgstr "자기소개"
 
-#: nmb/ui/widgets.py:252
+#: nmb/ui/widgets.py:253
 msgid "Introduction"
 msgstr "소개"
 
@@ -1231,7 +1231,7 @@ msgstr "내린 때와 거둔 때가 함께 남습니다. 이 판은 신이 개�
 msgid "Keyring"
 msgstr "키링"
 
-#: nmb/ui/settings.py:176
+#: nmb/ui/settings.py:181
 msgid "Keys this computer already had, tested once. Working ones went into the keyring."
 msgstr "이 컴퓨터에 있던 키를 한 번씩 시험했고 되는 키는 키링에 넣었습니다."
 
@@ -1315,7 +1315,7 @@ msgstr "계시 거두기"
 msgid "Light"
 msgstr "밝게"
 
-#: nmb/ui/settings.py:96
+#: nmb/ui/settings.py:101
 msgid "Lines, whispers, night and day, votes, deaths"
 msgstr "대화, 귓속말, 밤과 낮, 투표, 죽음"
 
@@ -1323,11 +1323,11 @@ msgstr "대화, 귓속말, 밤과 낮, 투표, 죽음"
 msgid "LM Studio"
 msgstr "LM Studio"
 
-#: nmb/ui/settings.py:169
+#: nmb/ui/settings.py:174
 msgid "LM Studio address"
 msgstr "LM Studio 주소"
 
-#: nmb/ui/settings.py:297
+#: nmb/ui/settings.py:304
 msgid "LM Studio did not start"
 msgstr "LM Studio가 켜지지 않았습니다"
 
@@ -1343,7 +1343,7 @@ msgstr "참가자 구성 불러오기, 저장"
 msgid "Loading models"
 msgstr "모델 불러오는 중"
 
-#: nmb/ui/picker.py:177
+#: nmb/ui/picker.py:175
 msgid "Loads on call"
 msgstr "부를 때 올림"
 
@@ -1423,7 +1423,7 @@ msgstr "마피아 팀 승리"
 msgid "Major models"
 msgstr "주요 모델"
 
-#: nmb/ui/settings.py:146
+#: nmb/ui/settings.py:151
 msgid "Make a key"
 msgstr "키 만들기"
 
@@ -1599,7 +1599,7 @@ msgstr "NeedMoreBench 기록"
 msgid "New game"
 msgstr "새 게임"
 
-#: nmb/ui/picker.py:240
+#: nmb/ui/picker.py:241
 msgid "New pool"
 msgstr "새 풀"
 
@@ -1611,7 +1611,7 @@ msgstr "새 직업"
 msgid "New run"
 msgstr "새 벤치"
 
-#: nmb/ui/replay.py:75
+#: nmb/ui/replay.py:80
 msgid "Next phase"
 msgstr "다음 단계"
 
@@ -1687,7 +1687,7 @@ msgstr "아직 연결된 모델이 없습니다"
 msgid "No models from {routes}"
 msgstr "{routes}에서 모델 목록을 받지 못했습니다"
 
-#: nmb/ui/picker.py:149
+#: nmb/ui/picker.py:147
 msgid "No models yet"
 msgstr "아직 모델이 없습니다"
 
@@ -1851,7 +1851,7 @@ msgstr "아무것도 전해지지 않습니다. 아무도 죽지 않았다는 �
 msgid "Nothing. A model that is already answering finishes its answer."
 msgstr "아무것도 전해지지 않습니다. 이미 답하는 중인 모델은 답을 마칩니다."
 
-#: nmb/ui/settings.py:165
+#: nmb/ui/settings.py:170
 msgid "Off: such models are hidden and OpenRouter is asked not to keep prompts"
 msgstr "끄면 보낸 내용을 학습하는 모델은 숨기고 OpenRouter에는 보관하지 말라고 요청합니다"
 
@@ -1975,7 +1975,7 @@ msgstr "답은 신만 봅니다."
 msgid "Only the mafia hear this. Pick tonight's target."
 msgstr "마피아만 듣습니다. 오늘 밤 죽일 사람을 고르세요."
 
-#: nmb/ui/widgets.py:326
+#: nmb/ui/widgets.py:327
 msgid "Only you know"
 msgstr "나만 앎"
 
@@ -1983,7 +1983,7 @@ msgstr "나만 앎"
 msgid "Only your lover hears this."
 msgstr "연인만 듣습니다."
 
-#: nmb/ui/widgets.py:357
+#: nmb/ui/widgets.py:358
 msgid "Only {name} knows"
 msgstr "{name}만 앎"
 
@@ -2043,7 +2043,7 @@ msgstr "그 밖"
 msgid "Pardon"
 msgstr "사면"
 
-#: nmb/ui/settings.py:203
+#: nmb/ui/settings.py:208
 msgid "Paste the {route} key"
 msgstr "{route} 키 붙여넣기"
 
@@ -2107,7 +2107,7 @@ msgstr "투표로 올릴 사람을 고르세요."
 msgid "Pick who to use your ability on."
 msgstr "능력을 쓸 사람을 고르세요."
 
-#: nmb/ui/widgets.py:246
+#: nmb/ui/widgets.py:247
 msgid "Pick: {name}"
 msgstr "고른 사람: {name}"
 
@@ -2115,7 +2115,7 @@ msgstr "고른 사람: {name}"
 msgid "Picked in the poll"
 msgstr "여론 조사에서 찍힌 수"
 
-#: nmb/ui/widgets.py:140
+#: nmb/ui/widgets.py:141
 msgid "Picked {n}"
 msgstr "지목 {n}"
 
@@ -2171,7 +2171,7 @@ msgstr "지목"
 msgid "Possess"
 msgstr "빙의"
 
-#: nmb/ui/widgets.py:254
+#: nmb/ui/widgets.py:255
 msgid "Possessed"
 msgstr "빙의"
 
@@ -2191,7 +2191,7 @@ msgstr "프리셋"
 msgid "Pretend to be"
 msgstr "흉내 낼 모델"
 
-#: nmb/ui/replay.py:72
+#: nmb/ui/replay.py:77
 msgid "Previous phase"
 msgstr "앞 단계"
 
@@ -2251,13 +2251,17 @@ msgstr "범위 {lo}~{hi}%, 기록 {n}판"
 msgid "Rank"
 msgstr "순위"
 
-#: nmb/ui/settings.py:83
+#: nmb/ui/settings.py:88
 msgid "Reading time"
 msgstr "읽는 시간"
 
 #: nmb/ui/check.py:93
 msgid "Ready"
 msgstr "준비됨"
+
+#: nmb/ui/settings.py:226
+msgid "Ready, with the OpenCode inside NeedMoreBench"
+msgstr "준비됨, NMB에 들어 있는 OpenCode"
 
 #: nmb/ui/home.py:391
 msgid "Real"
@@ -2279,7 +2283,7 @@ msgstr "비고"
 msgid "Remove"
 msgstr "지우기"
 
-#: nmb/ui/replay.py:40
+#: nmb/ui/replay.py:45
 msgid "Replay"
 msgstr "다시보기"
 
@@ -2311,7 +2315,7 @@ msgstr "죽으면 직업 공개"
 msgid "Revelation"
 msgstr "계시"
 
-#: nmb/ui/widgets.py:365
+#: nmb/ui/widgets.py:366
 msgid "Revelation to you"
 msgstr "나에게 내린 계시"
 
@@ -2379,7 +2383,7 @@ msgstr "기록에 저장됨"
 msgid "Saved {name}"
 msgstr "{name} 저장함"
 
-#: nmb/ui/settings.py:252
+#: nmb/ui/settings.py:259
 msgid "Saved. {status}"
 msgstr "저장했습니다. {status}"
 
@@ -2455,7 +2459,7 @@ msgstr "둘째 사람"
 msgid "Second player"
 msgstr "둘째 대상"
 
-#: nmb/ui/settings.py:84
+#: nmb/ui/settings.py:89
 msgid "Seconds between public lines while watching"
 msgstr "관전할 때 발언 사이 초"
 
@@ -2471,7 +2475,7 @@ msgstr "유혹자"
 msgid "Seems from"
 msgstr "보낸 사람"
 
-#: nmb/ui/widgets.py:181
+#: nmb/ui/widgets.py:182
 msgid "Seen by no one"
 msgstr "아무도 못 봄"
 
@@ -2519,7 +2523,7 @@ msgstr "단축"
 msgid "Should this player die?"
 msgstr "이 사람을 처형할까요?"
 
-#: nmb/ui/replay.py:91
+#: nmb/ui/replay.py:100
 msgid "Show models"
 msgstr "모델 공개"
 
@@ -2555,11 +2559,11 @@ msgstr "느리게"
 msgid "Smite"
 msgstr "천벌"
 
-#: nmb/ui/settings.py:95
+#: nmb/ui/settings.py:100
 msgid "Sound"
 msgstr "소리"
 
-#: nmb/ui/settings.py:96
+#: nmb/ui/settings.py:101
 msgid "Sound effects"
 msgstr "효과음"
 
@@ -2591,7 +2595,7 @@ msgstr "기본"
 msgid "Standings"
 msgstr "순위"
 
-#: nmb/ui/settings.py:151
+#: nmb/ui/settings.py:156
 msgid "Start"
 msgstr "켜기"
 
@@ -2619,7 +2623,7 @@ msgstr "멈춤"
 msgid "Stopped"
 msgstr "중단됨"
 
-#: nmb/ui/replay.py:98
+#: nmb/ui/replay.py:107
 msgid "Stopped game, shown up to where it stopped"
 msgstr "중단된 판: 멈춘 곳까지"
 
@@ -2627,7 +2631,7 @@ msgstr "중단된 판: 멈춘 곳까지"
 msgid "Stops the game until you press it again."
 msgstr "다시 누를 때까지 게임을 멈춥니다."
 
-#: nmb/ui/settings.py:67
+#: nmb/ui/settings.py:72
 msgid "Style"
 msgstr "화면"
 
@@ -2691,7 +2695,7 @@ msgstr "그 플레이어에게 알려 줍니다. 다른 사람은 그 사람이 
 msgid "The best {k} of each group play here"
 msgstr "조별 상위 {k}명이 여기서 겨룹니다"
 
-#: nmb/ui/widgets.py:170
+#: nmb/ui/widgets.py:171
 msgid "The call failed"
 msgstr "호출 실패"
 
@@ -2779,7 +2783,7 @@ msgstr "가장 많은 표를 받은 사람이 혼자서 평소보다 조금 길�
 msgid "The player you pick speaks next in the talk."
 msgstr "고른 플레이어가 토론에서 다음으로 말합니다."
 
-#: nmb/ui/widgets.py:255
+#: nmb/ui/widgets.py:256
 msgid "The players read this as real"
 msgstr "플레이어에게는 진짜로 보입니다"
 
@@ -2831,7 +2835,7 @@ msgstr "보낸 사람 말투로 쓸 귓속말"
 msgid "Their role"
 msgstr "그 사람 직업"
 
-#: nmb/ui/widgets.py:153
+#: nmb/ui/widgets.py:154
 msgid "Their turn"
 msgstr "차례"
 
@@ -2847,7 +2851,7 @@ msgstr "두 사람의 직업이 같음"
 msgid "Thinking"
 msgstr "생각하는 중"
 
-#: nmb/ui/settings.py:193
+#: nmb/ui/settings.py:198
 msgid "This computer has no keyring, so a key you paste is kept only until the app closes. To keep keys, install GNOME Keyring or KWallet and sign in again."
 msgstr "이 컴퓨터에는 키링이 없어서 붙여 넣은 키는 앱을 닫을 때까지만 기억합니다. 키를 계속 두려면 GNOME 키링이나 KWallet을 설치하고 다시 로그인하세요."
 
@@ -2919,7 +2923,7 @@ msgstr "{n}번째 낮까지"
 msgid "To night"
 msgstr "밤으로"
 
-#: nmb/ui/settings.py:191
+#: nmb/ui/settings.py:196
 msgid "To play, connect at least one. Keys stay in {store} on this computer and are never shown again."
 msgstr "게임을 하려면 하나 이상 연결하세요. 키는 이 컴퓨터의 {store}에 두고 다시 보여 주지 않습니다."
 
@@ -2951,7 +2955,7 @@ msgstr "요청이 너무 많습니다"
 msgid "Tournament"
 msgstr "토너먼트"
 
-#: nmb/ui/picker.py:175
+#: nmb/ui/picker.py:173
 msgid "Trains"
 msgstr "학습"
 
@@ -2959,7 +2963,7 @@ msgstr "학습"
 msgid "Trains on prompts (allow in Settings)"
 msgstr "보낸 내용을 학습함 (설정에서 허용)"
 
-#: nmb/ui/widgets.py:358
+#: nmb/ui/widgets.py:359
 msgid "true: {result}"
 msgstr "진짜: {result}"
 
@@ -3023,7 +3027,7 @@ msgstr "{route} 유료판 쓰기"
 msgid "Use {route}"
 msgstr "{route} 쓰기"
 
-#: nmb/ui/widgets.py:374
+#: nmb/ui/widgets.py:375
 msgid "Used by {name}"
 msgstr "{name}님이 씀"
 
@@ -3051,7 +3055,7 @@ msgstr "Venice (OpenCode 경유)"
 msgid "Verdict"
 msgstr "찬반"
 
-#: nmb/ui/widgets.py:297
+#: nmb/ui/widgets.py:298
 msgid "Verdict result"
 msgstr "찬반 결과"
 
@@ -3059,7 +3063,7 @@ msgstr "찬반 결과"
 msgid "Vigilante"
 msgstr "자경단원"
 
-#: nmb/ui/settings.py:99
+#: nmb/ui/settings.py:104
 msgid "Volume"
 msgstr "음량"
 
@@ -3067,7 +3071,7 @@ msgstr "음량"
 msgid "Vote"
 msgstr "투표"
 
-#: nmb/ui/widgets.py:297
+#: nmb/ui/widgets.py:298
 msgid "Vote result"
 msgstr "투표 결과"
 
@@ -3247,7 +3251,7 @@ msgstr "처형되었습니다. 함께 데려갈 사람을 한 명 고르거나 �
 msgid "You win"
 msgstr "승리"
 
-#: nmb/ui/widgets.py:221
+#: nmb/ui/widgets.py:222
 msgid "You: {what}"
 msgstr "너는 {what}"
 
@@ -3291,11 +3295,11 @@ msgstr "{names} 생각 중"
 msgid "{name} named you"
 msgstr "{name}님에게 답할 차례"
 
-#: nmb/ui/widgets.py:291
+#: nmb/ui/widgets.py:292
 msgid "{name} summed up older history ({how})"
 msgstr "{name}의 지난 기록 요약 ({how})"
 
-#: nmb/ui/widgets.py:361
+#: nmb/ui/widgets.py:362
 msgid "{name} to the god"
 msgstr "{name}님이 신에게"
 
@@ -3303,11 +3307,11 @@ msgstr "{name}님이 신에게"
 msgid "{name} trains on what it is sent; allow such models in Settings to use it"
 msgstr "{name}은(는) 보낸 내용을 학습에 쓰는 모델이라 설정에서 허용해야 쓸 수 있습니다"
 
-#: nmb/ui/widgets.py:191
+#: nmb/ui/widgets.py:192
 msgid "{name}'s reasoning"
 msgstr "{name}의 추론"
 
-#: nmb/ui/widgets.py:180
+#: nmb/ui/widgets.py:181
 msgid "{name}'s thought"
 msgstr "{name}의 속마음"
 
@@ -3407,7 +3411,7 @@ msgstr "{n}판, 예상 ${cost:.2f}"
 msgid "{n} model"
 msgstr "{n}개"
 
-#: nmb/ui/picker.py:224
+#: nmb/ui/picker.py:227
 msgid "{n} model now"
 msgstr "지금 {n}개"
 
@@ -3415,7 +3419,7 @@ msgstr "지금 {n}개"
 msgid "{n} models"
 msgstr "{n}개"
 
-#: nmb/ui/picker.py:224
+#: nmb/ui/picker.py:227
 msgid "{n} models now"
 msgstr "지금 {n}개"
 
@@ -3463,11 +3467,11 @@ msgstr "자리 {n}곳을 랜덤 역할로 돌렸습니다"
 msgid "{n} seats' roles went back to random; counts moved: {counts}"
 msgstr "자리 {n}곳을 랜덤 역할로 돌렸습니다. 함께 바뀐 수: {counts}"
 
-#: nmb/ui/widgets.py:142
+#: nmb/ui/widgets.py:143
 msgid "{n} vote"
 msgstr "{n}표"
 
-#: nmb/ui/widgets.py:142
+#: nmb/ui/widgets.py:143
 msgid "{n} votes"
 msgstr "{n}표"
 
@@ -3483,7 +3487,7 @@ msgstr "{power} 사용 완료"
 msgid "{route} free"
 msgstr "{route} 무료"
 
-#: nmb/ui/settings.py:203
+#: nmb/ui/settings.py:208
 msgid "{route} key saved"
 msgstr "{route} 키 저장됨"
 

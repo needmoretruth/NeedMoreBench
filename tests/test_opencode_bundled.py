@@ -72,6 +72,24 @@ def test_without_the_persons_server_free_zen_still_lists_and_plays(monkeypatch: 
     assert e.value.reason == "missing"
 
 
+def test_the_smoke_fails_a_built_app_without_its_opencode(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from nmb.ui import smoke
+    said: list[str] = []
+    monkeypatch.delenv("FLATPAK_ID", raising=False)
+    assert smoke.check_opencode(said.append) is None  # a source checkout need not carry it
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "_MEIPASS", str(tmp_path), raising=False)
+    assert smoke.check_opencode(said.append) == "opencode is not in the app"
+    exe = tmp_path / "opencode" / opencode._name()
+    exe.parent.mkdir()
+    exe.write_text("#!/bin/sh\necho 'opencode v2.3.2'\n")
+    exe.chmod(0o755)
+    if sys.platform != "win32":
+        assert smoke.check_opencode(said.append) is None and "v2.3.2" in said[-1]
+        exe.write_text("#!/bin/sh\nexit 3\n")
+        assert smoke.check_opencode(said.append) == "the shipped opencode exited with 3"
+
+
 def test_every_bundle_pins_the_same_release_and_checksums() -> None:
     pins = json.loads((ROOT / "packaging" / "opencode.json").read_text(encoding="utf-8"))
     yml = (ROOT / "packaging" / "flatpak" / "org.needmorebench.NeedMoreBench.yml").read_text(encoding="utf-8")
