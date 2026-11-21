@@ -60,8 +60,21 @@ def split_maker(name: str) -> tuple[str | None, str]:
     if ": " in name:
         maker, rest = (p.strip() for p in name.split(": ", 1))
         if maker and rest and len(maker) <= 40:
-            return maker, rest if len(rest.split()) > 1 or any(c.isdigit() for c in rest) else f"{maker} {rest}"
-    return None, name
+            return maker, proper_case(rest if len(rest.split()) > 1 or any(c.isdigit() for c in rest) else f"{maker} {rest}")
+    return None, proper_case(name)
+
+
+# tier words a maker writes capitalised in a capitalised name ('Hy4 flash Free' is Tencent's Hy4 Flash, free tier)
+_TIER = frozenset({"flash", "free", "pro", "lite", "turbo", "plus", "air", "preview", "thinking", "instruct", "max"})
+
+
+def proper_case(name: str) -> str:
+    """'Hy4 flash Free' → 'Hy4 Flash Free': a lower-case tier word in a name that starts with a capital is written
+    the way the rest of the name is. A name in lower case throughout ('qwen3.8-flash') is the maker's own spelling."""
+    words = name.split(" ")
+    if not words or not words[0][:1].isupper():
+        return name
+    return " ".join(w[:1].upper() + w[1:] if w in _TIER else w for w in words)
 
 
 def _known(maker: str) -> tuple[str, str | None]:

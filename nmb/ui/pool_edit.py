@@ -11,7 +11,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk  # noqa: E402
 
-from ..i18n import _  # noqa: E402
+from ..i18n import _, counted  # noqa: E402
 from ..pools import automatic, pool_models  # noqa: E402
 from ..providers.base import ModelInfo  # noqa: E402
 from ..providers.merge import keys_of  # noqa: E402
@@ -64,7 +64,7 @@ class PoolEditor(Adw.Dialog):
             if automatic(m) and m.maker:
                 counts[m.maker] = counts.get(m.maker, 0) + 1
         for maker in sorted(counts, key=lambda k: (-counts[k], k.lower())):
-            sw = Adw.SwitchRow(title=maker, subtitle=_("{n} models").format(n=counts[maker]), active=maker in f["maker"])
+            sw = Adw.SwitchRow(title=maker, subtitle=counted(counts[maker], "{n} model", "{n} models"), active=maker in f["maker"])
             sw.connect("notify::active", lambda r, _p, mk=maker: self._toggle("maker", mk, r.get_active()))
             self.maker_row.add_row(sw)
         g.add(self.route_row)
@@ -139,7 +139,7 @@ class PoolEditor(Adw.Dialog):
             self.list.remove(r)
         self.rows = []
         ms = self.members()
-        self.list.set_description(_("{n} models now").format(n=len(ms)))
+        self.list.set_description(counted(len(ms), "{n} model now", "{n} models now"))
         for m in sorted(ms, key=lambda m: (m.maker or "", m.name.lower())):
             row = Adw.ActionRow(title=m.name, subtitle=", ".join(x for x in (m.maker, _("Free") if m.free else "") if x))
             rm = Gtk.Button(icon_name="list-remove-symbolic", valign=Gtk.Align.CENTER, tooltip_text=_("Leave out"))

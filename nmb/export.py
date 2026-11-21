@@ -13,22 +13,27 @@ from .store import SUFFIX, Saved
 SKIP = {"thinking", "turns", "poll", "call", "human_turn", "would_end", "ledger", "note", "start", "pause"}
 
 
-def final_books(saved: Saved) -> tuple[dict[int, dict[str, dict[str, Any]]], dict[int, dict[int, str]]]:
+def final_books(saved: Saved) -> tuple[dict[int, dict[str, dict[str, Any]]], dict[int, list[str]]]:
+    """Each seat's last ledger rows and every version of its notebook page, oldest first."""
     ledgers: dict[int, dict[str, dict[str, Any]]] = {}
-    notes: dict[int, dict[int, str]] = {}
+    pages: dict[int, list[str]] = {}
+    old: dict[int, dict[int, str]] = {}  # games saved before the page kept numbered notes
     for e in saved.events:
         seat = e.get("by_seat")
         if seat is None:
             continue
         if e["kind"] == "ledger":
             ledgers.setdefault(seat, {})[e["details"]["name"]] = e["details"]["new"]
-        elif e["kind"] == "note":
-            book = notes.setdefault(seat, {})
-            if e["details"].get("op") == "delete":
+        elif e["kind"] == "note" and "op" in e["details"]:
+            book = old.setdefault(seat, {})
+            if e["details"]["op"] == "delete":
                 book.pop(e["details"]["id"], None)
             else:
                 book[e["details"]["id"]] = e["text"]
-    return ledgers, notes
+            pages.setdefault(seat, []).append("\n".join(f"#{k} {t}" for k, t in sorted(book.items())))
+        elif e["kind"] == "note":
+            pages.setdefault(seat, []).append(e["text"])
+    return ledgers, pages
 
 
 def _reveal(settings: dict[str, Any], game: str | None) -> bool:
@@ -62,15 +67,25 @@ def render(saved: Saved) -> str:
         vis = e.get("seen_by")
         text = e.get("text", "")
         k = e["kind"]
-        if k == "say":
+        d = e.get("details") or {}
+        if d.get("god_effect") and not (d.get("answer") or d.get("false_result")):
+            continue  # the god's own record line of that power says it, with what it changed
+        if k == "god" and d.get("record"):
+            line = f"(신의 권능 {d.get('power')}) {text}"
+        elif k == "god" and d.get("answer"):
+            line = f"(신에게 한 답 {name.get(e.get('about_seat'), '?')}) {text}"
+        elif k == "private" and d.get("false_result"):
+            to = ", ".join(name.get(s, "?") for s in vis) if isinstance(vis, list) else "?"
+            line = f"({to}만 앎, 신이 바꾼 거짓 결과, 진짜는 {d.get('real_result')}) {text}"
+        elif k == "say":
             line = f"{who}{' (최후의 반론)' if e['details'].get('defense') else ''}: {text}"
         elif k == "whisper":
             line = f"(귓속말 {who} → {name.get(e.get("about_seat"), "?")}) {text}"
         elif k == "mafia":
             pick = e["details"].get("pick")
             line = f"(마피아 회의) {who + ': ' if who else ''}{text}" + (f" [죽일 사람: {pick}]" if pick else "")
-        elif k in ("lover", "dead"):
-            line = f"({'연인 대화' if k == 'lover' else '죽은 사람 대화'}) {who}: {text}"
+        elif k in ("lover", "dead", "cult"):
+            line = f"({ {'lover': '연인 대화', 'dead': '죽은 사람 대화', 'cult': '교주의 말'}[k]}) {who}: {text}"
         elif k == "thought":
             line = f"(속마음 {who}) {text}"
         elif k == "reasoning":  # the model's own reasoning, in its own language
@@ -92,14 +107,16 @@ def render(saved: Saved) -> str:
         out += ["", "| 이름 | 직업 | 승리 | 생존 | 호출 | 실패 | 비용 |", "|---|---|---|---|---|---|---|"]
         for p in r.get("players", []):
             out.append(f"| {p['name']} | {p['role']} | {'승' if p['won'] else '패'} | {'생존' if p['alive'] else '사망'} | {p['calls']} | {p['failed']} | ${p['cost']:.4f} |")
-    ledgers, notes = final_books(saved)
+    ledgers, pages = final_books(saved)
     out += ["", "## 마지막 장부와 노트", ""]
     for seat, s in seats.items():
         out.append(f"### {s['name']} ({s.get('role')})")
         for n, row in (ledgers.get(seat) or {}).items():
-            out.append(f"- {n}: 의심도 {row['suspicion']}, 추정 {row['guess']}{', ' + row['note'] if row.get('note') else ''}")
-        for nid, t in sorted((notes.get(seat) or {}).items()):
-            out.append(f"- 노트 #{nid}: {t}")
+            out.append(f"- {n}: 의심도 {row['suspicion']}, 추정 {row['guess']}{', 확인됨' if row.get('known') else ''}"
+                       f"{', ' + row['note'] if row.get('note') else ''}")
+        versions = pages.get(seat) or []
+        if versions:
+            out += ["", f"노트 ({len(versions)}번 고침)", "", *("> " + line for line in versions[-1].splitlines())]
         out.append("")
     return "\n".join(out).rstrip() + "\n"
 

@@ -20,6 +20,8 @@ python -m pytest -q -p no:cacheprovider
 
 python packaging\licenses.py --gtk $Gtk --out build\licenses
 python packaging\icons.py
+# opencode for free models out of the box (Y1): the pinned release, checksum checked, next to the app as opencode\
+python packaging\fetch_opencode.py windows-x64 build\opencode
 python -m PyInstaller --noconfirm --log-level WARN --distpath dist --workpath build\pyinstaller packaging\needmorebench.spec
 
 # smoke: the built app opens its screens, saves a picture of each and exits with 0 (a windowed app: its log is a file)

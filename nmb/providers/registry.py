@@ -32,8 +32,15 @@ class Routes:
             from .. import keys
             key = keys.get
         lookup = key
+        from .opencode_direct import KEY_ROUTE, GoDirect
         r = Routes({}, allow_training, health)
-        r.add(OpenCodeRoute())
+        from .opencode import server_executable
+        from .opencode_creds import persons
+        from .opencode_private import PrivateServer
+        from ..store import home
+        r.add(OpenCodeRoute(direct=GoDirect(lambda: lookup(KEY_ROUTE)),
+                            private=PrivateServer(lambda: home() / "opencode-server", server_executable,
+                                                  signins=persons())))
         r.add(AnthropicRoute(lambda: lookup("anthropic")))
         r.add(VeniceRoute(lambda: lookup("venice")))
         r.add(OpenRouterRoute(lambda: lookup("openrouter"), lambda: r.allow_training))
@@ -42,7 +49,12 @@ class Routes:
 
     async def statuses(self) -> dict[str, tuple[str, str]]:
         names = list(self.routes)
-        got = await asyncio.gather(*(self.routes[n].status() for n in names), return_exceptions=True)
+        calls = [self.routes[n].status() for n in names]
+        direct = getattr(self.routes.get("opencode"), "direct", None)
+        if direct is not None:  # Go's own API is a connection of its own in Settings
+            names.append("opencode-go")
+            calls.append(direct.status())
+        got = await asyncio.gather(*calls, return_exceptions=True)
         out = {n: (g if isinstance(g, tuple) else ("provider", str(g))) for n, g in zip(names, got)}
         self.learn_statuses(out)
         return out
@@ -53,7 +65,7 @@ class Routes:
         from .health import Problem, next_utc_midnight
         now = time.time()
         for name, (code, text) in statuses.items():
-            if code == "auth":
+            if code == "auth" and name in self.routes:  # a refused Go key only turns the direct calls off
                 self.health.set(f"{name}:*", Problem("auth", now + 86400, text, now))
             elif code == "credit" and name == "openrouter":
                 self.health.set("openrouter:*paid", Problem("credit", now + 3600, text, now))
@@ -186,6 +198,13 @@ class Routes:
         # the free tier's own build first (its date, or the routes' release dates), then the user's route order
         twins.sort(key=lambda x: (not same_build(x), rank(x)))
         return twins[0].key if twins else None
+
+    def no_reasoning(self, key: str) -> str:
+        """Why a seat's reasoning will not be recorded, in plain words; empty when it will be or the route does not
+        say. Only the OpenCode route has a way that drops it."""
+        ref = ModelRef.parse(key)
+        why = getattr(self.routes.get(ref.route), "why_no_reasoning", None)
+        return why(ref) if callable(why) else ""
 
     def with_effort(self, key: str, variant: str | None) -> str:
         """`key` with the closest effort level its route offers."""

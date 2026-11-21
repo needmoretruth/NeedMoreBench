@@ -28,7 +28,7 @@ from .i18n import _
 from .providers.base import ProviderError
 
 SERVICE = "NeedMoreBench"
-ROUTES = ("openrouter", "anthropic", "venice")
+ROUTES = ("openrouter", "anthropic", "venice", "opencode-go")  # opencode-go: the Go key for Go's own API
 ENV = {"anthropic": "ANTHROPIC_API_KEY", "openrouter": "OPENROUTER_API_KEY", "venice": "VENICE_API_KEY"}
 OLD_SCHEMA = "org.needmorebench.NeedMoreBench.Key"
 

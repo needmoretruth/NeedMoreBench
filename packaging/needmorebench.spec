@@ -18,10 +18,13 @@ licenses = ROOT / "build" / "licenses"  # written by packaging/licenses.py befor
 if licenses.is_dir():
     datas.append((str(licenses), "licenses"))
 datas += copy_metadata("keyring")  # keyring finds its backends through its package metadata
+opencode = ROOT / "build" / "opencode"  # written by packaging/fetch_opencode.py: NMB's own server runs it (Y1)
+if opencode.is_dir():
+    datas.append((str(opencode), "opencode"))  # as data: PyInstaller must not rewrite or strip the program
 
 hidden = collect_submodules("nmb") + collect_submodules("keyring.backends")
 if sys.platform == "win32":
-    hidden += collect_submodules("win32ctypes")
+    hidden += collect_submodules("win32ctypes") + ["winsound"]  # the sound effects (§5) play through it
 
 a = Analysis(  # noqa: F821
     [str(ROOT / "packaging" / "launch.py")],

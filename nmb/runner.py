@@ -83,6 +83,16 @@ def seat_record(game: Game) -> list[dict[str, Any]]:
     return out
 
 
+def draw_judge(setup: GameSetup, folder: Path | None, record: bool) -> Callable[[int, list[str]], float | None] | None:
+    """The balance judge for a 랜덤 draw of 복잡한 마피아, fitted on the games in the record folder; none
+    for other lineups, or when the game is not recorded and no folder was named."""
+    from .engine.lineups import RANDOM, mode_of
+    if setup.kind != "complex" or mode_of(setup) != RANDOM or (folder is None and not record):
+        return None
+    from . import balance
+    return balance.judge(setup.kind, folder)
+
+
 def build_game(setup: GameSetup, routes: Routes | None, sink: Callable[[Event], None] | None = None,
                offline: bool = False, folder: Path | None = None, record: bool = True,
                extra: dict[str, Any] | None = None) -> tuple[Game, Recorder | None, HumanController | None]:
@@ -97,7 +107,7 @@ def build_game(setup: GameSetup, routes: Routes | None, sink: Callable[[Event], 
     problem = setup.problem()
     if problem:
         raise ValueError(problem)
-    players = seat_players(setup, rng)
+    players = seat_players(setup, rng, draw_judge(setup, folder, record))
     human: HumanController | None = None
     controllers: dict[int, Any] = {}
     for p in players:

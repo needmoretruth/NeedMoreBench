@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from . import keys
 from .providers.anthropic_api import AnthropicRoute
 from .providers.openai_compat import OpenRouterRoute, VeniceRoute
+from .providers.opencode_direct import GoDirect
 
 
 @dataclass
@@ -24,6 +25,8 @@ async def test_key(route: str, key: str) -> tuple[str, str]:
         return await OpenRouterRoute(lambda: key, lambda: False).status()
     if route == "venice":
         return await VeniceRoute(lambda: key).status()
+    if route == "opencode-go":  # the key alone, not the login that stands in for it
+        return await GoDirect(lambda: key, token=lambda: None).status()
     return await AnthropicRoute(lambda: key).status()
 
 

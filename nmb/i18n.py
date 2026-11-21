@@ -101,3 +101,8 @@ def _(text: str) -> str:
 
 def ngettext(one: str, many: str, n: int) -> str:
     return _t.ngettext(one, many, n)
+
+
+def counted(n: int, one: str, many: str, **kw: object) -> str:
+    """「1 vote」, 「2 votes」: two plain msgids (Korean has one form for both), formatted with n and kw."""
+    return _(one if n == 1 else many).format(n=n, **kw)

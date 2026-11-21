@@ -12,7 +12,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk  # noqa: E402
 
 from .. import rating, standings  # noqa: E402
-from ..i18n import _  # noqa: E402
+from ..i18n import _, counted  # noqa: E402
 from ..store import list_games  # noqa: E402
 from ..view import effort_label  # noqa: E402
 from . import bg  # noqa: E402
@@ -23,7 +23,7 @@ HEAD = ["Rank", "Model and reasoning", "Score", "Mafia side", "Citizen side", "G
 
 
 def cell(text: str, *classes: str, xalign: float = 1.0, tip: str = "") -> Gtk.Label:
-    lab = Gtk.Label(label=text, xalign=xalign, valign=Gtk.Align.CENTER)
+    lab = Gtk.Label(label=text, xalign=xalign, yalign=0.5, valign=Gtk.Align.FILL)  # FILL: every cell of a row as tall as the row, lines and tints meet
     for c in classes:
         lab.add_css_class(c)
     if tip:
@@ -94,9 +94,11 @@ class Standings(Gtk.Stack):
             self.grid.attach(head, col, 0, 1, 1)
         for i, r in enumerate(table.rows, start=1):
             self._row(i, r, table.usage.get(r.entrant.key, standings.Usage()), table.name(r.entrant))
-        self.note.set_label(_("{n} games count. {skipped} left out: stopped, draws, provider failures or scripted "
-                              "players. Dimmed rows are preliminary: fewer than {min} games or {side} on a side.")
-                            .format(n=table.games, skipped=table.skipped, min=rating.MIN_GAMES, side=rating.MIN_SIDE))
+        self.note.set_label(counted(table.games, "{n} game counts. {skipped} left out: stopped, draws, provider failures or "
+                                    "scripted players. Dimmed rows are preliminary: fewer than {min} games or {side} on a side.",
+                                    "{n} games count. {skipped} left out: stopped, draws, provider failures or scripted "
+                                    "players. Dimmed rows are preliminary: fewer than {min} games or {side} on a side.",
+                                    skipped=table.skipped, min=rating.MIN_GAMES, side=rating.MIN_SIDE))
 
     def _row(self, y: int, r: rating.BoardRow, u: standings.Usage, shown: str) -> None:
         dim = ("prelim",) if r.preliminary else ()  # a colour, not opacity, so the row lines stay one colour

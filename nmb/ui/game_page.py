@@ -17,9 +17,12 @@ from ..engine.state import Event  # noqa: E402
 from ..i18n import _  # noqa: E402
 from ..view import ViewState, step_label  # noqa: E402
 from .inspector import Inspector  # noqa: E402
-from .widgets import PlayerCard, chip, hbox, label, timeline_row, vbox  # noqa: E402
+from .widgets import GOD_ICON, PlayerCard, chip, hbox, label, timeline_row, vbox  # noqa: E402
 
 FILTERS = [("all", "All"), ("say", "Public"), ("whisper", "Whispers"), ("mafia", "Night chats"), ("thought", "Thoughts"), ("reasoning", "Reasoning")]
+# what an empty view says, so a filter with nothing in it never looks broken
+EMPTY = {"all": "Nothing yet.", "say": "No public lines.", "whisper": "No whispers.", "mafia": "No night chats.",
+         "thought": "No thoughts.", "reasoning": "No reasoning."}
 SPEEDS = [("Slow", 2.4), ("Normal", 1.2), ("Fast", 0.4), ("Fastest", 0.0)]
 
 
@@ -36,11 +39,12 @@ class GamePage(Adw.NavigationPage):
         self.on_end: Callable[[], None] | None = None
         self.human_seat: int | None = None  # set by a live game with a person in it
         self.card: Gtk.Widget | None = None
+        self.composer: Any = None  # the person's always-open line box during 토론
         self.held: list[tuple[int | None, Gtk.Widget]] = []  # thoughts waiting for their speaker's line
 
         self.root = Adw.ToolbarView()
         self.root.add_css_class("game")
-        header = Adw.HeaderBar()
+        self.header = header = Adw.HeaderBar()
         self.title_label = label(title, "phase-title", xalign=0.5)
         self.sub_label = label("", "phase-sub", xalign=0.5)
         self.phase_icon = Gtk.Image.new_from_icon_name("weather-clear-night-symbolic")
@@ -56,7 +60,7 @@ class GamePage(Adw.NavigationPage):
         header.pack_start(self.speed_btn)
         self.panel_btn = Gtk.ToggleButton(icon_name="sidebar-show-right-symbolic", tooltip_text=_("Ledger and notes"), active=True)
         header.pack_end(self.panel_btn)
-        self.god_btn = Gtk.MenuButton(icon_name="weather-clear-symbolic", tooltip_text=_("God powers"))
+        self.god_btn = Gtk.MenuButton(icon_name=GOD_ICON, tooltip_text=_("God powers"))
         self.god_btn.add_css_class("god-button")
         self.god_btn.set_visible(False)
         header.pack_start(self.god_btn)  # on the left its popover opens inside the window
@@ -107,6 +111,9 @@ class GamePage(Adw.NavigationPage):
         self.timeline = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         self.timeline.add_css_class("timeline")
         self.timeline.set_filter_func(self._keep)
+        self.empty = label(_(EMPTY["all"]), "dim-label", xalign=0.5)
+        self.empty.set_margin_top(48)
+        self.timeline.set_placeholder(self.empty)
         self.scroll = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True)
         self.scroll.set_child(self.timeline)
         self.scroll.add_css_class("timeline-view")
@@ -124,12 +131,12 @@ class GamePage(Adw.NavigationPage):
         bar.set_margin_top(8)
         bar.set_margin_bottom(6)
         self.banner = label("", "banner-text", xalign=0.5)
-        self.banner_box = vbox(0, self.banner)
-        self.banner_box.add_css_class("banner-overlay")
-        self.banner_box.set_halign(Gtk.Align.CENTER)
-        self.banner_box.set_valign(Gtk.Align.CENTER)
-        self.banner_box.set_opacity(0)
-        self.banner_box.set_can_target(False)
+        # 밤이 되었습니다: an opaque band that slides down over the top of the timeline and back. It is never
+        # see-through, so no line shows through the words (a faded pill in the middle let the chat show through).
+        band = vbox(0, self.banner)
+        band.add_css_class("banner-overlay")
+        self.banner_box = Gtk.Revealer(child=band, transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN,
+                                       transition_duration=260, valign=Gtk.Align.START, can_target=False)
         overlay = Gtk.Overlay(child=self.scroll)
         overlay.add_overlay(self.banner_box)
         self.center = vbox(0, bar, overlay, self.thinking)
@@ -150,7 +157,7 @@ class GamePage(Adw.NavigationPage):
         self.bottom_bar = vbox(0)  # replay scrubber
         self.root.add_bottom_bar(self.bottom_bar)
         self.set_child(self.root)
-        self._banner_anim: Adw.TimedAnimation | None = None
+        self._banner_hide = 0
         self.refresh()
         if st.seats:
             self.players.select_row(self.cards[st.viewer if st.viewer is not None else 0])
@@ -158,7 +165,8 @@ class GamePage(Adw.NavigationPage):
     # ---- breakpoints (the window adds them) -------------------------------------------------------------
     def narrow(self, on: bool) -> None:
         self.split.set_collapsed(on)
-        self.players_pane.set_size_request(210 if on else 250, -1)
+        # 230 when narrow: with the talk chip at the 13 px text floor, 210 left a name no room beside it
+        self.players_pane.set_size_request(230 if on else 250, -1)
 
     # ---- events ----------------------------------------------------------------------------------------
     def feed(self, e: Event, animate: bool = True) -> None:
@@ -172,6 +180,8 @@ class GamePage(Adw.NavigationPage):
                 self._place(row, e.actor)
                 if animate:
                     self._scroll_soon()
+                    if row.has_css_class("god-row") and row.get_child() is not None:
+                        row.get_child().add_css_class("fresh")  # the glow plays once, live only
         elif e.kind in ("step", "human_turn"):
             self._place(None, None)
         if animate:
@@ -179,10 +189,20 @@ class GamePage(Adw.NavigationPage):
                 self.show_banner(e.data["banner"])
             if e.data.get("sound") and self.st.sees(e):
                 self.on_sound(e.data["sound"])
+        mine = self.human_seat is not None and e.actor == self.human_seat
         if e.kind == "human_turn" and animate and self.human_seat is not None and e.to and self.human_seat in e.to:
             self.ask_human(e.data.get("request") or {})
-        elif e.kind == "end":
+        elif e.kind == "human_done" and mine or e.kind == "end":
             self.clear_card()
+        if self.composer is not None and animate:
+            if e.kind == "queued" and mine:
+                (self.composer.reset if e.data.get("dropped") else self.composer.queued)()
+            elif e.kind == "say" and mine and not e.data.get("intro") and not e.data.get("defense"):
+                self.composer.said()
+            elif e.kind == "step":
+                self.composer.reset()
+            elif e.kind == "system" and e.data.get("time") and e.data.get("actor_seat") == self.human_seat:
+                self.composer.used(e.data["time"])  # pressed on the composer or on the turn card
         if e.kind in ("phase", "end") or was_night != (self.st.phase == "night"):
             self._night(self.st.phase == "night")
         self.refresh(changed=e)
@@ -204,14 +224,15 @@ class GamePage(Adw.NavigationPage):
         child = self.timeline.get_first_child()
         while child is not None:
             nxt = child.get_next_sibling()
-            self.timeline.remove(child)
+            if child is not self.empty:  # removing the placeholder would unset it, and empty views go blank
+                self.timeline.remove(child)
             child = nxt
         for e in events:
             self.feed(e, animate=False)
         self._place(None, None)
         self._night(self.st.phase == "night")
         self.refresh()
-        self._scroll_soon()
+        self._scroll_soon(force=True)
 
     def refresh(self, changed: Event | None = None) -> None:
         st = self.st
@@ -239,6 +260,12 @@ class GamePage(Adw.NavigationPage):
             self.turns_label.set_label(f"{st.turns_left}/{total}")
             alive = sum(1 for v in st.seats if v.alive)
             (self.turns_box.add_css_class if st.turns_left <= alive else self.turns_box.remove_css_class)("low")
+        if self.composer is not None:
+            me = st.seats[self.human_seat] if self.human_seat is not None and self.human_seat < len(st.seats) else None
+            meeting = st.phase == "night" and st.meeting
+            self.composer.mode(meeting)
+            self.composer.set_visible((talking or meeting) and self.card is None and st.result is None
+                                      and me is not None and me.alive)
         self.end_btn.set_visible(talking and st.would_end)
         self.end_btn.set_label(_("To the vote") if st.vote_next else _("To night"))
         cost = st.cost()
@@ -257,6 +284,13 @@ class GamePage(Adw.NavigationPage):
         self.god_btn.set_popover(GodPopover(self))
         self.god_btn.set_visible(True)
 
+    def enable_talk(self, send: Callable[[str], None], press: Callable[[str], None]) -> None:
+        from .composer import Composer
+        self.composer = Composer(send, press)
+        self.composer.set_visible(False)
+        self.bottom.append(self.composer)
+        self.refresh()
+
     def ask_human(self, req: dict[str, Any]) -> None:
         from .human import ActionCard, card_box
         self.clear_card()
@@ -270,6 +304,8 @@ class GamePage(Adw.NavigationPage):
         card = ActionCard(req, send, others)
         self.card = card_box(card)
         self.bottom.append(self.card)
+        if self.composer is not None:
+            self.composer.set_visible(False)
         self.on_sound("turn")
         focus = card.say or card.whisper_text
         if focus is not None:
@@ -280,6 +316,7 @@ class GamePage(Adw.NavigationPage):
         if self.card is not None:
             self.bottom.remove(self.card)
             self.card = None
+            self.refresh()
 
     # ---- pieces -----------------------------------------------------------------------------------------
     def _night(self, on: bool) -> None:
@@ -287,27 +324,29 @@ class GamePage(Adw.NavigationPage):
 
     def show_banner(self, text: str) -> None:
         self.banner.set_label(text)
-        if self._banner_anim is not None:
-            self._banner_anim.skip()
-        target = Adw.CallbackAnimationTarget.new(self._banner_opacity)
-        anim = Adw.TimedAnimation.new(self.banner_box, 0, 1, 2200, target)
-        anim.set_easing(Adw.Easing.LINEAR)
-        self._banner_anim = anim
-        anim.play()
+        self.banner_box.set_reveal_child(True)
+        if self._banner_hide:
+            GLib.source_remove(self._banner_hide)
 
-    def _banner_opacity(self, t: float) -> None:
-        # fade in for the first 15 %, hold, fade out for the last 25 %
-        a = t / 0.15 if t < 0.15 else 1.0 if t < 0.75 else max(0.0, (1 - t) / 0.25)
-        self.banner_box.set_opacity(a)
+        def hide() -> bool:
+            self._banner_hide = 0
+            self.banner_box.set_reveal_child(False)
+            return False
+        self._banner_hide = GLib.timeout_add(2000, hide)
 
-    def _scroll_soon(self) -> None:
+    def _scroll_soon(self, force: bool = False) -> None:
+        """Follow the newest line when the reader is at the bottom. A replay jump (`force`) always lands on the
+        newest line and keeps following while GTK lays out the hundreds of rows it just added (one 30 ms pass
+        left the timeline at the first day)."""
         adj = self.scroll.get_vadjustment()
-        near = adj.get_value() + adj.get_page_size() >= adj.get_upper() - 160
+        near = force or adj.get_value() + adj.get_page_size() >= adj.get_upper() - 160
+        passes = [8 if force else 1]
 
         def go() -> bool:
             a = self.scroll.get_vadjustment()
             a.set_value(a.get_upper() - a.get_page_size())
-            return False
+            passes[0] -= 1
+            return passes[0] > 0
         if near:
             GLib.timeout_add(30, go)
 
@@ -317,8 +356,9 @@ class GamePage(Adw.NavigationPage):
             return self.filter == "reasoning"
         return self.filter == "all" or kind == self.filter  # thoughts show in 전체 as muted notes
 
-    def _filter_changed(self, *_: Any) -> None:
+    def _filter_changed(self, *_args: Any) -> None:
         self.filter = self.filters.get_active_name() or "all"
+        self.empty.set_label(_(EMPTY.get(self.filter, "Nothing yet.")))
         self.timeline.invalidate_filter()
 
     def _picked(self, _lb: Gtk.ListBox, row: Gtk.ListBoxRow | None) -> None:
@@ -331,6 +371,10 @@ class GamePage(Adw.NavigationPage):
         self.inspector.show_seat(self.st, seat)
         if self.split.get_collapsed():
             self.split.set_show_sidebar(True)
+
+    def add_sound_button(self, btn: Gtk.Widget) -> None:
+        """소리 and 음량 in the game's header, next to the panel button."""
+        self.header.pack_end(btn)
 
     def _toggle_pause(self, *_: Any) -> None:
         if self.controls is not None:

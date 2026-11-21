@@ -67,9 +67,12 @@ class LiveGame:
         if self.game is not None:
             self.game.post(fn, *args, **kw)
 
-    def god(self, power: str, seat: int | None = None, text: str = "", role: str | None = None, by: str = "신") -> None:
+    def god(self, power: str, seat: int | None = None, text: str = "", role: str | None = None, by: str = "신",
+            other: int | None = None, n: int = 0) -> None:
+        """Runs at the game loop's next step whoever pressed it, so a cheating player's power has no timing tell
+       its seat goes only into the god-only record."""
         if self.game is not None:
-            self.call(self.game.god, power, seat, text, role, by)
+            self.call(self.game.god, power, seat, text, role, by, other, n, self.setup.human_seat)
 
     def pause(self, paused: bool) -> None:
         if self.game is not None:
@@ -78,6 +81,16 @@ class LiveGame:
     def answer(self, obj: dict[str, Any]) -> None:
         if self.human is not None:
             self.call(self.human.answer, obj)
+
+    def say(self, text: str) -> None:
+        """The person's line during 토론, said at the next turn boundary."""
+        if self.game is not None:
+            self.call(self.game.queue_line, self.setup.human_seat, text)
+
+    def press_time(self, word: str) -> None:
+        """The person's 연장 / 단축 during 토론."""
+        if self.game is not None:
+            self.call(self.game.press_time, self.setup.human_seat, word)
 
     def edit(self, obj: dict[str, Any]) -> None:
         """The person's own ledger rows and notes, any time during the game."""

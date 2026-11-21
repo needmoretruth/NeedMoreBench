@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any
+from typing import Any, Callable
 
 _FENCE = re.compile(r"```(?:json|JSON)?\s*(.*?)```", re.S)
 _TRAILING_COMMA = re.compile(r",\s*([}\]])")
@@ -34,6 +34,42 @@ def first_json_object(text: str) -> dict[str, Any] | None:
                     continue
                 if isinstance(obj, dict):
                     return obj
+    return salvage_object(text)
+
+
+def salvage_object(text: str) -> dict[str, Any] | None:
+    """An answer cut off by the token limit: the fields it finished, as an object (a whole `say` before an
+    unfinished ledger is still what the player said). A field cut in the middle is dropped."""
+    start = text.find("{")
+    if start < 0:
+        return None
+    depth, in_str, esc, ends = 0, False, False, []
+    for i in range(start, len(text)):
+        ch = text[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+        elif ch == '"':
+            in_str = True
+        elif ch in "{[":
+            depth += 1
+        elif ch in "}]":
+            depth -= 1
+        elif ch == "," and depth == 1:
+            ends.append(i)  # a member at the top level ended here
+    tail = text[start:].rstrip()
+    for cut in [tail] + [text[start:i] for i in reversed(ends)]:
+        for attempt in (cut + "}", cut.translate(_SMART) + "}"):
+            try:
+                obj = json.loads(attempt, strict=False)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(obj, dict) and obj:
+                return obj
     return None
 
 
@@ -67,7 +103,21 @@ def clean_speech(text: Any, limit: int = 600) -> str:
     t = _MARKDOWN.sub("", t)
     t = re.sub(r"\s*\n+\s*", " ", t).strip()
     t = t.strip('"').strip()
-    return t[:limit]
+    return clip(t, limit)
+
+
+def clip(t: str, limit: int) -> str:
+    """At most `limit` characters, never ending mid-word: the last sentence end or space in the second half of
+    the room, then 「…」 (an English thought cut at 400 read 「cast doubt on Dee」)."""
+    if len(t) <= limit:
+        return t
+    room = t[:limit - 1]
+    end = max(room.rfind(c) + 1 for c in ".!?。")
+    if end < limit // 2:
+        end = room.rfind(" ")
+    if end < limit // 2:
+        end = len(room)
+    return room[:end].rstrip() + "…"
 
 
 def _norm(name: str) -> str:
@@ -98,8 +148,10 @@ def is_skip(value: Any) -> bool:
     return value is None or (isinstance(value, str) and _norm(value) in SKIP_WORDS)
 
 
-def read_ledger(raw: Any, others: list[str], guesses: list[str]) -> tuple[list[dict[str, Any]], list[str]]:
-    """Valid ledger edits and the problems found (for the observer, not a retry)."""
+def read_ledger(raw: Any, others: list[str], guesses: list[str],
+                word: Callable[[Any], Any] = lambda g: g) -> tuple[list[dict[str, Any]], list[str]]:
+    """Valid ledger edits and the problems found (for the observer, not a retry). `word` reads a guess written in
+    the game's language as the engine's role name."""
     edits, problems = [], []
     if isinstance(raw, dict):
         raw = [dict(v, name=k) if isinstance(v, dict) else {"name": k, "suspicion": v} for k, v in raw.items()]
@@ -119,7 +171,7 @@ def read_ledger(raw: Any, others: list[str], guesses: list[str]) -> tuple[list[d
                 edit["suspicion"] = max(0, min(100, int(round(float(s)))))
             except (TypeError, ValueError):
                 problems.append(f"의심도가 숫자가 아님: {s}")
-        g = item.get("guess", item.get("추정"))
+        g = word(item.get("guess", item.get("추정")))
         if isinstance(g, str) and g.strip():
             gm = _match_guess(g, guesses)
             if gm:
@@ -144,28 +196,18 @@ def _match_guess(g: str, guesses: list[str]) -> str | None:
     return None
 
 
-def read_notes(raw: Any) -> dict[str, list[Any]]:
-    out: dict[str, list[Any]] = {"add": [], "edit": [], "delete": []}
-    if not isinstance(raw, dict):
-        if isinstance(raw, list):
-            raw = {"add": raw}
-        else:
-            return out
-    for t in (raw.get("add") or [])[:5] if isinstance(raw.get("add"), list) else []:
-        if isinstance(t, str) and t.strip():
-            out["add"].append(clean_speech(t, 400))
-    for e in (raw.get("edit") or [])[:5] if isinstance(raw.get("edit"), list) else []:
-        if isinstance(e, dict) and isinstance(e.get("text"), str):
-            try:
-                out["edit"].append((int(e.get("id")), clean_speech(e["text"], 400)))
-            except (TypeError, ValueError):
-                pass
-    for d in (raw.get("delete") or [])[:10] if isinstance(raw.get("delete"), list) else []:
-        try:
-            out["delete"].append(int(d))
-        except (TypeError, ValueError):
-            pass
-    return out
+def read_notes(raw: Any) -> str | None:
+    """The new notebook page, or None to keep the current one. Line breaks stay: it is a page.
+    A list of lines is joined; {"page": ...} is read as the page; anything else keeps the page."""
+    if isinstance(raw, dict):
+        raw = raw.get("page")
+    if isinstance(raw, list) and all(isinstance(x, str) for x in raw):
+        raw = "\n".join(raw)
+    if not isinstance(raw, str):
+        return None
+    text = _EMOJI.sub("", raw)
+    text = re.sub(r"[ \t]+\n", "\n", text).strip()
+    return text
 
 
 def read_whispers(raw: Any, allowed: list[str], limit: int) -> list[tuple[str, str]]:

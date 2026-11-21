@@ -1,6 +1,6 @@
 """The user's own roles: 복수자 shoots back at the mafia member who set the night's target;
 사냥꾼, executed by vote, takes any one living player along after the 찬반. Each with the interactions
-names: 의사, 군인, 성직자, 연인, 정치인."""
+names: 의사, 방패병, 부활술사, 연인, 시장."""
 from __future__ import annotations
 
 from nmb.engine.roles import ROLES, pool_roles
@@ -53,18 +53,18 @@ def test_avenger_saved_by_the_doctor_fires_nothing():
 
 
 def test_avenger_revived_by_the_priest_leaves_the_mafia_dead():
-    roles = ["복수자", "마피아", "마피아", "경찰", "의사", "성직자", "시민", "시민", "시민"]
+    roles = ["복수자", "마피아", "마피아", "경찰", "의사", "부활술사", "시민", "시민", "시민"]
     plan = {(1, "mafia", 1): {"target": 0}, (1, "mafia", 2): {"target": 0}, (2, "night", 5): {"target": 0}}
     g = play(roles, plan, days=3)
     shot = next(e.target for e in g.events if e.kind == "death" and e.data["cause"] == "avenger")
     assert g.players[0].alive and not g.players[shot].alive
-    assert f"성직자의 기도로 {name(g, 0)}님이 되살아났습니다" in public(g)
+    assert f"부활술사가 {name(g, 0)}님을 되살렸습니다" in public(g)
 
 
 def test_a_lover_dying_for_a_partner_is_no_avenger_and_a_soldier_never_shoots():
     g = play(["연인", "마피아", "경찰", "의사", "연인", "시민"], {(1, "mafia", 1): {"target": 0}})
     assert g.players[1].alive and not g.players[4].alive
-    g = play(["군인", "마피아", "경찰", "의사", "시민", "시민"], {(1, "mafia", 1): {"target": 0}})
+    g = play(["방패병", "마피아", "경찰", "의사", "시민", "시민"], {(1, "mafia", 1): {"target": 0}})
     assert g.players[0].alive and g.players[1].alive
 
 
@@ -100,7 +100,7 @@ def test_hunter_shot_kills_the_last_mafia_and_the_town_wins():
 
 
 def test_hunter_shot_ignores_the_doctor_the_soldier_the_lover_and_the_politician():
-    for role, at in (("군인", 2), ("정치인", 2), ("연인", 2)):
+    for role, at in (("방패병", 2), ("시장", 2), ("연인", 2)):
         roles = ["사냥꾼", "마피아", role, "의사", "시민", "시민", "시민", "시민"]
         if role == "연인":
             roles[4] = "연인"
@@ -112,7 +112,7 @@ def test_hunter_shot_ignores_the_doctor_the_soldier_the_lover_and_the_politician
 
 
 def test_a_politician_hunter_cannot_exist_but_a_vote_saving_politician_stops_the_shot():
-    roles = ["사냥꾼", "마피아", "정치인", "의사", "시민", "시민", "시민"]
+    roles = ["사냥꾼", "마피아", "시장", "의사", "시민", "시민", "시민"]
     plan = {**executed(2, 7), (2, "shot", 2): {"target": 1}}
     g = play(roles, plan, days=2)
     assert g.players[2].alive and (2, "shot", 2) not in g.asked

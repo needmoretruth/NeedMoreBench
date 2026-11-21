@@ -19,12 +19,14 @@ from ..i18n import _  # noqa: E402
 from ..providers.base import STATUS_TEXT  # noqa: E402
 from . import bg  # noqa: E402
 
-ROUTES = [("opencode", "OpenCode"), ("anthropic", "Anthropic"), ("venice", "Venice"), ("openrouter", "OpenRouter"), ("lmstudio", "LM Studio")]
-KEYED = ("anthropic", "venice", "openrouter")
+ROUTES = [("opencode", "OpenCode"), ("opencode-go", "OpenCode Go"), ("anthropic", "Anthropic"), ("venice", "Venice"), ("openrouter", "OpenRouter"), ("lmstudio", "LM Studio")]
+KEYED = ("opencode-go", "anthropic", "venice", "openrouter")
 SCHEMES = [("light", "Light"), ("dark", "Dark"), ("system", "Follow system")]
 WHERE = {"keyring": "Keyring"}
 # For someone with no key yet: what each route offers and where its key (or program) comes from.
 GUIDE = [("opencode", "Free models with a daily limit, no key needed", "Download", "https://opencode.ai"),
+         ("opencode-go", "Go plan models with their reasoning; your OpenCode login works too", "Make a key",
+          "https://opencode.ai/console"),
          ("openrouter", "Free models with a daily limit, and paid models", "Make a key", "https://openrouter.ai/keys"),
          ("anthropic", "Claude models, paid", "Make a key", "https://platform.claude.com/settings/keys"),
          ("venice", "Open models, paid", "Make a key", "https://venice.ai/settings/api"),
@@ -84,7 +86,33 @@ class SettingsDialog(Adw.PreferencesDialog):
         delay.connect("notify::value", lambda r, _p: self._save("delay", round(r.get_value(), 1)))
         play.add(delay)
         page.add(play)
+        page.add(self._sound())
         return page
+
+    def _sound(self) -> Adw.PreferencesGroup:
+        """소리 and 음량, the same settings as the menus' controls."""
+        snd = self.app.sound
+        group = Adw.PreferencesGroup(title=_("Sound"))
+        on = Adw.SwitchRow(title=_("Sound effects"), subtitle=_("Lines, whispers, night and day, votes, deaths"),
+                           active=self.app.settings.sound)
+        on.connect("notify::active", lambda r, _p: snd.set(on=r.get_active()))
+        vol = Adw.ActionRow(title=_("Volume"))
+        scale = snd.scale_widget()
+        scale.set_valign(Gtk.Align.CENTER)
+        vol.add_suffix(scale)
+        vol.set_sensitive(self.app.settings.sound)
+
+        def follow() -> None:
+            if on.get_active() != self.app.settings.sound:
+                on.set_active(self.app.settings.sound)
+            vol.set_sensitive(self.app.settings.sound)
+            if abs(scale.get_value() - self.app.settings.volume) > 1e-6:
+                scale.set_value(self.app.settings.volume)
+        snd.listeners.append(follow)
+        group.connect("destroy", lambda *_a: follow in snd.listeners and snd.listeners.remove(follow))
+        group.add(on)
+        group.add(vol)
+        return group
 
     def _language(self, code: str) -> None:
         self.app.settings.language = code

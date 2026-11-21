@@ -13,7 +13,7 @@ from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
 from ..i18n import _  # noqa: E402
 from ..store import Saved, export_game, import_file, list_games  # noqa: E402
-from .widgets import vbox  # noqa: E402
+from .widgets import chip, vbox  # noqa: E402
 
 GAME_EN = {"simple": "Simple mafia", "complex": "Complex mafia"}
 TEAM_EN = {"시민": "Citizens won", "마피아": "Mafia won", "교주": "Cult won"}
@@ -30,7 +30,7 @@ def when(saved: Saved) -> str:
 def outcome(saved: Saved) -> str:
     r = saved.result
     if r is None:
-        return _("Stopped")
+        return _("Playing") if saved.live else _("Stopped")
     return _(TEAM_EN.get(r.get("team") or "", "Draw"))
 
 
@@ -108,10 +108,11 @@ class RecordsPage(Adw.NavigationPage):
         row.saved = s
         row.text = (title + " " + players_line(s) + " " + " ".join(x.get("model_name") or "" for x in s.header.get("seats", []))).lower()
         row.connect("activated", lambda *_a: self._open(s))
-        export = Gtk.Button(icon_name="document-save-symbolic", tooltip_text=_("Export"), valign=Gtk.Align.CENTER)
-        export.add_css_class("flat")
-        export.connect("clicked", lambda *_a: self._export(s))
-        row.add_suffix(export)
+        if s.intervened:  # the god changed this game; it does not count in the standings
+            row.add_suffix(chip(_("God intervened"), "god"))
+            row.set_tooltip_text(_("The god used powers in this game, so it is left out of the standings."))
+            row.text += " " + _("God intervened").lower()
+        row.add_suffix(self._export_button(s))
         again = Gtk.Button(icon_name="view-refresh-symbolic", tooltip_text=_("Play again"), valign=Gtk.Align.CENTER)
         again.add_css_class("flat")
         again.connect("clicked", lambda *_a: self._again(s))
@@ -126,6 +127,7 @@ class RecordsPage(Adw.NavigationPage):
     def _open(self, s: Saved) -> None:
         from .replay import Replay
         r = Replay(s, on_sound=self.app.play_sound, on_again=lambda: self._again(s))
+        r.page.add_sound_button(self.app.sound.button())
         self.app.window.push(r.page)
 
     def _again(self, s: Saved) -> None:
@@ -135,7 +137,22 @@ class RecordsPage(Adw.NavigationPage):
         self.app.window.nav.pop_to_tag("home")
         start_game(self.app, GameSetup.from_json(s.settings).again())
 
-    def _export(self, s: Saved) -> None:
+    def _export_button(self, s: Saved) -> Gtk.MenuButton:
+        """내보내기: the record file, and a Markdown copy only when asked (off by default)."""
+        md = Gtk.CheckButton(label=_("Markdown copy too"))
+        go = Gtk.Button(label=_("Export to a folder"))
+        go.add_css_class("suggested-action")
+        box = vbox(8, md, go)
+        for m in ("top", "bottom", "start", "end"):
+            getattr(box, f"set_margin_{m}")(8)
+        pop = Gtk.Popover(child=box)
+        go.connect("clicked", lambda *_a: (pop.popdown(), self._export(s, md.get_active())))
+        btn = Gtk.MenuButton(icon_name="document-save-symbolic", tooltip_text=_("Export"), valign=Gtk.Align.CENTER,
+                             popover=pop)
+        btn.add_css_class("flat")
+        return btn
+
+    def _export(self, s: Saved, markdown: bool = False) -> None:
         dlg = Gtk.FileDialog(title=_("Export to a folder"))
 
         def done(d: Gtk.FileDialog, res: Gio.AsyncResult) -> None:
@@ -145,7 +162,7 @@ class RecordsPage(Adw.NavigationPage):
                 return
             if folder is None or folder.get_path() is None:
                 return
-            paths = export_game(s, Path(folder.get_path()))
+            paths = export_game(s, Path(folder.get_path()), markdown=markdown)
             self.app.window.toast(_("Saved {name}").format(name=paths[0].name))
         dlg.select_folder(self.app.window, None, done)
 

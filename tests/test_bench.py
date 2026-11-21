@@ -22,6 +22,18 @@ def finish(run: Run, p: Played, rng: random.Random) -> None:
     run.played.append(p)
 
 
+def test_an_entry_seated_on_both_sides_wins_only_with_the_winning_seat():
+    seats = [{"key": KEYS[0], "role": "마피아"}, {"key": KEYS[0], "role": None}, {"key": KEYS[1], "role": None}]
+    p = Played(1, seats, status="done", winners=[KEYS[0], KEYS[1]], won_seats=[1, 2])
+    rows = {k: (w, n) for k, w, n in bench.table([p], KEYS[:2])}
+    assert rows[KEYS[0]] == (1, 2) and rows[KEYS[1]] == (1, 1)
+    old = Played(1, seats, status="done", winners=[KEYS[0], KEYS[1]])  # runs saved before won_seats
+    assert {k: w for k, w, _n in bench.table([old], KEYS[:2])}[KEYS[0]] == 2
+    # the table then counts seats (2 for one game) and says so; one seat each per game reads as games
+    assert bench.repeats([p]) and not bench.repeats([Played(1, seats[1:], status="done")])
+    assert not bench.repeats([Played(1, seats, status="stopped")])
+
+
 def test_league_gives_everyone_the_same_games_and_both_sides():
     run = Run(Plan(kind="league", players=7, games=60, entries=[Entry(k) for k in KEYS[:10]]))
     rng = random.Random(1)

@@ -42,10 +42,10 @@ def test_game_starts_in_the_day_with_introductions_and_no_vote():
     assert (phases[0].data["phase"], phases[0].day) == ("day", 1) and (phases[1].data["phase"], phases[1].day) == ("night", 1)
     assert (phases[2].data["phase"], phases[2].day) == ("day", 2)
     steps = [e.data["step"] for e in g.events if e.kind == "step" and e.day == 1]
-    assert steps == ["소개", "토론"]
+    assert steps == ["소개", "토론", "귓속말 시간"]  # whispers from the first day
     intros = [e for e in g.events if e.kind == "say" and e.data.get("intro")]
     assert [e.actor for e in intros] == list(range(7))  # each once, in seat order
-    assert not any(e.kind in ("vote_result", "verdict_result", "whisper") and e.day == 1 for e in g.events)
+    assert not any(e.kind in ("vote_result", "verdict_result") and e.day == 1 for e in g.events)
     assert "첫날은 투표 없이 밤이 됩니다." in [e.text for e in g.events if e.day == 1]
     assert not any(e.data.get("will") for e in g.events)
     system = log[0][2]
@@ -119,7 +119,7 @@ def test_extend_adds_turns_once_a_day():
     assert len(lines) == len({e.data["actor_seat"] for e in lines}) <= 5
     first = next(e for e in g.events if e.kind == "turns" and e.day == 1)
     dead_before = sum(1 for e in g.events if e.kind == "death" and e.id < first.id)
-    assert first.data["left"] == first.data["total"] == 2 * (5 - dead_before)
+    assert first.data["left"] == first.data["total"] == 1 * (5 - dead_before)  # the first day: one turn each
     # each extension adds two turns: the day's turn count is the start plus two per extension
     said = [e for e in g.events if e.kind == "say" and e.day == 1 and not e.data.get("defense") and not e.data.get("intro")]
     assert len(said) == first.data["total"] + 2 * len(lines)

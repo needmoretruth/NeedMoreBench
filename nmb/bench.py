@@ -19,7 +19,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, Iterable
 
 from . import rating
-from .engine.roles import COMPLEX, COMPLEX_SLOTS, SIMPLE, simple_lineup
+from .engine.roles import COMPLEX, COMPLEX_SLOTS, SIMPLE, canon_role, simple_lineup
 from .engine.setup import GameSetup, SeatSpec
 from .providers.base import ModelInfo, ModelRef
 
@@ -73,6 +73,7 @@ class Played:
     file: str = ""
     status: str = "queued"  # queued | running | done | stopped | failed
     winners: list[str] = field(default_factory=list)  # entrant keys on the winning side
+    won_seats: list[int] | None = None  # seat indices on the winning side (one entry may sit twice in a short table)
     cost: float = 0.0
     error: str = ""
 
@@ -135,6 +136,17 @@ def counts(played: Iterable[Played]) -> tuple[dict[str, int], dict[str, int]]:
     return games, mafia
 
 
+def repeats(played: Iterable[Played]) -> bool:
+    """Whether some entry sat in more than one seat of a game (a short table repeats its entries): the table then
+    counts seats, and says so, since its numbers no longer read as games."""
+    for p in played:
+        if p.status in ("done", "running"):
+            keys = [s["key"] for s in p.seats]
+            if len(keys) != len(set(keys)):
+                return True
+    return False
+
+
 def mafia_seats(game: str, n: int) -> int:
     return simple_lineup(n)["마피아"] if game == SIMPLE else COMPLEX_SLOTS[n][0]
 
@@ -180,15 +192,16 @@ def groups(plan: Plan) -> dict[str, list[Entry]]:
 
 
 def table(played: Iterable[Played], keys: Iterable[str]) -> list[tuple[str, int, int]]:
-    """(entry key, wins, games) in a group, best first: win rate, then wins."""
+    """(entry key, wins, seats played) in a group, best first: win rate, then wins. Each seat is one result: an
+    entry seated twice in a short table counts its two seats apart, a win only for the seat on the winning side."""
     rows = {k: [0, 0] for k in keys}
     for p in played:
         if p.status != "done":
             continue
-        for s in p.seats:
+        for i, s in enumerate(p.seats):
             if s["key"] in rows:
                 rows[s["key"]][1] += 1
-                rows[s["key"]][0] += s["key"] in p.winners
+                rows[s["key"]][0] += (i in p.won_seats) if p.won_seats is not None else s["key"] in p.winners
     return sorted(((k, w, n) for k, (w, n) in rows.items()), key=lambda r: (-(r[1] / r[2] if r[2] else 0), -r[1]))
 
 
@@ -266,7 +279,7 @@ def setup_for(plan: Plan, seats: list[dict[str, Any]], seed: int) -> GameSetup:
     specs = []
     for s in seats:
         ref = ModelRef.parse(s["key"])
-        specs.append(SeatSpec(model_key=s["key"], variant=ref.variant, expert=bool(s.get("expert")), role=s.get("role")))
+        specs.append(SeatSpec(model_key=s["key"], variant=ref.variant, expert=bool(s.get("expert")), role=canon_role(s.get("role"))))
     return GameSetup(kind=plan.game, seats=specs, named=not plan.blind, blind_scope="ai", language=plan.language,
                      delay=0.0, god_powers=False, seed=seed)
 

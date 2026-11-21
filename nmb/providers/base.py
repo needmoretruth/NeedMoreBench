@@ -97,6 +97,19 @@ def estimate_tokens(text: str) -> int:
     return max(1, round(len(text) / 2))
 
 
+REASONING_ROOM = 8000  # tokens of reasoning allowed on top of the answer's own limit
+
+
+def answer_limit(info: ModelInfo | None, max_tokens: int) -> int:
+    """The output limit a call asks for. The limit counts the reasoning too, so a model that reasons (it has effort
+    levels), a free one (several write their reasoning into the answer) or one we know nothing about gets room for
+    it; with the answer's 1,200 alone a free Flint seat was cut off in 61 of 211 calls (2026-11-21 game). A paid model
+    without reasoning keeps the plain limit, so a runaway answer cannot cost more."""
+    if info is None or info.free or info.variants or info.price_out == 0:
+        return max_tokens + REASONING_ROOM
+    return max_tokens
+
+
 def cost_of(info: ModelInfo | None, tin: int, tout: int) -> float:
     if info is None:
         return 0.0

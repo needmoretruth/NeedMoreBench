@@ -64,35 +64,35 @@ def test_spy_contacts_on_finding_the_mafia_and_checks_again():
     assert spy.contacted and in_mafia_team(spy)
     assert f"{name(g, 1)}님의 직업은 마피아" in private_to(g, 0)
     assert f"{name(g, 2)}님의 직업은 경찰" in private_to(g, 0)  # the second check
-    assert f"{spy.name}(스파이)이(가) 마피아 팀과 접선했다" in private_to(g, 1)
+    assert f"{spy.name}(스파이)가 마피아 팀과 접선했다" in private_to(g, 1)
     for other in (2, 3, 4, 5):
         assert "직업은 마피아" not in seen(g, other) and "접선" not in seen(g, other)
     assert mafia.alive
 
 
 def test_spy_check_on_the_soldier_shows_the_spy_to_it():
-    g = play(["스파이", "마피아", "군인", "의사", "경찰", "시민"], {(1, "night", 0): {"target": 2}})
+    g = play(["스파이", "마피아", "방패병", "의사", "경찰", "시민"], {(1, "night", 0): {"target": 2}})
     assert f"{name(g, 0)}님이 너를 조사했다" in private_to(g, 2)
     assert not g.players[0].contacted
 
 
 def test_beast_is_tamed_when_the_mafia_kills_its_mark_and_then_picks_kills():
     plan = {(1, "night", 0): {"target": 4}, (1, "mafia", 1): {"target": 4}}
-    g = play(["짐승인간", "마피아", "경찰", "의사", "시민", "시민"], plan)
+    g = play(["야수", "마피아", "경찰", "의사", "시민", "시민"], plan)
     beast = g.players[0]
     assert not g.players[4].alive and beast.contacted
     assert ability_for(beast).is_killer(g, beast)
 
 
 def test_the_mafia_cannot_kill_the_beast():
-    g = play(["짐승인간", "마피아", "경찰", "의사", "시민", "시민"], {(1, "mafia", 1): {"target": 0}})
+    g = play(["야수", "마피아", "경찰", "의사", "시민", "시민"], {(1, "mafia", 1): {"target": 0}})
     assert g.players[0].alive
     assert "조용하게 밤이 지나갔습니다" in public(g)
 
 
 def test_madam_seduces_by_vote_blocking_the_night_and_silencing_the_next_day():
     plan = {(2, "vote", 0): {"vote": 2}, (2, "night", 2): {"target": 4}}
-    g = play(["마담", "마피아", "경찰", "의사", "시민", "시민"], plan, days=2)
+    g = play(["유혹자", "마피아", "경찰", "의사", "시민", "시민"], plan, days=2)
     assert (2, "night", 2) not in g.asked  # the seduced 경찰 is not asked at night
     assert "능력을 쓰지 못한다" in private_to(g, 2)
     assert g.players[2].silenced_day == 3
@@ -101,13 +101,13 @@ def test_madam_seduces_by_vote_blocking_the_night_and_silencing_the_next_day():
 
 
 def test_madam_seducing_the_mafia_contacts():
-    g = play(["마담", "마피아", "경찰", "의사", "시민", "시민"], {(2, "vote", 0): {"vote": 1}}, days=2)
+    g = play(["유혹자", "마피아", "경찰", "의사", "시민", "시민"], {(2, "vote", 0): {"vote": 1}}, days=2)
     assert g.players[0].contacted and not g.blocked_next
 
 
 def test_thief_steals_by_day_and_uses_the_ability_that_night():
     plan = {(2, "vote", 0): {"vote": 4, "steal": 2}, (2, "night", 0): {"target": 1}}
-    g = play(["도둑", "마피아", "경찰", "의사", "시민", "시민"], plan, days=2)
+    g = play(["모방자", "마피아", "경찰", "의사", "시민", "시민"], plan, days=2)
     vote_prompt = next(u for st, k, _s, u in g.log if st == 0 and k == "vote")
     assert "steal" in vote_prompt
     assert f"{name(g, 1)}님은 마피아입니다" in private_to(g, 0)  # the stolen 경찰 check
@@ -115,27 +115,27 @@ def test_thief_steals_by_day_and_uses_the_ability_that_night():
 
 
 def test_thief_stealing_the_mafia_contacts():
-    g = play(["도둑", "마피아", "경찰", "의사", "시민", "시민"], {(2, "vote", 0): {"steal": 1}}, days=2)
+    g = play(["모방자", "마피아", "경찰", "의사", "시민", "시민"], {(2, "vote", 0): {"steal": 1}}, days=2)
     assert g.players[0].contacted
 
 
 # ---- 시민 팀 특수 ---------------------------------------------------------------------------------------------
 def test_soldier_survives_one_mafia_attack_in_public():
-    g = play(["군인", "마피아", "경찰", "의사", "시민", "시민"], {(1, "mafia", 1): {"target": 0}, (2, "mafia", 1): {"target": 0}},
+    g = play(["방패병", "마피아", "경찰", "의사", "시민", "시민"], {(1, "mafia", 1): {"target": 0}, (2, "mafia", 1): {"target": 0}},
              days=3)
-    assert f"군인 {name(g, 0)}님이 마피아의 공격을 버텨냈습니다" in public(g)
+    assert f"방패병 {name(g, 0)}님이 마피아의 공격을 버텨냈습니다" in public(g)
     assert g.players[0].revealed and not g.players[0].alive and g.players[0].died_day == 2
 
 
 def test_politician_counts_twice_and_is_not_executed():
     plan = {(2, "vote", 0): {"vote": 4}, (2, "vote", 4): {"vote": 0}, (2, "vote", 5): {"vote": 0},
             (2, "verdict", 4): {"verdict": "찬성"}, (2, "verdict", 5): {"verdict": "찬성"}}
-    g = play(["정치인", "마피아", "경찰", "의사", "시민", "시민"], plan, days=2)
+    g = play(["시장", "마피아", "경찰", "의사", "시민", "시민"], plan, days=2)
     res = next(e for e in g.events if e.kind == "vote_result")
     assert res.data["counts"][name(g, 4)] == 2 and res.data["counts"][name(g, 0)] == 2  # tie: straight to night
     plan[(2, "vote", 3)] = {"vote": 0}
     plan[(2, "verdict", 2)] = plan[(2, "verdict", 3)] = {"verdict": "찬성"}
-    g = play(["정치인", "마피아", "경찰", "의사", "시민", "시민"], plan, days=2)
+    g = play(["시장", "마피아", "경찰", "의사", "시민", "시민"], plan, days=2)
     assert g.players[0].alive and "투표로 처형되지 않습니다" in public(g)
 
 
@@ -160,50 +160,50 @@ def test_lovers_talk_alone_at_night_and_one_dies_for_the_other():
 
 
 def test_thug_takes_a_vote_for_the_next_day():
-    g = play(["건달", "마피아", "경찰", "의사", "시민", "시민"], {(1, "night", 0): {"target": 4}}, days=2)
+    g = play(["협박꾼", "마피아", "경찰", "의사", "시민", "시민"], {(1, "night", 0): {"target": 4}}, days=2)
     assert (2, "vote", 4) not in g.asked and (2, "vote", 5) in g.asked
     assert "투표할 수 없다" in private_to(g, 4)
 
 
 def test_reporter_waits_for_the_second_night_then_publishes():
-    g = play(["기자", "마피아", "경찰", "의사", "시민", "시민"], {(2, "night", 0): {"target": 1}}, days=3)
+    g = play(["폭로자", "마피아", "경찰", "의사", "시민", "시민"], {(2, "night", 0): {"target": 1}}, days=3)
     assert (1, "night", 0) not in g.asked
-    assert f"특종입니다! {name(g, 1)}님의 직업은 마피아입니다" in public(g)
+    assert f"폭로자가 밝혔습니다. {name(g, 1)}님의 직업은 마피아입니다" in public(g)
     assert g.players[1].revealed
 
 
 def test_detective_learns_whom_another_used_an_ability_on():
     plan = {(1, "night", 0): {"target": 3}, (1, "night", 3): {"target": 5}}
-    g = play(["사립탐정", "마피아", "경찰", "의사", "시민", "시민"], plan)
+    g = play(["미행꾼", "마피아", "경찰", "의사", "시민", "시민"], plan)
     assert f"{name(g, 3)}님은 오늘 밤 {name(g, 5)}님에게 능력을 썼다" in private_to(g, 0)
-    g = play(["사립탐정", "마피아", "경찰", "의사", "시민", "시민"], {(1, "night", 0): {"target": 1}, (1, "mafia", 1): {"target": 4}})
+    g = play(["미행꾼", "마피아", "경찰", "의사", "시민", "시민"], {(1, "night", 0): {"target": 1}, (1, "mafia", 1): {"target": 4}})
     assert f"{name(g, 1)}님은 오늘 밤 {name(g, 4)}님에게 능력을 썼다" in private_to(g, 0)
 
 
 def test_graverobber_inherits_the_first_mafia_victims_role():
-    g = play(["도굴꾼", "마피아", "경찰", "의사", "시민", "시민"], {(1, "mafia", 1): {"target": 2}}, days=2)
-    assert g.players[0].role == "경찰" and g.players[0].start_role == "도굴꾼"
+    g = play(["계승자", "마피아", "경찰", "의사", "시민", "시민"], {(1, "mafia", 1): {"target": 2}}, days=2)
+    assert g.players[0].role == "경찰" and g.players[0].start_role == "계승자"
     assert "이제 너는 경찰이다" in private_to(g, 0)
     assert (2, "night", 0) in g.asked  # it checks as the 경찰 now
 
 
 def test_terrorist_takes_the_mafia_along_at_night_and_at_execution():
     plan = {(1, "night", 0): {"target": 1}, (1, "mafia", 1): {"target": 0}}
-    g = play(["테러리스트", "마피아", "경찰", "의사", "시민", "시민", "시민"], plan)
+    g = play(["폭탄마", "마피아", "경찰", "의사", "시민", "시민", "시민"], plan)
     assert not g.players[0].alive and not g.players[1].alive
     votes = {(2, "vote", s): {"vote": 0} for s in range(1, 7)}
     verdicts = {(2, "verdict", s): {"verdict": "찬성"} for s in range(1, 7)}
-    g = play(["테러리스트", "마피아", "경찰", "의사", "시민", "시민", "시민"], {**votes, **verdicts, (2, "defense", 0): {"take": 1}},
+    g = play(["폭탄마", "마피아", "경찰", "의사", "시민", "시민", "시민"], {**votes, **verdicts, (2, "defense", 0): {"take": 1}},
              days=2)
     assert not g.players[0].alive and not g.players[1].alive
-    assert f"테러리스트 {name(g, 0)}님이 {name(g, 1)}님과 함께 죽었습니다" in public(g)
+    assert f"폭탄마 {name(g, 0)}님이 {name(g, 1)}님과 함께 죽었습니다" in public(g)
 
 
 def test_priest_revives_once_in_public():
     plan = {(1, "mafia", 1): {"target": 4}, (2, "night", 0): {"target": 4}}
-    g = play(["성직자", "마피아", "경찰", "의사", "시민", "시민", "시민"], plan, days=3)
+    g = play(["부활술사", "마피아", "경찰", "의사", "시민", "시민", "시민"], plan, days=3)
     assert g.players[4].alive
-    assert f"성직자의 기도로 {name(g, 4)}님이 되살아났습니다" in public(g)
+    assert f"부활술사가 {name(g, 4)}님을 되살렸습니다" in public(g)
     assert (3, "night", 0) not in g.asked or g.players[0].state.get("used")
 
 

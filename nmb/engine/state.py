@@ -4,8 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Any
 
-NOTE_LIMIT = 20
-NOTE_CHARS = 400
+NOTE_PAGE = 1200  # the notebook is one page the player rewrites whole
 LEDGER_NOTE_CHARS = 80
 
 
@@ -16,50 +15,34 @@ class Identity:
     maker: str | None = None
     country: str | None = None
 
-    def line(self) -> str:
+    def line(self, lang: str = "ko") -> str:
+        """In `lang`: 사람 and the country words are translated, a model's and a maker's names are names."""
+        from .text import say
         if self.model is None:
-            return "사람"
-        return ", ".join(x for x in (self.model, self.maker or "알 수 없음", self.country or "알 수 없음"))  # no middle dot
+            return say(lang, "사람")
+        parts = (self.model, self.maker or "알 수 없음", self.country or "알 수 없음")
+        return ", ".join(say(lang, x) for x in parts)  # no middle dot
 
 
 @dataclass
 class LedgerRow:
-    suspicion: int = 50
+    suspicion: int = 50  # how likely this player is on another team than the ledger's owner
     guess: str = "모름"
     note: str = ""
-
-
-@dataclass
-class Note:
-    id: int
-    text: str
+    known: bool = False  # 확인됨: the game told the user this player's team and role (a teammate, a lover)
 
 
 @dataclass
 class Notebook:
-    notes: list[Note] = field(default_factory=list)
-    next_id: int = 1
+    """One page the player rewrites whole when it wants; every version stays in the record."""
+    page: str = ""
+    version: int = 0
 
-    def add(self, text: str) -> Note | None:
-        if len(self.notes) >= NOTE_LIMIT:
-            return None
-        n = Note(self.next_id, text[:NOTE_CHARS])
-        self.next_id += 1
-        self.notes.append(n)
-        return n
-
-    def edit(self, nid: int, text: str) -> Note | None:
-        for n in self.notes:
-            if n.id == nid:
-                n.text = text[:NOTE_CHARS]
-                return n
-        return None
-
-    def delete(self, nid: int) -> Note | None:
-        for i, n in enumerate(self.notes):
-            if n.id == nid:
-                return self.notes.pop(i)
-        return None
+    def write(self, text: str) -> bool:
+        if len(text) > NOTE_PAGE or text == self.page:
+            return False
+        self.page, self.version = text, self.version + 1
+        return True
 
 
 @dataclass
@@ -76,14 +59,15 @@ class Player:
     notebook: Notebook = field(default_factory=Notebook)
     start_role: str = ""
     contacted: bool = False  # a mafia helper that has met the mafia (접선)
-    revealed: bool = False  # role made public (군인 armour, 정치인, 기자 article)
-    silenced_day: int = 0  # cannot speak on this day (마담, 침묵)
-    no_vote_day: int = 0  # cannot vote on this day (건달)
+    revealed: bool = False  # role made public (방패병 armour, 시장, 폭로자 article)
+    silenced_day: int = 0  # cannot speak on this day (유혹자, 침묵)
+    no_vote_day: int = 0  # cannot vote on this day (협박꾼)
     at_rest: bool = False  # laid to rest by the 영매: silent in the dead chat
     died_day: int = 0
     memory: str = ""  # the player's own summary of its oldest history after compaction
     memory_upto: int = -1  # events with id up to this are in the memory, not in the log
     state: dict[str, Any] = field(default_factory=dict)  # ability-owned state (marks, uses, stolen role)
+    revelations: list[tuple[int, str]] = field(default_factory=list)  # standing 신의 계시 (id, text),
 
     @property
     def is_human(self) -> bool:

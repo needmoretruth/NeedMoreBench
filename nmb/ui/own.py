@@ -12,9 +12,10 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import GLib, Gtk, Pango  # noqa: E402
 
+from ..engine.state import NOTE_PAGE  # noqa: E402
 from ..i18n import _  # noqa: E402
 from ..view import Row, role_label  # noqa: E402
-from .widgets import clear, hbox, label, vbox  # noqa: E402
+from .widgets import hbox, label  # noqa: E402
 
 Send = Callable[[dict[str, Any]], None]
 
@@ -50,13 +51,17 @@ class OwnLedgerLine(Gtk.Box):
         focus = Gtk.EventControllerFocus()
         focus.connect("leave", lambda *_a: self._note())
         self.note.add_controller(focus)
-        self.append(hbox(8, who, self.guess))
+        self.sure = label(_("Confirmed"), "known-tag")
+        self.sure.set_tooltip_text(_("The game told you this player's team and role"))
+        self.sure.set_visible(False)
+        self.append(hbox(8, who, self.sure, self.guess))
         self.append(hbox(8, self.scale, self.num))
         self.append(self.note)
         self.kept = Row()
 
     def update(self, row: Row) -> None:
         self.kept = row
+        self.sure.set_visible(row.known)
         self._quiet = True
         if self._timer == 0:
             self.scale.set_value(row.suspicion)
@@ -92,71 +97,54 @@ class OwnLedgerLine(Gtk.Box):
 
 
 class OwnNotes(Gtk.Box):
-    """The person's notebook: add, edit and delete, as a model does through its answer."""
+    """The person's notebook page: one page of up to 1,200 characters, written whole, as a model
+    sends its whole new page. Saved when the person presses 저장 or leaves the page."""
 
     def __init__(self, send: Send):
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.send = send
-        self.entry = Gtk.Entry(placeholder_text=_("New note"), max_length=400, hexpand=True)
-        self.entry.connect("activate", lambda *_a: self._add())
-        add = Gtk.Button(icon_name="list-add-symbolic", tooltip_text=_("Add note"))
-        add.connect("clicked", lambda *_a: self._add())
-        self.append(hbox(6, self.entry, add))
-        self.list = vbox(6)
-        self.append(self.list)
-        self.shown: dict[int, str] | None = None
-        self.last: dict[int, str] = {}
-        self.editing: int | None = None
-
-    def update(self, notes: dict[int, str]) -> None:
-        self.last = dict(notes)
-        if notes == self.shown or self.editing is not None:
-            return
-        self.shown = dict(notes)
-        clear(self.list)
-        if not notes:
-            self.list.append(label(_("No notes."), "dim"))
-        for nid, text in sorted(notes.items()):
-            self.list.append(self._row(nid, text))
-
-    def _row(self, nid: int, text: str) -> Gtk.Widget:
-        body = label(text, wrap=True, selectable=True)
-        body.set_hexpand(True)
-        edit = Gtk.Button(icon_name="document-edit-symbolic", tooltip_text=_("Edit"))
-        delete = Gtk.Button(icon_name="user-trash-symbolic", tooltip_text=_("Delete"))
-        for b in (edit, delete):
-            b.add_css_class("flat")
-            b.set_valign(Gtk.Align.START)
-        row = vbox(2, label(f"#{nid}", "note-id"), hbox(4, body, edit, delete))
-        row.add_css_class("note-row")
-        edit.connect("clicked", lambda *_a: self._edit(row, nid, text))
-        delete.connect("clicked", lambda *_a: self.send({"notes": {"delete": [nid]}}))
-        return row
-
-    def _edit(self, row: Gtk.Box, nid: int, text: str) -> None:
-        self.editing = nid
-        entry = Gtk.Entry(text=text, max_length=400, hexpand=True)
-        clear(row)
-        row.append(label(f"#{nid}", "note-id"))
-        row.append(entry)
-        entry.grab_focus()
-
-        def done(*_a: Any) -> None:
-            if self.editing != nid:
-                return
-            self.editing = None
-            new = entry.get_text().strip()
-            if new and new != text:
-                self.send({"notes": {"edit": [{"id": nid, "text": new}]}})
-            self.shown = None  # draw the list again from what the engine keeps
-            GLib.idle_add(lambda: (self.update(self.last), False)[1])
-        entry.connect("activate", done)
+        self.set_vexpand(False)
+        self.view = Gtk.TextView(wrap_mode=Gtk.WrapMode.WORD_CHAR, accepts_tab=False, vexpand=False)
+        page = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=False, min_content_height=340,
+                                  max_content_height=340, child=self.view)  # a full page scrolls inside; 저장 stays in sight
+        page.add_css_class("note-page")
+        self.buf = self.view.get_buffer()
+        self.buf.connect("changed", lambda *_a: self._count())
         focus = Gtk.EventControllerFocus()
-        focus.connect("leave", done)
-        entry.add_controller(focus)
+        focus.connect("leave", lambda *_a: self._save())
+        self.view.add_controller(focus)
+        self.count = label("", "meta", xalign=0.0)
+        self.count.set_hexpand(True)
+        self.save = Gtk.Button(label=_("Save"))
+        self.save.add_css_class("pill")
+        self.save.connect("clicked", lambda *_a: self._save())
+        self.append(page)
+        self.append(hbox(8, self.count, self.save))
+        self.kept = ""
+        self._count()
 
-    def _add(self) -> None:
-        text = self.entry.get_text().strip()
-        if text:
-            self.send({"notes": {"add": [text]}})
-            self.entry.set_text("")
+    def _text(self) -> str:
+        return self.buf.get_text(self.buf.get_start_iter(), self.buf.get_end_iter(), False)
+
+    def _count(self) -> None:
+        n = len(self._text().strip())
+        self.count.set_label(_("{n} / {limit} chars").format(n=f"{n:,}", limit=f"{NOTE_PAGE:,}"))
+        over = n > NOTE_PAGE
+        if over:
+            self.count.add_css_class("error")
+        else:
+            self.count.remove_css_class("error")
+        self.save.set_sensitive(not over and self._text().strip() != self.kept)
+
+    def update(self, page: str) -> None:
+        if page == self.kept:
+            return
+        self.kept = page
+        if not self.view.has_focus():
+            self.buf.set_text(page)
+        self._count()
+
+    def _save(self) -> None:
+        text = self._text().strip()
+        if text != self.kept and len(text) <= NOTE_PAGE:
+            self.send({"notes": text})

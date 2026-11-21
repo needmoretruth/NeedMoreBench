@@ -3,7 +3,8 @@
 `<date>-<game>-<id>.nmb.jsonl`: line 1 the header (how to read the file, every setting, the seed, the
 seats), then one event per line with who saw it, then the result line. The file explains itself to any AI
 it is handed to. Raw model answers and full prompts go to `<same>.raw.jsonl.gz` so the main file stays
-small. A game that stopped without a result line is listed as 중단됨 and replays up to where it stopped.
+small. A game without a result line is 진행 중 while its writer holds `<same>.live` locked, else 중단됨; both
+replay up to where the file ends.
 """
 from __future__ import annotations
 
@@ -12,14 +13,15 @@ import gzip
 import json
 import secrets
 import shutil
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import IO, TYPE_CHECKING, Any
 
 from . import __version__
 from .config import REAL_HOME, folder
-from .engine.roles import GAME_TITLE
+from .engine.roles import GAME_TITLE, canon_tree
 from .engine.state import Event
 
 if TYPE_CHECKING:
@@ -28,6 +30,7 @@ if TYPE_CHECKING:
 FORMAT = 1
 SUFFIX = ".nmb.jsonl"
 RAW_SUFFIX = ".raw.jsonl.gz"
+LIVE_SUFFIX = ".live"
 
 HOW_TO_READ = (
     "NeedMoreBench 마피아 게임 기록이다. 한 줄이 JSON 객체 하나다. 첫 줄(record=header)은 설정과 자리(seats: 자리 번호 seat, "
@@ -40,8 +43,13 @@ HOW_TO_READ = (
     "pause 일시정지와 다시 진행, say 공개 발언(details.intro가 true면 1번째 낮의 자기소개, details.defense가 true면 최후의 반론), whisper 1:1 귓속말, mafia 마피아 밤 회의, "
     "private 그 사람만 아는 결과(조사 결과 등), death 죽음, vote_result 투표 결과, verdict_result 찬반 결과, "
     "thought 속마음(그 모델이 직접 쓴 짧은 메모, 아무도 못 봄), reasoning 그 모델의 실제 추론(경로가 돌려줄 때만, 모델이 쓴 언어 그대로. details.summarized가 true면 Anthropic이 준 공식 요약이고 원문이 아니다. details.route는 경로, details.tokens는 추론 토큰 수. 관전자만 보고 어떤 프롬프트에도 들어가지 않는다), "
-    "ledger 장부 수정(details의 old와 new), note 노트 추가 수정 삭제, poll 여론 조사 수, "
-    "turns 남은 발언 차례, god 신의 권능, moderator 사람 사회자의 공지, call 모델 호출 한 번의 시간과 토큰 추정과 비용, "
+    "ledger 장부 수정(details의 old와 new. new.known이 true면 게임이 알려 준 사실로 채운 줄), note 노트 한 장을 새로 씀(text가 그 판 전체, details.version이 몇 번째 판인지), poll 여론 조사 수, "
+    "turns 남은 발언 차례, god 신의 권능(details.power가 권능 이름. details.record가 true인 줄은 관전자만 보는 신의 기록으로 "
+    "details.used_by에 쓴 사람(관전자, 또는 치트로 참가한 자리 번호), details.changed에 바뀐 것, details.learned에 누가 무엇을 알게 됐는지가 있다. "
+    "플레이어는 누가 신인지 모르고 모든 것을 「신」이 한 것으로만 안다. 다른 사건의 details.god_effect가 true면 권능이 만든 것이다: "
+    "whisper의 forged는 신이 그 이름으로 위조한 귓속말(보낸 것으로 적힌 사람은 모른다), say의 possessed는 신이 그 사람 이름으로 한 말, "
+    "private의 false_result는 신이 바꾼 거짓 능력 결과(real_result가 진짜), god의 answer는 심문에 대한 답. 계시는 그 플레이어의 시스템 프롬프트에 "
+    "거둘 때까지 들어간다. 공지와 일시정지 말고 다른 권능을 쓴 판은 신이 개입한 판으로 레이팅에서 빠진다), moderator 사람 사회자의 공지, call 모델 호출 한 번의 시간과 토큰 추정과 비용, "
     "error 그 차례를 못 한 연결 오류나 시간 초과나 거절(details.reason이 declined면 모델이 그 요청에 답하기를 거절함, details.attempts에 시도마다의 이유), route 같은 모델을 다른 경로로 바꿔 부름(details.old, details.new), compaction 기록이 길어져 그 플레이어의 오래된 기록을 기억 요약으로 바꿈(details.by가 model이면 모델이 직접 씀, engine이면 엔진이 줄임), "
     "end 게임 끝. 게임은 낮으로 시작한다: 1번째 낮에 자리 순서대로 한 사람씩 소개하고 토론한 뒤 투표 없이 1번째 밤이 된다. "
     "그 뒤로 밤 → 아침 → 토론 → 귓속말 시간 → 투표 → 최후의 반론 → 찬반 → 밤이 되풀이되고, N번째 밤 다음이 N+1번째 낮이다(사건의 day). "
@@ -63,6 +71,36 @@ def games_dir() -> Path:
 def raw_path(main: Path) -> Path:
     stem = main.name[: -len(SUFFIX)] if main.name.endswith(SUFFIX) else main.stem
     return main.with_name(stem + RAW_SUFFIX)
+
+
+def live_path(main: Path) -> Path:
+    """`<same>.live`: held locked by the process writing the game while it runs."""
+    stem = main.name[: -len(SUFFIX)] if main.name.endswith(SUFFIX) else main.stem
+    return main.with_name(stem + LIVE_SUFFIX)
+
+
+def _lock(f: IO[bytes]) -> bool:
+    """Takes the lock without waiting. The system lets go of it when the writer ends, even by a crash."""
+    try:
+        if sys.platform == "win32":
+            import msvcrt
+            f.seek(0)
+            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return False
+    return True
+
+
+def writing(main: Path) -> bool:
+    """A live process is still writing this game (in this app, a bench run or the command line)."""
+    try:
+        with live_path(main).open("rb") as f:
+            return not _lock(f)  # the lock was free: the writer ended without closing (a crash)
+    except OSError:
+        return False
 
 
 def seen_by(e: Event) -> Any:
@@ -97,6 +135,8 @@ class Recorder:
         folder.mkdir(parents=True, exist_ok=True)
         self.path = folder / f"{now:%Y%m%d-%H%M%S}-{game.kind}-{gid}{SUFFIX}"
         self.raw = raw_path(self.path)
+        self._live: IO[bytes] | None = live_path(self.path).open("wb")  # locked before the record exists
+        _lock(self._live)
         self._f = self.path.open("a", encoding="utf-8")
         header = {"record": "header", "how_to_read": HOW_TO_READ, "format": FORMAT, "app": f"NeedMoreBench {__version__}",
                   "id": gid, "game": game.kind, "title": GAME_TITLE[game.kind], "created": now.isoformat(timespec="seconds"),
@@ -124,10 +164,17 @@ class Recorder:
         g = self.game
         if g.result is not None and not g.result.get("stopped"):
             calls = [c for c in g.calls if c["kind"] != "error"]
+            from .engine.abilities.base import side
+            # sides: the team each seat ended on (a convert counts with its cult), which the rating counts by
             self._write({"record": "result", **g.result, "roles": {str(p.seat): p.start_role for p in g.players},
+                         "sides": {str(p.seat): side(p) for p in g.players},
                          "players": stats or [], "calls": len(calls), "cost_usd": round(sum(c["cost"] for c in g.calls), 6),
                          "seconds": round(time.time() - g.started, 1)})
         self._f.close()
+        if self._live is not None:
+            self._live.close()
+            self._live = None
+            live_path(self.path).unlink(missing_ok=True)
 
 
 def _plain(o: Any) -> Any:
@@ -142,6 +189,7 @@ class Saved:
     header: dict[str, Any]
     events: list[dict[str, Any]]
     result: dict[str, Any] | None
+    live: bool = False  # no result yet and its writer is still running
 
     @property
     def finished(self) -> bool:
@@ -149,11 +197,17 @@ class Saved:
 
     @property
     def status(self) -> str:
-        return "끝" if self.finished else "중단됨"
+        return "끝" if self.finished else "진행 중" if self.live else "중단됨"
 
     @property
     def settings(self) -> dict[str, Any]:
         return self.header.get("settings", {})
+
+    @property
+    def intervened(self) -> bool:
+        """신이 개입한 판: a power other than 공지 and 일시정지 was used; left out of ratings."""
+        from .engine.god import intervened
+        return intervened(self.events)
 
 
 def load(path: Path) -> Saved:
@@ -166,7 +220,7 @@ def load(path: Path) -> Saved:
             if not line:
                 continue
             try:
-                d = json.loads(line)
+                d = canon_tree(json.loads(line))  # role names from before read as today's
             except json.JSONDecodeError:
                 break  # a line cut by a crash ends the readable part
             t = d.get("record")
@@ -178,7 +232,7 @@ def load(path: Path) -> Saved:
                 result = d
     if header.get("record") != "header":
         raise ValueError("NeedMoreBench 기록 파일이 아닙니다")
-    return Saved(path, header, events, result)
+    return Saved(path, header, events, result, live=result is None and writing(path))
 
 
 def list_games(folder: Path | None = None) -> list[Saved]:

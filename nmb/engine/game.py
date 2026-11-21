@@ -14,12 +14,16 @@ from collections import Counter
 from typing import Any, Callable, Protocol
 
 from . import day as day_flow
+from . import god as divine
 from . import night as night_flow
-from .abilities import NightContext, ability_of, in_mafia_team
+from .abilities import NightContext, ability_for, ability_of, in_mafia_team
+from .abilities.base import side
+from .abilities.cult import cults, members
 from .parse import clean_speech, is_skip, match_name, read_ledger, read_notes
-from .roles import MAFIA, ROLES, TEAM_LABEL, TOWN, guess_options, team_of
+from .roles import CULT, MAFIA, ROLES, TEAM_LABEL, TOWN, guess_options
 from .setup import GameSetup
 from .state import Event, Player
+from .text import LANGS, Msg, T, from_word, say
 from .turn import TurnRequest
 from .words import josa
 
@@ -45,11 +49,14 @@ class Game:
         self.day, self.phase, self.step = 0, "day", ""
         self.result: dict[str, Any] | None = None
         self.god_protect: set[str] = set()
-        self.blocked_next: set[str] = set()  # no ability on the coming night (마담's seduction)
-        self.town_learned: list[tuple[str, str]] = []  # (name, role) the citizen team found out (파파라치)
+        self.divine = divine.Divine()  # what the god powers keep between steps
+        self.blocked_next: set[str] = set()  # no ability on the coming night (유혹자's seduction)
+        self.town_learned: list[tuple[str, str]] = []  # (name, role) the citizen team found out (소문꾼)
         self.skip = False
         self.turns_left = 0
-        self.time_used: set[int] = set()
+        self.time_used: set[int] = set()  # pressed 연장 today
+        self.cut_votes: set[int] = set()  # pressed 단축 today: a vote to end the talk
+        self.turns_total = 0
         self.poll: dict[int, str] = {}
         self.calls: list[dict[str, Any]] = []
         self.on_raw: Callable[[int, int, str, str, str], None] | None = None  # call id, seat, system, user, raw answer
@@ -60,6 +67,9 @@ class Game:
         self._end_day: asyncio.Event | None = None
         self.paused = False
         self.locks: dict[int, asyncio.Lock] = {}
+        self.queued: dict[int, list[str]] = {}  # a person's lines typed during 토론, said at the next boundary
+        self.talk: asyncio.Event | None = None  # set when such a line arrives, so a waiting discussion goes on
+        self.meeting: frozenset[int] | None = None  # who reads the mafia meeting while it runs
 
     # ---- lookups -------------------------------------------------------------------------------------
     def name_of(self, seat: int | None) -> str:
@@ -83,16 +93,26 @@ class Game:
         return None
 
     def guess_options(self) -> list[str]:
-        return guess_options(self.kind, [p.start_role for p in self.players])
+        from .lineups import possible_roles
+        from .setup import playable
+        return guess_options(self.kind, possible_roles(self.setup, len(self.players), playable))
 
-    def phase_label(self) -> str:
-        base = f"{self.day}번째 밤" if self.phase == "night" else f"{self.day}번째 낮"
-        return f"{base}, {self.step}" if self.step else base
+    @property
+    def lang(self) -> str:
+        return self.setup.language if self.setup.language in LANGS else "ko"
+
+    def t(self, x: "str | Msg | None") -> str:
+        """Engine text in this game's dialogue language."""
+        return say(self.lang, x)
+
+    def phase_label(self) -> Msg:
+        base = T("{n}번째 밤", n=self.day) if self.phase == "night" else T("{n}번째 낮", n=self.day)
+        return T("{base}, {step}", base=base, step=self.step) if self.step else base
 
     def set_step(self, step: str, **data: Any) -> None:
         """The part of the day (소개, 아침, 토론, 투표, 최후의 반론, 찬반): screens and replays read it from this event."""
         self.step = step
-        self.emit("step", step, log=False, step=step, **data)
+        self.emit("step", T("{step}", step=step), log=False, step=step, **data)
 
     def poll_counts(self) -> dict[str, int]:
         alive = {p.name for p in self.alive()}
@@ -100,20 +120,25 @@ class Game:
         return dict(c.most_common())
 
     # ---- events --------------------------------------------------------------------------------------
-    def emit(self, kind: str, text: str = "", actor: int | None = None, target: int | None = None,
+    def emit(self, kind: str, text: "str | Msg" = "", actor: int | None = None, target: int | None = None,
              to: frozenset[int] | None = None, log: bool = True, key: bool = False, **data: Any) -> Event:
+        if isinstance(text, Msg):  # the record keeps the key and parameters; the text is in the game's language
+            data["msg"] = text.record()
+            text = text.render(self.lang)
         e = Event(len(self.events), kind, self.day, self.phase, text, actor, target, to, log, key, data)
         self.events.append(e)
         self.sink(e)
         return e
 
-    def system(self, text: str, key: bool = True, target: int | None = None, **data: Any) -> Event:
+    def system(self, text: "str | Msg", key: bool = True, target: int | None = None, **data: Any) -> Event:
         return self.emit("system", text, target=target, key=key, **data)
 
-    def private(self, p: Player, text: str, kind: str = "private", target: int | None = None, **data: Any) -> Event:
+    def private(self, p: Player, text: "str | Msg", kind: str = "private", target: int | None = None, **data: Any) -> Event:
+        if "result" in data:  # a pending 거짓 결과 arrives as this very line
+            text, data = divine.fake_result(self, p, text, data)
         return self.emit(kind, text, target=target, to=frozenset({p.seat}), key=True, **data)
 
-    def observe(self, kind: str, text: str = "", actor: int | None = None, **data: Any) -> Event:
+    def observe(self, kind: str, text: "str | Msg" = "", actor: int | None = None, **data: Any) -> Event:
         """Observer-only: never in a prompt; a playing human sees only their own."""
         to = frozenset({actor}) if actor is not None else frozenset()
         return self.emit(kind, text, actor=actor, to=to, log=False, **data)
@@ -137,7 +162,7 @@ class Game:
     def pick(self, obj: dict[str, Any], req: TurnRequest, field: str | None = None,
              options: list[str] | None = None) -> str | None:
         field = field or req.field
-        v = obj.get(field) if field else None
+        v = from_word(self.lang, obj.get(field) if field else None)  # 'Yes' in an English game is 찬성
         if is_skip(v):
             return None
         return match_name(v, options if options is not None else req.options)
@@ -146,7 +171,7 @@ class Game:
         thought = clean_speech(obj.get("thought"), 400)
         if thought:
             self.observe("thought", thought, actor=p.seat)
-        edits, _ = read_ledger(obj.get("ledger"), list(p.ledger), self.guess_options())
+        edits, _ = read_ledger(obj.get("ledger"), list(p.ledger), self.guess_options(), lambda g: from_word(self.lang, g))
         for ed in edits:
             row = p.ledger[ed["name"]]
             old = {"suspicion": row.suspicion, "guess": row.guess, "note": row.note}
@@ -156,19 +181,20 @@ class Game:
             new = {"suspicion": row.suspicion, "guess": row.guess, "note": row.note}
             if new != old:
                 self.observe("ledger", ed["name"], actor=p.seat, name=ed["name"], old=old, new=new)
-        ops = read_notes(obj.get("notes"))
-        for nid in ops["delete"]:
-            n = p.notebook.delete(nid)
-            if n:
-                self.observe("note", n.text, actor=p.seat, op="delete", id=nid)
-        for nid, text in ops["edit"]:
-            n = p.notebook.edit(nid, text)
-            if n:
-                self.observe("note", n.text, actor=p.seat, op="edit", id=nid)
-        for text in ops["add"]:
-            n = p.notebook.add(text)
-            if n:
-                self.observe("note", n.text, actor=p.seat, op="add", id=n.id)
+        page = read_notes(obj.get("notes"))
+        if page is not None and p.notebook.write(page):  # over the limit after the one send-back: the page stays
+            self.observe("note", page, actor=p.seat, version=p.notebook.version, chars=len(page))
+
+    def know(self, p: Player, q: Player) -> None:
+        """p is told for certain that q is on its team, and q's role: the row starts at 0, 확인됨."""
+        row = p.ledger.get(q.name)
+        if row is None or row.known:
+            return
+        old = {"suspicion": row.suspicion, "guess": row.guess, "note": row.note, "known": row.known}
+        row.suspicion, row.known = 0, True
+        row.guess = q.role if q.role in self.guess_options() else row.guess
+        self.observe("ledger", q.name, actor=p.seat, name=q.name, old=old,
+                     new={"suspicion": row.suspicion, "guess": row.guess, "note": row.note, "known": True})
 
     def edit_own(self, seat: int | None, obj: dict[str, Any]) -> None:
         """A person changes their own ledger and notes from the screen at any time (참가); the same
@@ -223,7 +249,12 @@ class Game:
         self._resume = asyncio.Event()
         self._resume.set()
         self._end_day = asyncio.Event()
-        self.observe("start", "게임을 시작합니다", roster=[self.seat_info(p) for p in self.players])
+        self.observe("start", T("게임을 시작합니다"), roster=[self.seat_info(p) for p in self.players])
+        team = [p for p in self.players if in_mafia_team(p)]
+        for p in team:  # the mafia know each other from the start
+            for q in team:
+                if q is not p:
+                    self.know(p, q)
         for p in self.players:
             ability_of(p.role).on_start(self, p)
         try:
@@ -243,7 +274,7 @@ class Game:
             await self.night()
             self.judge()
             if night >= self.setup.max_nights:
-                self.result = self.make_result(MAFIA, f"{night}번째 밤이 지나도록 끝나지 않아 마피아 팀이 이겼습니다")
+                self.result = self.make_result(MAFIA, T("{n}번째 밤이 지나도록 끝나지 않아 마피아 팀이 이겼습니다", n=night))
                 raise GameOver
             await day_flow.run_day(self)
             self.judge()
@@ -258,22 +289,22 @@ class Game:
     async def night(self) -> None:
         await night_flow.run_night(self)
 
-    def kill(self, q: Player, text: str, cause: str, ctx: NightContext | None = None) -> None:
+    def kill(self, q: Player, text: "str | Msg", cause: str, ctx: NightContext | None = None) -> None:
         q.alive = False
         q.died_day = ctx.night if ctx is not None else self.day  # a night death belongs to that night's date
-        role = f" {q.name}님은 {josa(q.role, '이었습니다', '였습니다')}." if self.setup.reveal else ""
-        self.emit("death", text + role, target=q.seat, key=True, cause=cause, role=q.role, sound="death")
+        line = T("{text} {name}님은 {role:이었습니다/였습니다}.", text=text, name=q.name, role=q.role) if self.setup.reveal else text
+        self.emit("death", line, target=q.seat, key=True, cause=cause, role=q.role, sound="death")
         ability_of(q.role).on_death(self, q, cause, ctx)
 
-    def set_role(self, p: Player, role: str, text: str) -> None:
-        """p's role changes (도굴꾼, 역할 바꾸기): p alone is told, the observer sees it."""
+    def set_role(self, p: Player, role: str, text: "str | Msg") -> None:
+        """p's role changes (계승자, 역할 바꾸기): p alone is told, the observer sees it."""
         old, p.role = p.role, role
         self.private(p, text, role=role)
-        self.emit("role", f"{p.name}님의 직업이 {old}에서 {role}(으)로 바뀌었습니다.", target=p.seat, to=frozenset({p.seat}),
-                  log=False, old=old, role=role)  # the screens of the observer and that player only
+        self.emit("role", T("{name}님의 직업이 {old}에서 {role:으로/로} 바뀌었습니다.", name=p.name, old=old, role=role),
+                  target=p.seat, to=frozenset({p.seat}), log=False, old=old, role=role)  # the observer and that player
 
-    def revive(self, q: Player, text: str, ctx: NightContext | None = None) -> None:
-        """A dead player comes back (성직자, 과학자): announced in the morning, or at once by day."""
+    def revive(self, q: Player, text: "str | Msg", ctx: NightContext | None = None) -> None:
+        """A dead player comes back (부활술사, 불사신): announced in the morning, or at once by day."""
         q.alive = True
         q.at_rest = False
         if ctx is not None:
@@ -290,27 +321,46 @@ class Game:
 
     # ---- winning -------------------------------------------------------------------------------------
     def check_win(self) -> None:
+        """In order: the mafia team, a cult, the citizen team, a role that wins for its side (기수)."""
         alive = self.alive()
         if not alive:
-            self.result = self.make_result(None, "모두 죽었습니다")
+            self.result = self.make_result(None, T("모두 죽었습니다"))
             return
         mafia = [p for p in alive if in_mafia_team(p)]
         held = any(ability_of(p.role).holds_game(self, p) for p in alive)
         if mafia and len(mafia) >= len(alive) - len(mafia) and not held:
-            self.result = self.make_result(MAFIA, "마피아 팀 수가 시민 팀 수와 같아졌습니다")
-        elif not mafia and not held:
-            self.result = self.make_result(TOWN, "마피아 팀이 모두 죽었습니다")
+            self.result = self.make_result(MAFIA, T("마피아 팀 수가 시민 팀 수와 같아졌습니다"))
+            return
+        for cid, flock in cults(self).items():
+            if flock and len(flock) >= len(alive) - len(flock):
+                winners = [p.seat for p in members(self, cid, alive=False)]
+                self.result = self.make_result(CULT, T("교주 팀이 산 사람의 절반 이상이 되었습니다"), winners)
+                return
+        if not mafia and not held:
+            self.result = self.make_result(TOWN, T("마피아 팀이 모두 죽었습니다"))
+            return
+        flag = next((p for p in alive if ability_for(p).wins(self, p)), None)
+        if flag is not None:
+            self.result = self.make_result(side(flag), T("{role} {name}님이 {n}번째 낮까지 살아남았습니다", role=flag.role,
+                                                         name=flag.name, n=self.day))
+            return
 
-    def make_result(self, team: str | None, reason: str) -> dict[str, Any]:
-        winners = set() if team is None else {p.seat for p in self.players if team_of(p.role) == team}
-        label = "무승부" if team is None else f"{TEAM_LABEL[team]} 승리"
-        return {"team": team, "label": label, "reason": reason, "winners": sorted(winners), "day": self.day}
+    def make_result(self, team: str | None, reason: "str | Msg", winners: list[int] | None = None) -> dict[str, Any]:
+        """label and reason in the game's language; `msg` keeps both as messages for another interface language.
+        The winners are the players on that side at the end (a convert wins with its cult, not its first team)."""
+        if winners is None:
+            winners = [] if team is None else [p.seat for p in self.players if side(p) == team]
+        label = T("무승부") if team is None else T("{team} 승리", team=TEAM_LABEL[team])
+        return {"team": team, "label": self.t(label), "reason": self.t(reason), "winners": sorted(winners),
+                "day": self.day, "msg": {"label": label.record(), "reason": reason.record() if isinstance(reason, Msg) else None}}
 
     def finish(self) -> None:
         self.phase, self.step = "end", ""
-        r = self.result or self.make_result(None, "게임이 중단되었습니다")
+        r = self.result or self.make_result(None, T("게임이 중단되었습니다"))
         self.result = r
-        self.emit("end", f"{r['label']}. {r['reason']}.", key=True, result=r, sound="win" if r["team"] else "lose",
+        line = T("{label}. {reason}.", label=Msg.load(r.get("msg", {}).get("label")) or r["label"],
+                 reason=Msg.load(r.get("msg", {}).get("reason")) or r["reason"])
+        self.emit("end", line, key=True, result=r, sound="win" if r["team"] else "lose",
                   roles={p.seat: p.role for p in self.players})
 
     def seat_info(self, p: Player) -> dict[str, Any]:
@@ -318,47 +368,53 @@ class Game:
                 "model_name": p.model_name, "shown": p.shown.line()}
 
     # ---- god powers and the human moderator (called inside the loop) ---------------------------------
-    def god(self, power: str, seat: int | None = None, text: str = "", role: str | None = None, by: str = "신") -> None:
-        q = self.players[seat] if seat is not None else None
-        if power == "공지" and text:
-            self.emit("moderator" if by == "사회자" else "god", text, key=True, power="공지", by=by, sound="god")
-        elif power == "계시" and q and text:
-            self.emit("god", text, target=q.seat, to=frozenset({q.seat}), key=True, power="계시", sound="god")
-        elif power == "천벌" and q and q.alive:
-            self.emit("god", "하늘에서 벼락이 떨어졌습니다.", target=q.seat, key=True, power="천벌", sound="god")
-            self.kill(q, f"신의 천벌로 {q.name}님이 죽었습니다.", "god")
-        elif power == "부활" and q and not q.alive:
-            q.alive = True
-            self.emit("god", f"신의 뜻으로 {q.name}님이 살아 돌아왔습니다.", target=q.seat, key=True, power="부활", sound="god")
-        elif power == "역할 바꾸기" and q and role in ROLES:
-            old, q.role = q.role, role
-            self.observe("god", f"{q.name}님의 역할을 {old}에서 {role}(으)로 바꿨습니다.", target=q.seat, power="역할 바꾸기", role=role, sound="god")
-            self.private(q, f"신이 네 역할을 {role}(으)로 바꿨다. 이제 너는 {josa(role, '이다', '다')}.", kind="god", power="계시")
-        elif power == "보호" and q:
-            self.god_protect.add(q.name)
-            self.observe("god", f"오늘 밤 {q.name}님을 향한 공격은 모두 막힙니다.", target=q.seat, power="보호", sound="god")
-        elif power == "침묵" and q:
-            q.silenced_day = self.day + 1 if self.phase == "night" else self.day
-            self.observe("god", f"{q.name}님은 {q.silenced_day}번째 낮에 말할 수 없습니다.", target=q.seat, power="침묵", sound="god")
-        elif power == "다음 단계로":
-            self.skip = True
-            self.end_day()
-            self.observe("god", "다음 단계로 넘어갑니다.", power="다음 단계로", sound="god")
-        elif power == "일시정지":
-            self.set_paused(not self.paused)
+    def god(self, power: str, seat: int | None = None, text: str = "", role: str | None = None, by: str = "신",
+            other: int | None = None, n: int = 0, user: int | None = None) -> bool:
+        """신의 권능 (nmb.engine.god). `role` carries the pick a power takes (a role, a false result);
+        `user` is a cheating participant's seat, kept only in the god-only record. The human moderator's 공지
+        is its own line."""
+        if by == "사회자":
+            if power == "공지" and text.strip():
+                self.emit("moderator", text.strip(), key=True, power="공지", by=by, sound="god")
+            return True
+        return divine.use(self, power, seat, text, role, other, n, user)
 
     def stop(self) -> None:
         """The user stopped the game: it ends where it stands and the record stays 중단됨 (no result line)."""
         if self.result is None:
-            self.result = {"team": None, "label": "중단됨", "reason": "게임을 멈췄습니다", "winners": [], "day": self.day,
-                           "stopped": True}
+            label, reason = T("중단됨"), T("게임을 멈췄습니다")
+            self.result = {"team": None, "label": self.t(label), "reason": self.t(reason), "winners": [], "day": self.day,
+                           "stopped": True, "msg": {"label": label.record(), "reason": reason.record()}}
         self.set_paused(False)
 
     def set_paused(self, paused: bool) -> None:
         self.paused = paused
         if self._resume is not None:
             self._resume.clear() if paused else self._resume.set()
-        self.observe("pause", "일시정지" if paused else "다시 진행", paused=paused)
+        self.observe("pause", T("일시정지") if paused else T("다시 진행"), paused=paused)
+
+    def queue_line(self, seat: int | None, text: str) -> None:
+        """a playing person speaks whenever they want in 토론. The line goes in right after the current
+        speaker, ahead of replies and hands, and spends one shared turn."""
+        if seat is None or not 0 <= seat < len(self.players) or self.result is not None:
+            return
+        p, line = self.players[seat], clean_speech(text)
+        if p.kind != "human" or not p.alive or not line:
+            return
+        if self.meeting is not None and seat in self.meeting:  # a person on the mafia team speaks in the meeting
+            self.emit("mafia", line, actor=seat, to=self.meeting, key=True, pick=None, sound="mafia")
+            return
+        if self.step != "토론":
+            return
+        self.queued.setdefault(seat, []).append(line)
+        self.observe("queued", line, actor=seat)
+        if self.talk is not None:
+            self.talk.set()
+
+    def press_time(self, seat: int | None, word: str) -> None:
+        """The person's 연장 / 단축 buttons during 토론: the same rules as a model's `time`."""
+        if seat is not None and 0 <= seat < len(self.players) and self.players[seat].kind == "human" and self.result is None:
+            day_flow.ask_time(self, self.players[seat], word)
 
     def end_day(self) -> None:
         """사람 사회자 ends the discussion (투표로)."""

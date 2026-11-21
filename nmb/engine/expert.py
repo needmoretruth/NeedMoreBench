@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from .abilities import in_mafia_team
 from .roles import CULT, MAFIA, ROLES
+from .text import Msg, T, lines
 
 if TYPE_CHECKING:
     from .game import Game
@@ -42,9 +43,9 @@ ROLE_TEXT = {
     "의사": "의사: 마피아가 노릴 사람(밝힌 경찰, 날카로운 사람)을 지킨다. 너를 밝히면 표적이 되므로 처형을 막아야 할 때까지 숨기는 편이 낫다.",
     "마피아": "마피아: 처형 위기의 동료를 끝까지 감싸면 함께 드러난다. 잃을 때는 버리고 신뢰를 얻는 것도 수다.",
     "스파이": "스파이: 접선 전에는 시민처럼 행동하며 마피아를 찾는다. 접선 뒤에는 알아낸 직업 정보를 회의에서 나눈다.",
-    "기자": "기자: 기사는 모두가 보는 확정 정보다. 마피아를 찾으면 처형으로, 시민 핵심 직업을 찾으면 보호로 이어진다.",
-    "군인": "군인: 공격을 버티면 모두가 알게 된다. 그 뒤로는 확인된 시민으로서 대화를 이끈다.",
-    "정치인": "정치인: 처형되지 않으므로 의심을 받아도 두 표로 판을 움직일 수 있다.",
+    "폭로자": "폭로자: 기사는 모두가 보는 확정 정보다. 마피아를 찾으면 처형으로, 시민 핵심 직업을 찾으면 보호로 이어진다.",
+    "방패병": "방패병: 공격을 버티면 모두가 알게 된다. 그 뒤로는 확인된 시민으로서 대화를 이끈다.",
+    "시장": "시장: 처형되지 않으므로 의심을 받아도 두 표로 판을 움직일 수 있다.",
 }
 
 
@@ -56,12 +57,13 @@ def expert_on(game: "Game", p: "Player") -> bool:
     return bool(game.setup.expert)
 
 
-def expert_text(game: "Game", p: "Player") -> str | None:
+def expert_text(game: "Game", p: "Player") -> Msg | None:
+    """Each block is a message of its own, so an English game gets the same section in English."""
     if not expert_on(game, p):
         return None
     team = ROLES[p.role].team
     side = MAFIA_TEXT if in_mafia_team(p) or team == MAFIA else CULT_TEXT if team == CULT else TOWN_TEXT
-    parts = [f"전문가 전략 (v{EXPERT_VERSION})", COMMON, side]
+    parts: list[str | Msg] = [T("전문가 전략 (v{n})", n=EXPERT_VERSION), T(COMMON), T(side)]
     if p.role in ROLE_TEXT:
-        parts.append("- " + ROLE_TEXT[p.role])
-    return "\n".join(parts)
+        parts.append(lines("- ", T(ROLE_TEXT[p.role]), sep=""))
+    return lines(*parts, sep="\n")

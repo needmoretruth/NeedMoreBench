@@ -87,6 +87,8 @@ class App(Adw.Application):
         super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.DEFAULT_FLAGS)
         self.settings = Settings.load()
         i18n.setup(self.settings.language)
+        from .sound import SoundPlayer
+        self.sound = SoundPlayer(self.settings)  # soft effects, 소리 and 음량 in the menus and Settings
         self.window: Window | None = None
         from ..providers.health import Health
         from ..store import home
@@ -135,6 +137,8 @@ class App(Adw.Application):
             self.refresh_models()
             self._first_run()
             self._resume_bench()
+            import threading
+            threading.Thread(target=self.sound.prepare, daemon=True).start()  # the files, before the first sound
         self.window.present()
 
     # ---- bench runs: played off the main loop, kept in the settings, resumed after a restart ------------
@@ -256,7 +260,7 @@ class App(Adw.Application):
         bg.run(lambda: import_keys(), done)
 
     def play_sound(self, name: str) -> None:
-        return None
+        self.sound.play(name)
 
     def set_language(self, code: str) -> None:
         """Pages build their text when made, so the lobby is made again in the new language."""

@@ -6,3 +6,7 @@ Licensed under the Apache License, Version 2.0 (see LICENSE).
 The downloadable apps for Windows and macOS include GTK, libadwaita, GLib, Pango, PyGObject and other
 libraries under the GNU Lesser General Public License and other licenses. Their license texts are in the
 app's "licenses" folder, and the release notes link to the exact source archives of those libraries.
+
+The Linux, Windows and macOS apps include the opencode program (https://github.com/anomalyco/opencode),
+Copyright (c) 2025 opencode, under the MIT License; its license text ships next to it (Flatpak:
+/app/share/licenses/opencode/LICENSE; Windows and macOS: the app's "opencode" folder).

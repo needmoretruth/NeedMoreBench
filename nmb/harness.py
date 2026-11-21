@@ -10,9 +10,10 @@ import asyncio
 import random
 from typing import TYPE_CHECKING, Any, Callable
 
-from .engine.parse import first_json_object, is_skip, match_name
+from .engine.parse import first_json_object, is_skip, match_name, read_notes
 from .engine.prompts import build_prompt, log_lines
-from .engine.state import Player
+from .engine.state import NOTE_PAGE, Player
+from .engine.text import Msg, T, from_word, say
 from .engine.turn import TurnRequest
 from .i18n import _
 from .providers.base import Completion, ModelRef, ProviderError, Route, estimate_tokens
@@ -32,15 +33,20 @@ MAX_RETRIES = 2
 COMPACT_RESERVE = 8000  # room for the answer and the next few lines
 
 
-def problem_with(obj: dict[str, Any] | None, req: TurnRequest) -> str | None:
+def problem_with(obj: dict[str, Any] | None, req: TurnRequest, lang: str = "ko") -> Msg | None:
+    """Why the answer cannot be used, as a message the retry prompt renders in the game's language."""
     if obj is None:
-        return "JSON 객체를 찾지 못했다"
+        return T("JSON 객체를 찾지 못했다")
+    page = read_notes(obj.get("notes"))
+    if page is not None and len(page) > NOTE_PAGE:  # sent back once; a second long page is not kept
+        return T("notes가 {n}자다. {max}자 이하로 줄여라", n=len(page), max=f"{NOTE_PAGE:,}")
     if req.field:
-        v = obj.get(req.field)
+        raw = obj.get(req.field)
+        v = from_word(lang, raw)  # 'Yes' in an English game is 찬성
         if v is None and not req.skip_word:
-            return f"{req.field} 값이 없다"
+            return T("{field} 값이 없다", field=req.field)
         if v is not None and not (req.skip_word and is_skip(v)) and match_name(v, req.options) is None:
-            return f"{req.field} 값 「{v}」은(는) 고를 수 있는 것이 아니다"
+            return T("{field} 값 {v:은/는} 고를 수 있는 것이 아니다", field=req.field, v=T("「{x}」", x=str(raw)))
     return None
 
 
@@ -120,17 +126,19 @@ class AIController:
         cut = lines[len(lines) // 2 - 1][0]
         old = "\n".join(line for i, line in lines if i <= cut)
         before = p.memory
-        req = TurnRequest("compaction", "기억 정리")
-        user = ("기억 정리: 기록이 길어져서 오래된 부분을 네 기억으로 줄인다. 아래 기록(과 앞서 정리한 기억)을 네가 나중에 읽을 메모로 "
-                "요약한다. 누가 무엇을 말하고 했는지, 네가 알게 된 사실, 네 판단을 남긴다. 이 메모가 그 기록을 대신한다.\n\n"
-                + (f"앞서 정리한 기억\n{before}\n\n" if before else "") + f"줄일 기록\n{old}\n\n"
-                "답 형식: JSON 객체 하나 {\"memory\": \"메모\"}. 앞뒤에 다른 글을 쓰지 않는다.")
+        req = TurnRequest("compaction", T("기억 정리"))
+        t = game.t
+        user = (t(T("기억 정리: 기록이 길어져서 오래된 부분을 네 기억으로 줄인다. 아래 기록(과 앞서 정리한 기억)을 네가 나중에 읽을 메모로 "
+                    "요약한다. 누가 무엇을 말하고 했는지, 네가 알게 된 사실, 네 판단을 남긴다. 이 메모가 그 기록을 대신한다.")) + "\n\n"
+                + (t(T("앞서 정리한 기억")) + f"\n{before}\n\n" if before else "") + t(T("줄일 기록")) + f"\n{old}\n\n"
+                + t(T("답 형식: JSON 객체 하나 {shape}. 앞뒤에 다른 글을 쓰지 않는다.",
+                      shape='{"memory": "' + t(T("메모")) + '"}')))
         memory, by = "", "model"
         try:
             comp = await self.call(game, p, system, user, max_tokens=4000)
             got = first_json_object(comp.text)
             memory = str((got or {}).get("memory") or "").strip()
-            game.record_call(p, req, self.ref.key, comp, system, user, None if memory else "memory가 없다")
+            game.record_call(p, req, self.ref.key, comp, system, user, None if memory else t(T("memory가 없다")))
         except ProviderError:
             memory = ""
         if not memory:
@@ -153,7 +161,8 @@ class AIController:
             except ProviderError:
                 return {}
             obj = first_json_object(comp.text)
-            error = problem_with(obj, req)
+            problem = problem_with(obj, req, game.lang)
+            error = game.t(problem) if problem else None
             game.record_call(p, req, self.ref.key, comp, system, user, error)
             if error is None:
                 return obj or {}
@@ -168,15 +177,23 @@ class HumanController:
         self.request: TurnRequest | None = None
 
     async def decide(self, game: "Game", p: Player, req: TurnRequest) -> dict[str, Any]:
+        """A request with a time limit (a discussion turn) passes when the time runs out; the card goes
+        away whenever the turn ends, answered, timed out or cut short."""
         loop = asyncio.get_running_loop()
-        self.pending = loop.create_future()
-        self.request = req
-        game.emit("human_turn", log=False, to=frozenset({p.seat}), request=req.to_json())
+        pending: asyncio.Future[dict[str, Any]] = loop.create_future()
+        self.pending, self.request = pending, req
+        game.emit("human_turn", log=False, to=frozenset({p.seat}), request=req.to_json(game.lang))
         try:
-            return await self.pending
+            if req.limit > 0:
+                try:
+                    return await asyncio.wait_for(pending, req.limit)
+                except asyncio.TimeoutError:
+                    return {}
+            return await pending
         finally:
-            self.pending = None
-            self.request = None
+            if self.pending is pending:
+                self.pending, self.request = None, None
+            game.observe("human_done", "", actor=p.seat)
 
     def answer(self, obj: dict[str, Any]) -> None:
         if self.pending is not None and not self.pending.done():
@@ -194,8 +211,12 @@ class ScriptedController:
         return self.fn(game, p, req)
 
 
-LINES = ["{t}님 아까 말이 좀 앞뒤가 안 맞았어요.", "저는 {t}님이 제일 수상해요.", "{t}님은 왜 아까부터 조용하세요?",
-         "어제 투표 흐름 보면 {t}님 쪽이 이상해요.", "{t}님 믿어도 될 것 같아요."]
+LINES = {"ko": ["{t}님 아까 말이 좀 앞뒤가 안 맞았어요.", "저는 {t}님이 제일 수상해요.", "{t}님은 왜 아까부터 조용하세요?",
+                "어제 투표 흐름 보면 {t}님 쪽이 이상해요.", "{t}님 믿어도 될 것 같아요."],
+         "en": ["{t}, what you said earlier didn't add up.", "I find {t} the most suspicious.", "{t}, why so quiet all this time?",
+                "Looking at yesterday's vote, something is off about {t}.", "I think we can trust {t}."]}
+DEMO = {"ko": ("{t}님을 지켜본다.", "우리 둘은 서로 믿어 봐요.", "느낌", "{d}번째 낮: {t}님 확인"),
+        "en": ("Keeping an eye on {t}.", "Let's trust each other, the two of us.", "a hunch", "Day {d}: check {t}")}
 
 
 class RandomController:
@@ -210,23 +231,29 @@ class RandomController:
         r = self.rng
         others = [q.name for q in game.alive() if q is not p]
         t = r.choice(others) if others else p.name
-        obj: dict[str, Any] = {"thought": f"{t}님을 지켜본다."}
+        lang = game.lang
+        thought, whisper, hunch, note = DEMO[lang]
+        obj: dict[str, Any] = {"thought": thought.format(t=t)}
         if req.say:
-            obj["say"] = "" if r.random() < self.quiet and req.kind == "discuss" else r.choice(LINES).format(t=t)
-        if req.field:
+            obj["say"] = "" if r.random() < self.quiet and req.kind == "discuss" else r.choice(LINES[lang]).format(t=t)
+        if req.field:  # answered in the game's language, as a model would ('Yes' in an English game)
             pool = req.options + ([req.skip_word] if req.skip_word and r.random() < 0.15 else [])
-            obj[req.field] = r.choice(pool) if pool else None
+            obj[req.field] = say(lang, r.choice(pool)) if pool else None
+        if req.extra_field and req.extra_options:  # a role's second choice (모방자, 폭탄마, 도청꾼)
+            obj[req.extra_field] = say(lang, r.choice(req.extra_options))
         if req.hand:
             obj["hand"] = r.randint(0, 3)
         if req.time and r.random() < 0.1:
-            obj["time"] = r.choice(["연장", "단축"])
+            obj["time"] = say(lang, r.choice(["연장", "단축"]))
         if req.poll:
             obj["poll"] = t
         if req.whispers and others and r.random() < 0.2:
-            obj["whispers"] = [{"to": t, "text": "우리 둘은 서로 믿어 봐요."}]
+            obj["whispers"] = [{"to": t, "text": whisper}]
         if p.ledger:
             name = r.choice(list(p.ledger))
-            obj["ledger"] = [{"name": name, "suspicion": r.randint(0, 100), "guess": "모름", "note": "느낌"}]
+            obj["ledger"] = [{"name": name, "suspicion": r.randint(0, 100), "guess": say(lang, "모름"), "note": hunch}]
         if r.random() < 0.2:
-            obj["notes"] = {"add": [f"{game.day}번째 낮: {t}님 확인"]}
+            obj["notes"] = (p.notebook.page + "\n" if p.notebook.page else "") + note.format(d=game.day, t=t)
+            if len(obj["notes"]) > NOTE_PAGE:
+                obj["notes"] = obj["notes"][-NOTE_PAGE:]
         return obj

@@ -7,7 +7,8 @@ from dataclasses import dataclass, field, asdict
 from typing import Any
 
 from .abilities import REGISTRY
-from .roles import EN, COMPLEX, DEFAULT_PLAYERS, GAME_ROLES, PLAYER_RANGE, ROLES, SIMPLE, MAFIA, draw_lineup, pool_roles
+from .lineups import CUSTOM, Judge, by_counts, counts_problem, lineup, mode_of, named_problem
+from .roles import EN, COMPLEX, canon_tree, DEFAULT_PLAYERS, GAME_ROLES, PLAYER_RANGE, ROLES, SIMPLE, MAFIA
 from ..i18n import _
 from .names import LINES, call_names
 from .state import Identity, LedgerRow, Player
@@ -48,8 +49,12 @@ class GameSetup:
     vote_public: bool = False  # 투표 공개: 익명 shows counts only
     moderator: str = "auto"  # auto | human
     reveal_roles: bool | None = None  # None: on in 단순, off in 복잡
-    role_pool: str = "classic"  # classic | full | custom
-    enabled_roles: list[str] = field(default_factory=list)
+    role_pool: str = "classic"  # 랜덤's pool: classic | full
+    cult: bool = False  # 교주팀: in 랜덤 at 9 players or more 교주 takes a 특수 seat, at 12 광신도 one more
+    role_mode: str = "random"  # 직업 구성: random | named (정해진 구성) | custom (직접)
+    enabled_roles: list[str] = field(default_factory=list)  # 직접: the roles a slot may draw
+    slots: list[int] = field(default_factory=list)  # older 직접: seats per kind (마피아, 보조, 경찰 계열, 의사, 특수, 시민)
+    counts: dict[str, int] = field(default_factory=dict)  # 직접: seats per role, 시민 fill the rest
     named: bool = True  # 기본 (True) or 블라인드
     blind_scope: str = "ai"  # ai: AI끼리만, me: 나에게도
     language: str = "ko"
@@ -78,6 +83,8 @@ class GameSetup:
         fixed = [s.role for s in self.seats if s.role]
         if any(r not in GAME_ROLES[self.kind] or not playable(r) for r in fixed):
             return _("A seat has a role this game does not have")
+        if by_counts(self):
+            return count_problem_text(counts_problem(self, playable))
         if self.kind == SIMPLE:
             from .roles import simple_lineup
             lineup = simple_lineup(n)
@@ -88,6 +95,11 @@ class GameSetup:
             mafia = sum(1 for r in fixed if ROLES[r].team == MAFIA)
             if mafia * 2 >= n:
                 return _("Too many mafia team seats")
+            off = named_problem(self)
+            if off:
+                return _("The set lineup has no more {role} seats").format(role=_(EN.get(off, off)))
+            if mode_of(self) == CUSTOM and self.slots and (sum(self.slots) != n or self.slots[0] * 2 >= n or self.slots[0] < 1):
+                return _("The role counts do not add up to the players") if sum(self.slots) != n else _("Too many mafia team seats")
         return None
 
     @property
@@ -128,6 +140,7 @@ class GameSetup:
     @staticmethod
     def from_json(d: dict[str, Any]) -> "GameSetup":
         d = dict(d)
+        d = canon_tree(d)  # saved before: old role names
         d["seats"] = [SeatSpec(**s) for s in d.get("seats", [])]
         known = GameSetup.__dataclass_fields__
         return GameSetup(**{k: v for k, v in d.items() if k in known})
@@ -161,19 +174,25 @@ def display_name(model_name: str | None, key: str | None) -> str:
     return short_model_name(model_name) if model_name else key_name(key)
 
 
+def count_problem_text(key: str | None) -> str | None:
+    """The start button's words for a 직접 lineup that cannot be played."""
+    return {"unknown": _("A role in the lineup is not in this game"),
+            "too_many": _("More roles than players"),
+            "pairs": _("Lovers come in pairs"),
+            "no_mafia": _("No one is on the mafia team"),
+            "no_town": _("No one is outside the mafia team")}.get(key or "")
+
+
 def playable(role: str) -> bool:
     """The role's ability is built (builds the classic pool first; the rest of the full pool waits)."""
     return ROLES[role].ability in REGISTRY
 
 
-def seat_players(setup: GameSetup, rng: random.Random) -> list[Player]:
+def seat_players(setup: GameSetup, rng: random.Random, judge: Judge | None = None) -> list[Player]:
     """Deal roles, give names and identities. One call name per seat: the model line's short name in 실명,
     a random given name in 블라인드; the full model name stays on the identity for the screen's second line."""
-    n = len(setup.seats)
     fixed = [s.role for s in setup.seats if s.role]
-    allowed = [r for r in pool_roles(setup.role_pool, setup.enabled_roles or None) if playable(r)]
-    lineup = draw_lineup(setup.kind, n, rng, setup.role_pool, allowed, fixed)
-    free = list(lineup)
+    free = lineup(setup, rng, playable, judge)
     for r in fixed:
         free.remove(r)
     rng.shuffle(free)

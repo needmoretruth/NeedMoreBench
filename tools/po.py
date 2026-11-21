@@ -26,23 +26,29 @@ def source_strings() -> dict[str, list[str]]:
         tree = ast.parse(path.read_text(encoding="utf-8"))
         rel = str(path.relative_to(ROOT))
         for node in ast.walk(tree):
-            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "_" and node.args:
-                arg = node.args[0]
-                if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                    out.setdefault(arg.value, []).append(f"{rel}:{node.lineno}")
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in ("_", "counted") and node.args:
+                args = node.args[:1] if node.func.id == "_" else node.args[1:3]  # counted(n, one, many)
+                for arg in args:
+                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                        out.setdefault(arg.value, []).append(f"{rel}:{node.lineno}")
     from nmb.engine.roles import EN, TEAM_EN
-    from nmb.view import COUNTRY, EFFORT, LINE_STYLE, STEP_EN
+    from nmb.engine import god as powers
+    from nmb.view import COUNTRY, EFFORT, LINE_STYLE, POWER_EN, STEP_EN
     from nmb.providers.base import STATUS_TEXT
-    from nmb.ui import bench, bench_view, end, game_page, god, human, picker, records, settings, standings
+    from nmb import help as help_text
+    from nmb.ui import bench, bench_view, end, game_page, god, human, picker, records, settings, standings, widgets
+    from nmb.ui import help as help_ui
     tables = [EN.values(), TEAM_EN.values(), COUNTRY.values(), EFFORT.values(), STEP_EN.values(),
-              (t for _n, t in picker.FILTERS), (t for _n, t in picker.POOLS), (t for _n, t in game_page.FILTERS),
+              (t for _n, t in picker.FILTERS), (t for _n, t in picker.POOLS), (t for _n, t in game_page.FILTERS), game_page.EMPTY.values(),
               (t for t, _s in game_page.SPEEDS), records.TEAM_EN.values(), records.GAME_EN.values(), ["Draw"],
               STATUS_TEXT.values(), (t for _n, t in settings.SCHEMES), settings.WHERE.values(), settings.STORES.values(),
               (s for _n, s, _b, _u in settings.GUIDE), (b for _n, _s, b, _u in settings.GUIDE),
               standings.HEAD, (t for _s, t in standings.SIDES), human.TITLE.values(), human.HINT.values(), human.EXTRA.values(), human.SAY_HINT.values(), (t for _n, t in human.TIME),
-              (t for _p, t in god.ON_LIVING), end.TEAM_WON.values(),
+              POWER_EN.values(), powers.GROUP_EN.values(), powers.REASONS.values(), god.FAKE_EN.values(), god.TEXT_HINT.values(),
+              (t for pair in god.PAIR_EN.values() for t in pair),
+              end.TEAM_WON.values(), help_ui.GAME_EN.values(), help_text.FIELDS,
               bench.KIND_EN.values(), bench.KIND_SUB.values(), bench_view.STATUS_EN.values(), bench_view.TABLE_HEAD,
-              (v[0] for v in LINE_STYLE.values() if v and v[0])]
+              widgets.TALK_STATE.values(), (v[0] for v in LINE_STYLE.values() if v and v[0])]
     for table in tables:
         for s in table:
             out.setdefault(s, []).append("table")

@@ -12,6 +12,8 @@ finish-args:
   - --socket=wayland
   - --socket=fallback-x11
   - --device=dri
+  # the sound effects (§5): GTK plays them through GStreamer to PipeWire or PulseAudio
+  - --socket=pulseaudio
   # keys in the desktop's keyring (GNOME Keyring, KWallet)
   - --talk-name=org.freedesktop.secrets
   # the local opencode server: its address and password, and keys the user gave opencode (read on first start)
@@ -20,6 +22,31 @@ finish-args:
   - --filesystem=~/.local/share/opencode:ro
 modules:
   - python-deps.json
+  # opencode (MIT) for NMB's own server, so free Zen models work out of the box (Y1): the person's opencode is out
+  # of the sandbox's reach. Pinned like packaging/opencode.json. One program with its payload appended: stripping
+  # or splitting debug info would cut the payload off, so both are off.
+  - name: opencode
+    buildsystem: simple
+    build-options:
+      strip: false
+      no-debuginfo: true
+    build-commands:
+      - install -Dm755 opencode ${FLATPAK_DEST}/bin/opencode
+      - install -Dm644 LICENSE ${FLATPAK_DEST}/share/licenses/opencode/LICENSE
+    sources:
+      - type: archive
+        only-arches: [x86_64]
+        strip-components: 0
+        url: https://github.com/anomalyco/opencode/releases/download/v2.3.2/opencode-linux-x64.tar.gz
+        sha256: 563b5d663637226b6e3bb4bb6803281bc39b0d2cd88db06d674b6420aab009b0
+      - type: archive
+        only-arches: [aarch64]
+        strip-components: 0
+        url: https://github.com/anomalyco/opencode/releases/download/v2.3.2/opencode-linux-arm64.tar.gz
+        sha256: 9d10185acdb72336e086e699ca363a6065f410fd3c1caed0dc8046e95ac06ccb
+      - type: file
+        url: https://raw.githubusercontent.com/anomalyco/opencode/v2.3.2/LICENSE
+        sha256: 625f0f619133f89bbbb2abe37369613dfa1885eba1e50d02170deb62bb42cb6b
   - name: needmorebench
     buildsystem: simple
     build-commands:

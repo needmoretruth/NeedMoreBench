@@ -17,7 +17,7 @@ from ..i18n import _  # noqa: E402
 from ..store import load  # noqa: E402
 from .bench import GAME_EN, KIND_EN, entry_name  # noqa: E402
 from .standings import cell  # noqa: E402
-from .widgets import clear, label  # noqa: E402
+from .widgets import clear, label, vbox  # noqa: E402
 
 STATUS_EN = {"done": "Finished", "stopped": "Stopped", "failed": "Failed", "running": "Playing", "queued": "Waiting"}
 TABLE_HEAD = ["Model", "Games", "As mafia", "Wins", "Win rate"]
@@ -82,7 +82,10 @@ class RunView(Gtk.ScrolledWindow):
         p = run.plan
         live = self.app.bench is not None and self.app.bench.alive and self.app.bench.run is run
         self.title.set_label(f"{_(KIND_EN[p.kind])}, {_(GAME_EN.get(p.game, 'Mafia'))}")
-        bits = [_("{n} players").format(n=p.players), _("{n} at once").format(n=p.at_once)]
+        # the tables as they are seated: 자동 seats fewer than the plan when fewer models are free (6명 said, 4 played)
+        sizes = sorted({len(x.seats) for x in run.played if x.seats}) or [p.players]
+        size = str(sizes[0]) if len(sizes) == 1 else f"{sizes[0]}~{sizes[-1]}"
+        bits = [_("{n} players").format(n=size), _("{n} at once").format(n=p.at_once)]
         bits.append(_("Blind") if p.blind else _("Named"))
         self.sub.set_label(", ".join(bits))
         done = run.finished()
@@ -174,6 +177,7 @@ class RunView(Gtk.ScrolledWindow):
             return
         from .replay import Replay
         r = Replay(load(Path(x.file)), on_sound=self.app.play_sound)
+        r.page.add_sound_button(self.app.sound.button())
         self.app.window.push(r.page)
 
     # ---- league table and tournament bracket ---------------------------------------------------------------
@@ -193,10 +197,12 @@ class RunView(Gtk.ScrolledWindow):
     def _table(self, played: list[Played], keys: list[str], top: int = 0) -> Gtk.Widget:
         games, mafia = bench.counts(x for x in played if x.status == "done")
         rows = bench.table(played, keys)
+        seats = bench.repeats(played)  # an entry sat twice in a game: every number is per seat, the head says so
         grid = Gtk.Grid()
         grid.add_css_class("standings")
         for col, h in enumerate(TABLE_HEAD):
-            head = cell(_(h), "table-head", xalign=0.0 if col == 0 else 1.0)
+            words = {1: _("Seats played"), 2: _("Mafia seats")}.get(col, _(h)) if seats else _(h)
+            head = cell(words, "table-head", xalign=0.0 if col == 0 else 1.0)
             head.add_css_class("edge-start" if col == 0 else ("edge-end" if col == len(TABLE_HEAD) - 1 else "mid"))
             grid.attach(head, col, 0, 1, 1)
         for y, (k, w, n) in enumerate(rows, start=1):
@@ -216,7 +222,11 @@ class RunView(Gtk.ScrolledWindow):
                 grid.attach(c, col, y, 1, 1)
         frame = Gtk.Frame(child=grid)
         frame.add_css_class("standings-frame")
-        return frame
+        if not seats:
+            return frame
+        note = label(_("A model sat in more than one seat of a game, so each seat counts once."), "dim-label", wrap=True,
+                     xalign=0.0)
+        return vbox(6, frame, note)
 
     def _bracket(self, run: Run) -> Gtk.Widget:
         p = run.plan

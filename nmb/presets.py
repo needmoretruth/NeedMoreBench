@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .engine.roles import canon_tree
 from .engine.setup import SeatSpec
 from .pools import PRESETS, preset_models
 from .providers.base import ModelRef
@@ -30,7 +31,7 @@ def saved(seats: list[SeatSpec]) -> dict[str, Any]:
 
 def from_saved(data: dict[str, Any]) -> list[SeatSpec]:
     """A hand-made preset comes back as it was saved, an LM Studio seat included."""
-    return [SeatSpec(**{k: v for k, v in d.items() if k in SEAT_FIELDS}) for d in data.get("seats", [])]
+    return [SeatSpec(**{k: v for k, v in canon_tree(d).items() if k in SEAT_FIELDS}) for d in data.get("seats", [])]
 
 
 def built_in(routes: Routes, name: str, seats: int, lo: int, hi: int) -> tuple[list[SeatSpec], list[str]]:

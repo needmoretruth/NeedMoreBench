@@ -122,23 +122,27 @@
 .game .players-pane { background-color: var(--sidebar-bg-color); color: var(--sidebar-fg-color); }
 .game .inspector-pane { background-color: var(--sidebar-bg-color); color: var(--sidebar-fg-color); }
 
+/* the desktop text floor: nothing is drawn under 13 px. Hierarchy comes from weight and colour, not size.
+   libadwaita draws captions and row subtitles at about 12 px; lifted here (tests/test_text_floor.py). */
+.caption, .caption-heading, .subtitle { font-size: 13px; }
+
 /* ---- shapes ---- */
 .card { border-radius: 16px; }
 button { border-radius: 12px; }
 button.pill { border-radius: 999px; padding: 10px 28px; }
 .dim { color: var(--nmb-dim); }
-.meta { font-size: 12px; color: var(--nmb-dim); }
+.meta { font-size: 13px; color: var(--nmb-dim); }
 .name { font-size: 13px; font-weight: 600; }
 
 /* ---- header: phase and turns ---- */
 .phase-title { font-weight: 700; font-size: 15px; }
-.phase-sub { font-size: 12px; color: var(--nmb-dim); }
+.phase-sub { font-size: 13px; color: var(--nmb-dim); }
 .turns-bar { padding: 6px 18px 8px 18px; background-color: var(--window-bg-color); border-bottom: 1px solid var(--nmb-line); }
 .turns-bar levelbar trough { min-height: 6px; border-radius: 3px; background-color: var(--nmb-bar-bg); }
 .turns-bar levelbar block.filled { border-radius: 3px; background-color: var(--accent-bg-color); }
 .turns-bar levelbar block.empty { background-color: transparent; }
 .turns-bar.low levelbar block.filled { background-color: var(--nmb-mafia); }
-.turns-label { font-size: 12px; font-feature-settings: "tnum"; }
+.turns-label { font-size: 13px; font-feature-settings: "tnum"; }
 
 /* ---- players ---- */
 .players-pane { border-right: 1px solid var(--nmb-line); }
@@ -148,14 +152,22 @@ button.pill { border-radius: 999px; padding: 10px 28px; }
 .player-row.dead .name { text-decoration: line-through; color: var(--nmb-dim); }
 .player-row.dead avatar { opacity: 0.45; }
 .player-row.speaking { background-color: alpha(currentColor, 0.07); }
-.poll-count { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px;
+.poll-count { font-size: 13px; font-weight: 700; padding: 1px 7px; border-radius: 999px;
   background-color: alpha(currentColor, 0.10); font-feature-settings: "tnum"; }
-.vote-count { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+.vote-count { font-size: 13px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
   background-color: var(--accent-bg-color); color: var(--accent-fg-color); font-feature-settings: "tnum"; }
 .voter-dots avatar { margin-left: -4px; }
 .thinking-dots { font-size: 14px; color: var(--nmb-dim); letter-spacing: 1px; }
+/* an ability used: whose, which role, what */
+.action-line { padding: 3px 12px; border-radius: 999px; background-color: alpha(currentColor, 0.05); }
+.action-text { font-size: 13px; color: var(--nmb-dim); }
+/* talk state beside the name: quiet or failed players read as such, not as broken */
+.talk-state { font-size: 13px; font-weight: 600; padding: 1px 7px; border-radius: 999px; color: var(--nmb-dim); }
+.talk-state.speaking, .talk-state.thinking { color: inherit; background-color: alpha(currentColor, 0.10); }
+.talk-state.hand { color: inherit; }
+.talk-state.failed { color: var(--error-color); background-color: alpha(var(--error-color), 0.10); }
 
-.chip { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
+.chip { font-size: 13px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
 .chip.mafia { background-color: alpha(var(--nmb-mafia), 0.16); color: var(--nmb-mafia); }
 .chip.town { background-color: alpha(var(--nmb-town), 0.16); color: var(--nmb-town); }
 .chip.cult { background-color: alpha(var(--nmb-cult), 0.16); color: var(--nmb-cult); }
@@ -173,22 +185,23 @@ button.pill { border-radius: 999px; padding: 10px 28px; }
 .bubble.whisper { border: 1.5px dashed alpha(currentColor, 0.38); background-color: alpha(currentColor, 0.045);
   box-shadow: inset 0 1px 3px alpha(black, 0.06); }
 .whisper-lock { color: var(--nmb-dim); -gtk-icon-size: 12px; }
-.whisper-to { font-size: 11px; font-weight: 600; color: var(--nmb-dim); }
+.whisper-to { font-size: 13px; font-weight: 600; color: var(--nmb-dim); }
 .bubble.mafia { border-color: alpha(var(--nmb-mafia), 0.45); }
 /* the other night chats are private too: 연인 like a whisper, the dead's chat faded */
 .bubble.lover { border: 1.5px dashed alpha(currentColor, 0.38); background-color: alpha(currentColor, 0.045); }
 .bubble.dead { border: 1px dashed alpha(currentColor, 0.3); background-color: transparent; opacity: 0.8; }
+.bubble.cult { border: 1.5px dashed alpha(var(--nmb-cult), 0.5); background-color: alpha(var(--nmb-cult), 0.05); }
 .bubble.defense { border-width: 2px; border-color: alpha(currentColor, 0.35); }
 /* a 속마음 is a muted note under its speaker's line, never a bubble */
 .thought-note { margin: 0 0 4px 42px; padding: 1px 0 3px 10px; border-left: 2px solid alpha(currentColor, 0.16); }
 .thought-text { font-size: 13px; font-style: italic; color: var(--nmb-dim); }
-.thought-who { font-size: 10px; color: alpha(var(--nmb-dim), 0.85); }
-.channel.thought { font-size: 10px; }
-.channel.reasoning { font-size: 10px; font-family: monospace; }
-.reasoning-note .thought-text { font-style: normal; font-family: monospace; font-size: 12px; }
+.thought-who { font-size: 13px; color: alpha(var(--nmb-dim), 0.85); }
+.channel.thought { font-size: 13px; }
+.channel.reasoning { font-size: 13px; }  /* the name tag reads like a thought's; only the text itself is monospace */
+.reasoning-note .thought-text { font-style: normal; font-family: monospace; font-size: 13px; }
 .line-row.thought-row { margin-top: 0; }
 .bubble-text { font-size: 15px; }
-.channel { font-size: 11px; font-weight: 600; color: var(--nmb-dim); }
+.channel { font-size: 13px; font-weight: 600; color: var(--nmb-dim); }
 .channel.mafia { color: var(--nmb-mafia); }
 .system-line { font-size: 13px; color: var(--nmb-dim); padding: 4px 12px; }
 .system-line.strong { color: var(--window-fg-color); font-weight: 600; }
@@ -206,8 +219,8 @@ button.pill { border-radius: 999px; padding: 10px 28px; }
 .result-card .tally { font-size: 14px; font-weight: 600; }
 .thinking-row { font-size: 13px; color: var(--nmb-dim); padding: 4px 12px; }
 
-.banner-overlay { background-color: alpha(var(--window-bg-color), 0.92); border-radius: 24px; padding: 22px 44px;
-  box-shadow: 0 8px 30px alpha(black, 0.14); }
+.banner-overlay { background-color: var(--view-bg-color); color: var(--view-fg-color); padding: 18px 24px;
+  border-bottom: 1px solid var(--nmb-line); box-shadow: 0 6px 18px alpha(black, 0.10); }
 .banner-text { font-size: 28px; font-weight: 700; }
 
 /* ---- inspector ---- */
@@ -216,7 +229,7 @@ button.pill { border-radius: 999px; padding: 10px 28px; }
 .inspector-tabs toggle { font-size: 13px; font-weight: 600; min-width: 0; }
 .inspector-tabs indicatorbin { padding-left: 2px; padding-right: 2px; }
 .inspector-tabs indicatorbin > label { padding: 0 2px; }
-.section-title { font-size: 12px; font-weight: 700; color: var(--nmb-dim); margin: 14px 4px 6px 4px; }
+.section-title { font-size: 13px; font-weight: 700; color: var(--nmb-dim); margin: 14px 4px 6px 4px; }
 .ledger-row { padding: 8px 10px; border-radius: 12px; background-color: var(--card-bg-color); border: 1px solid var(--nmb-line); }
 .ledger-row.flash { background-color: alpha(var(--nmb-god), 0.18); }
 .ledger-row { transition: background-color 700ms ease; }
@@ -226,7 +239,14 @@ button.pill { border-radius: 999px; padding: 10px 28px; }
 .sus-bar block.filled { border-radius: 4px; background-color: var(--accent-bg-color); transition: background-color 1000ms ease; }
 .sus-bar block.empty { background-color: transparent; }
 .note-row { padding: 8px 10px; border-radius: 12px; background-color: var(--card-bg-color); border: 1px solid var(--nmb-line); }
-.note-id { font-size: 11px; color: var(--nmb-dim); font-feature-settings: "tnum"; }
+.note-id { font-size: 13px; color: var(--nmb-dim); font-feature-settings: "tnum"; }
+/* 확인됨: the game told this, so it is not a guess */
+.known-tag { font-size: 13px; font-weight: 600; padding: 1px 8px; border-radius: 999px;
+  border: 1px solid alpha(currentColor, 0.35); color: var(--nmb-dim); }
+.note-page { border-radius: 12px; border: 1px solid var(--nmb-line); background-color: var(--card-bg-color); }
+.note-page textview { padding: 10px 12px; font-size: 14px; background-color: transparent; }
+.note-page textview text { background-color: transparent; }
+.meta.error { color: var(--error-color); font-weight: 600; }
 
 /* ---- human seat ---- */
 .composer { padding: 10px 14px; border-top: 1px solid var(--nmb-line); background-color: var(--window-bg-color); }
@@ -235,6 +255,8 @@ button.pill { border-radius: 999px; padding: 10px 28px; }
   border: 1px solid var(--nmb-line); }
 .action-card { color: var(--card-fg-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
 .action-title { font-size: 15px; font-weight: 700; }
+.action-card progressbar.turn-clock trough, .action-card progressbar.turn-clock progress { min-height: 4px; border-radius: 2px; }
+.action-dock .composer { margin-top: 6px; }
 .action-card entry { border-radius: 12px; min-height: 38px; }
 .action-card togglebutton.choice { padding: 5px 14px; font-weight: 600; }
 .action-card togglebutton.choice:checked { background-color: var(--accent-bg-color); color: var(--accent-fg-color); }
@@ -244,23 +266,39 @@ button.pill { border-radius: 999px; padding: 10px 28px; }
 /* ---- god powers ---- */
 .god-button { color: var(--nmb-god); }
 .god-shimmer { background-color: alpha(var(--nmb-god), 0.16); }
+.god-popover .god-power { padding: 6px 6px; min-height: 36px; }
+.god-popover .god-why { font-size: 13px; font-weight: 400; color: var(--nmb-dim); }  /* the desktop text floor */
+.god-popover .god-reason, .god-popover .meta { font-size: 13px; color: var(--nmb-dim); }
+.god-popover .god-use { background-color: var(--nmb-god); color: white; padding: 6px 22px; }
+.god-popover .god-use:disabled { background-color: alpha(var(--nmb-god), 0.25); color: alpha(white, 0.8); }
+/* a power's line: the god colour, the god's sun icon, and one glow when it arrives */
+.god-line { padding: 5px 14px 5px 10px; border-radius: 999px; background-color: alpha(var(--nmb-god), 0.07); }
+.god-line .god-text { color: var(--nmb-god); font-weight: 600; font-size: 13px; }
+.god-spark { color: var(--nmb-god); -gtk-icon-size: 14px; }
+@keyframes god-glow { from { background-color: alpha(var(--nmb-god), 0.40); } to { background-color: alpha(var(--nmb-god), 0.07); } }
+@keyframes god-spark { from { opacity: 0.2; } to { opacity: 1; } }
+.god-line.fresh { animation: god-glow 1600ms ease-out 1; }
+.god-line.fresh .god-spark { animation: god-spark 400ms ease-in-out 4 alternate; }
 
 /* ---- lobby ---- */
 .start-bar { padding: 10px 18px 12px 18px; }
 .lobby-numbers { padding: 4px; }
 .lobby-number { padding: 10px 14px; border-radius: 14px; background-color: var(--card-bg-color); border: 1px solid var(--nmb-line); }
 .lobby-number .value { font-size: 18px; font-weight: 700; font-feature-settings: "tnum"; }
-.lobby-number .label { font-size: 12px; color: var(--nmb-dim); }
+.lobby-number .label { font-size: 13px; color: var(--nmb-dim); }
+.chance-value { font-size: 16px; font-weight: 700; font-feature-settings: "tnum"; }
+.chance-value.dim { color: var(--nmb-dim); }
+.lineup-note image { color: var(--nmb-dim); }
 .seat-row { padding: 6px 4px; }
-.price { font-size: 12px; font-feature-settings: "tnum"; color: var(--nmb-dim); }
-.badge { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background-color: alpha(currentColor, 0.09); }
+.price { font-size: 13px; font-feature-settings: "tnum"; color: var(--nmb-dim); }
+.badge { font-size: 13px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background-color: alpha(currentColor, 0.09); }
 
 /* ---- standings ---- */
 .standings-frame { border-radius: 14px; background-color: var(--card-bg-color); border: 1px solid var(--nmb-line); }
-.table-head { font-size: 12px; font-weight: 700; color: var(--nmb-dim); padding: 12px 10px 8px 10px; }
+.table-head { font-size: 13px; font-weight: 700; color: var(--nmb-dim); padding: 12px 10px 8px 10px; }
 .edge-start { padding-left: 16px; }
 .edge-end { padding-right: 16px; }
-.table-cell { font-size: 14px; font-feature-settings: "tnum"; padding: 9px 10px; border-top: 1px solid var(--nmb-line); }
+.table-cell { font-size: 14px; font-feature-settings: "tnum"; padding: 9px 10px; border-top: 1px solid var(--nmb-line); background-clip: padding-box; }
 .table-cell .strong, .table-cell.strong { font-weight: 700; }
 .table-cell .prelim, .table-cell.prelim { color: var(--nmb-dim); }
 .table-cell.edge-start { padding-left: 16px; }  /* after .table-cell, so the row lines up with its head */
@@ -304,5 +342,5 @@ avatar.color14 { background-image: none; background-color: #6F6357; color: #FBF6
 .sus-scale trough { min-height: 7px; border-radius: 4px; background-color: var(--nmb-bar-bg); }
 .sus-scale highlight { border-radius: 4px; background-color: var(--accent-bg-color); }
 .sus-scale slider { min-width: 16px; min-height: 16px; margin: -5px; }
-.ledger-row.own dropdown > button { padding: 2px 8px; min-height: 24px; font-size: 12px; font-weight: 600; }
+.ledger-row.own dropdown > button { padding: 2px 8px; min-height: 24px; font-size: 13px; font-weight: 600; }
 .own-note { min-height: 30px; font-size: 13px; }

@@ -11,7 +11,7 @@ from typing import Any, Callable
 
 import httpx
 
-from .base import Completion, ModelInfo, ModelRef, ProviderError, Timer, cost_of, estimate_tokens
+from .base import Completion, ModelInfo, ModelRef, ProviderError, Timer, answer_limit, cost_of, estimate_tokens
 from . import lmstudio_ctl
 from .lists import POLICY, parse_lmstudio, parse_openrouter, parse_venice  # noqa: F401  POLICY is read through this module
 from .lmstudio_ctl import LOAD_LIMIT
@@ -73,8 +73,11 @@ class ChatRoute:
     def info(self, ref: ModelRef) -> ModelInfo | None:
         return self._info.get(ModelRef(ref.route, ref.provider, ref.id).key)
 
+    def limit(self, ref: ModelRef, max_tokens: int) -> int:
+        return answer_limit(self.info(ref), max_tokens)
+
     async def complete(self, ref: ModelRef, system: str, user: str, max_tokens: int = 1500) -> Completion:
-        body: dict[str, Any] = {"model": ref.id, "max_tokens": max_tokens,
+        body: dict[str, Any] = {"model": ref.id, "max_tokens": self.limit(ref, max_tokens),
                                 "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]}
         body.update(self.extra_body(ref))
         t = Timer()

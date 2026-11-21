@@ -1,4 +1,4 @@
-"""마피아 보조, classic pool: 스파이, 짐승인간, 마담, 도둑.
+"""마피아 보조, classic pool: 스파이, 야수, 유혹자, 모방자.
 
 A helper does not know the mafia until it contacts them (base.contact); until then it votes and counts as a
 citizen. 경찰 sees every helper as 마피아 아님 (only the 마피아 role looks like mafia), as in the source.
@@ -6,9 +6,9 @@ citizen. 경찰 sees every helper as 마피아 아님 (only the 마피아 role l
 from __future__ import annotations
 
 from ..parse import is_skip
+from ..text import T
 from ..turn import TurnRequest
-from ..words import josa
-from .base import Ability, NightContext, ability_of, contact, mafia_alive, register, target_names
+from .base import Ability, NightContext, ability_of, announce, choose_text, contact, mafia_alive, register, target_names
 
 
 def is_mafia(q) -> bool:  # noqa: ANN001
@@ -18,11 +18,12 @@ def is_mafia(q) -> bool:  # noqa: ANN001
 @register
 class Spy(Ability):
     key = "spy"
+    act_text, pass_text = "{t}님의 직업을 알아봅니다", "아무도 알아보지 않았습니다"
     priority = 40
     helper = True
 
     def night_request(self, game, p):
-        return TurnRequest("night", "밤이다. 직업을 알아낼 사람 한 명을 고른다. 고른 사람이 마피아면 접선하고 한 번 더 조사한다.",
+        return TurnRequest("night", T("밤이다. 직업을 알아낼 사람 한 명을 고른다. 고른 사람이 마피아면 접선하고 한 번 더 조사한다."),
                            field="target", options=target_names(game, p))
 
     async def act(self, game, p, target, ctx: NightContext):
@@ -34,29 +35,32 @@ class Spy(Ability):
             contact(game, p)
             again = [n for n in target_names(game, p) if n != q.name]
             if again:
-                req = TurnRequest("night", "접선했다. 한 명을 더 조사할 수 있다.", field="target", options=again)
+                req = TurnRequest("night", T("접선했다. 한 명을 더 조사할 수 있다."), field="target", options=again)
                 r = game.by_name(game.pick(await game.ask(p, req), req))
+                announce(game, p, choose_text(self, game, r.name if r else None), r)
                 if r is not None:
                     self.learn(game, p, r, ctx)
 
     @staticmethod
     def learn(game, p, q, ctx: NightContext) -> None:  # noqa: ANN001
         ctx.used_on[p.seat] = q.name
-        game.private(p, f"조사 결과: {q.name}님의 직업은 {q.role}입니다.", target=q.seat, result=q.role, knows=[q.seat])
-        if q.role == "군인":  # a mafia-team check on the soldier shows the checker to it
-            game.private(q, f"{p.name}님이 너를 조사했다. {p.name}님은 마피아 팀이다.", target=p.seat)
+        game.private(p, T("조사 결과: {name}님의 직업은 {role}입니다.", name=q.name, role=q.role), target=q.seat,
+                     result=q.role, knows=[q.seat])
+        if q.role == "방패병":  # a mafia-team check on the soldier shows the checker to it
+            game.private(q, T("{name}님이 너를 조사했다. {name}님은 마피아 팀이다.", name=p.name), target=p.seat)
 
 
 @register
 class Beast(Ability):
     key = "beast"
+    act_text, pass_text = "{t}님을 찍습니다", "아무도 찍지 않았습니다"
     priority = 10
     helper = True
 
     def night_request(self, game, p):
         if p.contacted:
             return None
-        return TurnRequest("night", "밤이다. 한 명을 찍는다. 찍은 사람이 마피아에게 죽으면 너는 길들여져 마피아와 접선한다.",
+        return TurnRequest("night", T("밤이다. 한 명을 찍는다. 찍은 사람이 마피아에게 죽으면 너는 길들여져 마피아와 접선한다."),
                            field="target", options=target_names(game, p))
 
     async def act(self, game, p, target, ctx: NightContext):
@@ -76,54 +80,62 @@ class Beast(Ability):
             contact(game, p)
 
     def status(self, p):
-        return "길들여져 마피아와 접선했다. 마피아 회의에서 죽일 사람을 같이 고른다." if p.contacted else None
+        return T("길들여져 마피아와 접선했다. 마피아 회의에서 죽일 사람을 같이 고른다.") if p.contacted else None
 
 
 @register
-class Madam(Ability):
-    key = "madam"
+class Seducer(Ability):
+    key = "seducer"
     helper = True
 
     def after_vote(self, game, p, vote, extra):
         q = game.by_name(vote)
         if q is None or q is p or not q.alive:
+            announce(game, p, T("아무도 유혹하지 않았습니다"))
             return
-        game.private(p, f"투표로 {q.name}님을 유혹했다.", target=q.seat)
+        announce(game, p, T("투표로 {name}님을 유혹합니다", name=q.name), q)
+        game.private(p, T("투표로 {name}님을 유혹했다.", name=q.name), target=q.seat)
         if is_mafia(q):
             contact(game, p)
             return
         game.blocked_next.add(q.name)
         q.silenced_day = game.day + 1
-        game.private(q, f"마담에게 유혹당했다. 오늘 밤 능력을 쓸 수 없고 {game.day + 1}번째 낮에는 말할 수 없다.")
-        game.observe("seduce", f"마담 {p.name}님이 {q.name}님을 유혹했습니다.", actor=p.seat, target=q.seat)
+        game.private(q, T("유혹자에게 유혹당했다. 오늘 밤 능력을 쓸 수 없고 {n}번째 낮에는 말할 수 없다.", n=game.day + 1))
+        game.observe("seduce", T("유혹자 {by}님이 {name}님을 유혹했습니다.", by=p.name, name=q.name), actor=p.seat, target=q.seat)
 
     def status(self, p):
-        return "낮 투표에서 네가 표를 준 사람이 유혹당한다."
+        return T("낮 투표에서 네가 표를 준 사람이 유혹당한다.")
 
 
 @register
-class Thief(Ability):
-    key = "thief"
+class Copycat(Ability):
+    key = "copycat"
     helper = True
 
     def vote_extra(self, game, p):
         opts = target_names(game, p)
         return TurnRequest("vote", "", extra_field="steal", extra_options=opts,
-                           extra_task="steal: 능력을 훔칠 사람 한 명(오늘 밤 그 직업의 능력을 쓴다). 훔치지 않으려면 \"없음\".")
+                           extra_task=T("steal: 능력을 따라 할 사람 한 명(오늘 밤 그 직업의 능력을 쓴다). 따라 하지 않으려면 \"{none}\".",
+                                        none="없음"))
 
     def after_vote(self, game, p, vote, extra):
         q = game.by_name(str(extra)) if extra and not is_skip(extra) else None
         if q is None or q is p or not q.alive:
+            announce(game, p, T("아무 능력도 따라 하지 않았습니다"))
             return
+        announce(game, p, T("{name}님의 능력을 따라 합니다", name=q.name), q)
         p.state["stolen"] = q.role
-        game.private(p, f"{q.name}님의 능력을 훔쳤다. {q.name}님은 {josa(q.role, '이다', '다')}. 오늘 밤 그 능력을 쓴다.", target=q.seat,
-                     knows=[q.seat])
+        game.private(p, T("{name}님의 능력을 따라 했다. {name}님은 {role:이다/다}. 오늘 밤 그 능력을 쓴다.", name=q.name, role=q.role),
+                     target=q.seat, knows=[q.seat])
         if is_mafia(q) and not p.contacted:
             contact(game, p)
 
     def _stolen(self, p) -> Ability | None:  # noqa: ANN001
         role = p.state.get("stolen")
-        return ability_of(role) if role and role != "도둑" else None
+        return ability_of(role) if role and role != "모방자" else None
+
+    def acting(self, p):
+        return self._stolen(p) or self
 
     def priority_for(self, p):
         ab = self._stolen(p)
@@ -144,4 +156,4 @@ class Thief(Ability):
 
     def status(self, p):
         role = p.state.get("stolen")
-        return f"오늘 밤 훔친 {role} 능력을 쓴다." if role else "투표 때 한 사람의 능력을 훔칠 수 있다."
+        return T("오늘 밤 따라 한 {role} 능력을 쓴다.", role=role) if role else T("투표 때 한 사람의 능력을 따라 할 수 있다.")

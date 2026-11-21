@@ -137,6 +137,7 @@ class BenchRunner:
                 played.status = "done"
                 won = set(result.get("winners", []))
                 played.winners = sorted({s["key"] for i, s in enumerate(played.seats) if i in won})
+                played.won_seats = sorted(won)
             played.cost = round(sum(c["cost"] for c in game.calls), 6)
             self.run.spend(played.cost)
         except Exception as e:  # a seat that cannot start, a provider gone: the run goes on with the next game

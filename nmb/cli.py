@@ -51,7 +51,7 @@ async def cmd_run(a: argparse.Namespace) -> int:
             return 2
         s.role = role
     setup = GameSetup(kind=a.game, seats=seats, named=not a.blind, seed=a.seed, language=a.lang,
-                      turns_per_player=a.turns, vote_public=a.public_votes, role_pool=a.pool, expert=a.expert)
+                      turns_per_player=a.turns, vote_public=a.public_votes, role_pool=a.pool, cult=a.cult, expert=a.expert)
     routes = None if a.offline else Routes.standard(allow_training=a.allow_training)
     if routes is not None:
         await routes.models()
@@ -124,7 +124,8 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--seed", type=int)
     r.add_argument("--lang", default="ko")
     r.add_argument("--turns", type=int, default=2)
-    r.add_argument("--pool", default="classic")
+    r.add_argument("--pool", choices=["classic", "full"], default="classic")
+    r.add_argument("--cult", action="store_true", help="교주팀: 9 players or more, 랜덤 of complex")
     r.add_argument("--roles", help="comma separated roles for the first seats, as the lobby's per-seat choice")
     r.add_argument("--public-votes", action="store_true")
     r.add_argument("--allow-training", action="store_true")

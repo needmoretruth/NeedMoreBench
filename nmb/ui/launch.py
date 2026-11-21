@@ -57,11 +57,13 @@ class Session:
         self.page = GamePage(st, _("Complex mafia") if setup.kind == "complex" else _("Simple mafia"), on_sound=self.app.play_sound,
                              controls=self.live)
         self.page.human_seat = setup.human_seat
+        self.page.add_sound_button(self.app.sound.button())
         self.page.cheat_chip.set_visible(setup.human_seat is not None and setup.cheats)
         if setup.human_seat is not None:  # the person keeps their own ledger and notes
             ins = self.page.inspector
             ins.own_seat, ins.send_edit, ins.guesses = setup.human_seat, self.live.edit, self.live.guesses()
             ins.show_seat(st, setup.human_seat)
+            self.page.enable_talk(self.live.say, self.live.press_time)
         self.page.on_end = self._show_end
         if setup.powers and self.app.god_ready:
             self.page.enable_powers()

@@ -12,7 +12,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk  # noqa: E402
 
 from ..i18n import _  # noqa: E402
-from ..view import ViewState, role_label, team_class  # noqa: E402
+from ..view import ViewState, result_text, role_label, team_class  # noqa: E402
 from .widgets import avatar, chip, hbox, label, vbox  # noqa: E402
 
 TEAM_WON = {"시민": "Citizens win", "마피아": "Mafia wins", "교주": "Cult wins"}
@@ -59,7 +59,10 @@ class EndDialog(Adw.Dialog):
         head.add_css_class("end-head")
         head.add_css_class(team_class("마피아" if team == "마피아" else "시민") if team else "plain")
         title = _(TEAM_WON[team]) if team in TEAM_WON else _("Stopped") if result.get("stopped") else _("Draw")
-        facts = [result.get("reason") or "", _("to day {n}").format(n=result["day"]) if result.get("day") else ""]
+        reason = result_text(result, "reason")
+        if reason.startswith(title):  # the headline already says it
+            reason = reason[len(title):].lstrip(" .:,")
+        facts = [reason, _("to day {n}").format(n=result["day"]) if result.get("day") else ""]
         if human_seat is not None and team:  # the person's own result is the headline, the team's goes below
             facts.insert(0, title)
             title = _("You win") if human_seat in winners else _("You lose")

@@ -20,6 +20,9 @@ import httpx
 
 from .base import Completion, ModelInfo, ModelRef, ProviderError, Timer, cost_of, estimate_tokens
 from .catalog import efforts, maker_of, special_purpose, split_maker, trains
+from .opencode_direct import GoDirect
+from .opencode_creds import GO, ZEN
+from .opencode_private import PrivateServer
 from ..i18n import _
 
 # a console program started from the windowed app on Windows would flash a console window
@@ -47,16 +50,35 @@ def config_file() -> Path:
     return host_xdg("XDG_CONFIG_HOME", ".config") / "opencode" / "service.json"
 
 
+def _name() -> str:
+    return "opencode.exe" if sys.platform == "win32" else "opencode"
+
+
+def bundled() -> str | None:
+    """The opencode program NMB ships (Y1; opencode is MIT): /app/bin in the Flatpak, `opencode/` inside the
+    Windows and macOS bundles. Only NMB's own server runs it; it is never taken for the person's install."""
+    places = []
+    if os.environ.get("FLATPAK_ID"):
+        places.append(Path("/app/bin") / _name())
+    if getattr(sys, "frozen", False):
+        places.append(Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "opencode" / _name())
+    return next((str(p) for p in places if p.is_file()), None)
+
+
 def executable() -> str | None:
-    """The opencode program: on PATH, or where its own installer puts it (~/.opencode/bin)."""
+    """The person's own opencode program: on PATH, or where its own installer puts it (~/.opencode/bin). The copy
+    NMB ships does not count: it cannot see or start the person's server."""
     found = shutil.which("opencode")
-    if found:
+    if found and found != bundled():
         return found
-    name = "opencode.exe" if sys.platform == "win32" else "opencode"
-    for p in (Path.home() / ".opencode" / "bin" / name,):
-        if p.is_file():
-            return str(p)
-    return None
+    p = Path.home() / ".opencode" / "bin" / _name()
+    return str(p) if p.is_file() else None
+
+
+def server_executable() -> str | None:
+    """What runs NMB's own server: the shipped copy first (its plugin hooks are tested on that version), else the
+    person's own."""
+    return bundled() or executable()
 
 
 def _read(path: Path) -> dict:
@@ -111,11 +133,19 @@ def parse(data: dict) -> list[ModelInfo]:
 class OpenCodeRoute:
     name = "opencode"
 
-    def __init__(self, url: str | None = None, password: str | None = None, timeout: float = 180):
+    def __init__(self, url: str | None = None, password: str | None = None, timeout: float = 180,
+                 direct: "GoDirect | None" = None, private: "PrivateServer | None" = None):
         self._url = url
         self._password = password
         self.timeout = timeout
         self._info: dict[str, ModelInfo] = {}
+        # Go and Zen models called through Go's own API, with reasoning; None: always the text endpoint
+        self.direct = direct
+        if direct is not None:
+            direct._info_of = self.info
+        # free Zen models Go does not serve, through NMB's own opencode server with reasoning
+        self.private = private
+        self.own_list = False  # the last model list came from NMB's own server, not the person's
 
     async def _base(self) -> tuple[str, httpx.BasicAuth]:
         if self._url is None:
@@ -136,6 +166,26 @@ class OpenCodeRoute:
         return self._url, httpx.BasicAuth("opencode", self._password)
 
     async def models(self) -> list[ModelInfo]:
+        """The person's server's list; without that server (not installed, off, or out of reach as in the Flatpak)
+        the list NMB's own server gives, so free Zen models work out of the box."""
+        try:
+            out = await self._persons_models()
+            self.own_list = False
+            return out
+        except ProviderError as e:
+            if self.private is None or e.reason not in ("missing", "off") or self.private.problem is not None:
+                raise
+            try:
+                out = parse(await self.private.model_list())
+                self.own_list = True
+            except ProviderError:
+                raise e from None
+        self._info.update({m.ref.key: m for m in out})
+        if self.direct is not None:
+            await self.direct.load()
+        return out
+
+    async def _persons_models(self) -> list[ModelInfo]:
         url, auth = await self._base()
         try:
             async with httpx.AsyncClient(timeout=30, auth=auth) as c:
@@ -151,12 +201,67 @@ class OpenCodeRoute:
         r.raise_for_status()
         out = parse(r.json())
         self._info.update({m.ref.key: m for m in out})
+        if self.direct is not None:
+            await self.direct.load()
         return out
+
+    def why_no_reasoning(self, ref: ModelRef) -> str:
+        """Empty when this seat's reasoning is recorded; otherwise why not, in plain words for the seat row.
+        Go's models go to Go's own API; every other OpenCode model to NMB's own server (audit AA1/AB1)."""
+        if self._direct(ref) or self._private(ref):
+            return ""
+        d, p = self.direct, self.private
+        if ref.provider == GO:
+            if d is None or d.problem is not None:
+                return d.why_no_reasoning() if d is not None else _("No reasoning: no OpenCode Go key and no OpenCode login")
+            return _("No reasoning: OpenCode Go does not serve this model")
+        if p is None or p.problem is not None:
+            return _("No reasoning: OpenCode could not start inside NeedMoreBench")
+        if p.signins is not None and p.signins.refused(ref.provider):
+            return _("No reasoning: this provider's sign-in works only inside OpenCode")
+        if ref.provider in p.refused:
+            return _("No reasoning: this provider did not take the key")
+        if ref.provider == ZEN:
+            return _("No reasoning: no OpenCode login")
+        return _("No reasoning: no key for this provider")
+
+    def _direct(self, ref: ModelRef) -> bool:
+        """Go's own API serves this seat: a Go model, or a free Zen model Go also lists. A paid Zen model stays on
+        the opencode server, so it is billed to Zen as the person chose, not to the Go plan."""
+        if self.direct is None or not self.direct.serves(ref):
+            return False
+        info = self.info(ref)
+        return ref.provider == "opencode-go" or bool(info and info.free)
+
+    def _private(self, ref: ModelRef) -> bool:
+        """NMB's own opencode server serves this seat: any model Go's API does not take, free Zen always, paid Zen
+        and the person's other providers when their key or login could be handed over (opencode_creds)."""
+        if self.private is None or ref.provider == GO or self._direct(ref):
+            return False
+        info = self.info(ref)
+        return self.private.can_call(ref.provider, bool(info and info.free))
 
     def info(self, ref: ModelRef) -> ModelInfo | None:
         return self._info.get(ModelRef(ref.route, ref.provider, ref.id).key)
 
     async def complete(self, ref: ModelRef, system: str, user: str, max_tokens: int = 1200) -> Completion:
+        if self.direct is not None and self._direct(ref):
+            try:
+                return await self.direct.complete(ref, system, user, max_tokens)
+            except ProviderError as e:
+                if e.reason != "auth":
+                    raise
+                self.direct.problem = e  # the key or login stopped working: the text endpoint from now on
+        if self.private is not None and self._private(ref):
+            try:
+                return await self.private.complete(ref, system, user, max_tokens, self.info(ref))
+            except ProviderError as e:
+                if e.reason == "auth":
+                    self.private.refused.add(ref.provider)  # the key it was handed is refused: the person's server
+                elif e.reason in ("off", "missing"):
+                    self.private.problem = e  # it could not start: the text endpoint from now on, the seat row says so
+                else:
+                    raise
         url, auth = await self._base()
         prompt = f"{system}\n\n{user}" if system else user
         model: dict[str, str] = {"providerID": ref.provider, "id": ref.id}
@@ -201,8 +306,9 @@ class OpenCodeRoute:
 
     async def status(self) -> tuple[str, str]:
         try:
-            await self._base()
             models = await self.models()
         except ProviderError as e:
             return e.reason, str(e)
+        if self.own_list:  # the person's server is out of reach: NMB's own server gave the list
+            return "ok", _("Models: {n}, through the OpenCode inside NeedMoreBench").format(n=len(models))
         return "ok", _("Models: {n}").format(n=len(models))

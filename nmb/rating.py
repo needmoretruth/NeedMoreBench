@@ -15,6 +15,8 @@ from typing import Any, Iterable
 
 import numpy as np
 
+from .engine.god import intervened
+
 SCALE = 400 / math.log(10)
 CITIZEN, MAFIA, CULT = "시민", "마피아", "교주"
 REF_SIDE = CITIZEN  # β of the citizen side is 0 in every setting (softmax is shift-invariant)
@@ -265,15 +267,19 @@ def team_of_role(role: str) -> str:
 
 
 def row_from_saved(header: dict[str, Any], events: list[dict[str, Any]], result: dict[str, Any] | None) -> GameRow | None:
-    """A finished game as a rating row, or None (stopped, a draw, or a human seat whose side has no entrant)."""
-    if not result or result.get("stopped") or not result.get("team"):
+    """A finished game as a rating row, or None (stopped, a draw, a game the god meddled in, or a human
+    seat whose side has no entrant)."""
+    if not result or result.get("stopped") or not result.get("team") or intervened(events):
         return None
     settings = header.get("settings", {})
     roles = {int(k): v for k, v in (result.get("roles") or {}).items()}
+    # the team each seat ended on: a convert counts with its cult. Records before 「sides」 show it by the conversions
+    ended = {int(k): v for k, v in (result.get("sides") or {}).items()} or \
+        {int(ev["about_seat"]): CULT for ev in events if ev.get("kind") == "convert" and ev.get("about_seat") is not None}
     sides: dict[str, list[Entrant]] = {}
     for s in header.get("seats", []):
         role = roles.get(s["seat"], s.get("role"))
-        side = team_of_role(role)
+        side = ended.get(s["seat"]) or team_of_role(role)
         if s.get("kind") == "human":
             e = Entrant("human", "", False, "사람")
         else:

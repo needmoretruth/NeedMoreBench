@@ -8,8 +8,10 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, GLib, Gtk, Pango  # noqa: E402
 
 from ..engine.state import Event  # noqa: E402
-from ..i18n import _  # noqa: E402
-from ..view import LINE_STYLE, SPEECH, SeatView, ViewState, role_label, team_class  # noqa: E402
+from ..providers.base import STATUS_TEXT  # noqa: E402
+from ..i18n import _, counted  # noqa: E402
+from ..view import (LINE_STYLE, SPEECH, SeatView, ViewState, line_text, power_label, result_text, result_word, role_label,  # noqa: E402
+                    team_class)
 
 
 def label(text: str = "", *classes: str, wrap: bool = False, xalign: float = 0.0, selectable: bool = False) -> Gtk.Label:
@@ -27,6 +29,16 @@ def chip(text: str, kind: str = "plain") -> Gtk.Label:
     lb = label(text, "chip", kind)
     lb.set_valign(Gtk.Align.CENTER)
     return lb
+
+
+GOD_ICON = "weather-clear-symbolic"  # the god's mark: the header's powers button and every god line
+
+
+def god_icon() -> Gtk.Image:
+    img = Gtk.Image.new_from_icon_name(GOD_ICON)
+    img.add_css_class("god-spark")
+    img.set_valign(Gtk.Align.CENTER)
+    return img
 
 
 def avatar(name: str, size: int = 36) -> Adw.Avatar:
@@ -91,6 +103,7 @@ class PlayerCard(Gtk.ListBoxRow):
         self.avatar = avatar(v.name, 36)
         self.name = label(v.name, "name")
         self.name.set_ellipsize(Pango.EllipsizeMode.END)
+        self.name.set_width_chars(5)  # a short name stays whole; the talk chip gives way first
         self.model = label("", "meta")
         self.model.set_ellipsize(Pango.EllipsizeMode.END)
         self.role = chip("")
@@ -100,9 +113,12 @@ class PlayerCard(Gtk.ListBoxRow):
         self.voters = hbox(0)
         self.voters.add_css_class("voter-dots")
         self.dots = Dots()
+        self.talk = label("", "talk-state")
+        self.talk.set_ellipsize(Pango.EllipsizeMode.END)
         self.name.set_hexpand(True)
         self.model.set_hexpand(True)
-        text = vbox(3, hbox(6, self.name, self.dots, self.poll), hbox(6, self.role, self.model, self.voters, self.votes))
+        text = vbox(3, hbox(6, self.name, self.dots, self.talk, self.poll),
+                    hbox(6, self.role, self.model, self.voters, self.votes))
         text.set_hexpand(True)
         self.set_child(hbox(10, self.avatar, text))
 
@@ -121,35 +137,58 @@ class PlayerCard(Gtk.ListBoxRow):
                 self.role.remove_css_class(c)
             self.role.add_css_class(team_class(v.role))
         self.poll.set_visible(v.polls > 0 and st.step == "토론")
-        self.poll.set_label(str(v.polls))
+        self.poll.set_label(_("Picked {n}").format(n=v.polls))  # a bare number beside 손 듦 said nothing
         self.votes.set_visible(v.votes is not None and v.votes > 0)
-        self.votes.set_label(_("{n} votes").format(n=v.votes) if v.votes else "")
+        self.votes.set_label(counted(v.votes, "{n} vote", "{n} votes") if v.votes else "")
         clear(self.voters)
         for n in v.voters[:6]:
             self.voters.append(avatar(n, 18))
         self.voters.set_visible(bool(v.voters))
-        self.dots.run(v.thinking and v.kind != "human")  # a person's turn is the card under the timeline
-        for c, on in (("dead", not v.alive), ("speaking", v.thinking)):
+        state = v.talk if st.step == "토론" and v.alive else ""
+        thinking = v.thinking or state == "thinking"
+        # a person's turn is the card under the timeline; the dots say thinking only where the talk chip does not,
+        # so the name keeps its room beside the chip at the 13 px text floor
+        self.dots.run(thinking and v.kind != "human" and state != "thinking")
+        human_turn = state == "thinking" and v.kind == "human"  # a person is not thinking; it is their turn
+        self.talk.set_label(_("Their turn") if human_turn else _(TALK_STATE[state]) if state in TALK_STATE else "")
+        self.talk.set_visible(state in TALK_STATE)
+        for c in TALK_STATE:
+            (self.talk.add_css_class if c == state else self.talk.remove_css_class)(c)
+        # the whole state on hover, since a narrow side panel cuts the chip short
+        self.talk.set_tooltip_text(failure_text(v.talk_why) if state == "failed" else self.talk.get_label() or None)
+        for c, on in (("dead", not v.alive), ("speaking", thinking)):
             (self.add_css_class if on else self.remove_css_class)(c)
 
 
-SYSTEM_STRONG = ("투표 시간입니다.", "토론 시간이 얼마 남지 않았습니다.")
+# each player's state in the talk, so a quiet model never looks broken
+TALK_STATE = {"speaking": "Speaking", "thinking": "Thinking", "hand": "Hand up", "done": "Nothing to add", "failed": "No answer"}
 
 
-def thought_note(e: Event) -> Gtk.Widget:
-    """A 속마음: private thinking, never a message. No avatar and no bubble; a muted note indented under
-    the speaker's line with its label and 「아무도 못 봄」, so it never reads as one model talking to another."""
-    head = hbox(6, label(_("Thought"), "channel", "thought"), label(_("Seen by no one"), "thought-who"))
+def failure_text(reason: str) -> str:
+    if reason == "timeout":
+        return _("No answer in time")
+    return _(STATUS_TEXT[reason]) if reason in STATUS_TEXT else _("The call failed")
+
+
+SYSTEM_STRONG = ("투표 시간입니다.", "토론 시간이 얼마 남지 않았습니다.")  # message keys (and the text of older records)
+
+
+def thought_note(e: Event, name: str = "") -> Gtk.Widget:
+    """A 속마음: private thinking, never a message. No bubble; a muted note with the thinker's small
+    avatar and 「(이름)의 속마음」 and 「아무도 못 봄」, so it never reads as one model talking to another and it is
+    always clear whose it is, also alone at night."""
+    head = hbox(6, avatar(name, 18), label(_("{name}'s thought").format(name=name), "channel", "thought"),
+                label(_("Seen by no one"), "thought-who"))
     box = vbox(1, head, label(e.text, "thought-text", wrap=True, selectable=True))
     box.add_css_class("thought-note")
     box.set_halign(Gtk.Align.START)
     return box
 
 
-def reasoning_note(e: Event) -> Gtk.Widget:
+def reasoning_note(e: Event, name: str = "") -> Gtk.Widget:
     """The model's own reasoning, in the language it used: a closed note under the speaker's line that opens
-    to the whole text, marked as Anthropic's summary when it is one."""
-    head = hbox(6, label(_("Reasoning"), "channel", "reasoning"),
+    to the whole text, marked as Anthropic's summary when it is one; it names whose it is."""
+    head = hbox(6, avatar(name, 18), label(_("{name}'s reasoning").format(name=name), "channel", "reasoning"),
                 label(_("Summary") if e.data.get("summarized") else _("Seen by no one"), "thought-who"))
     first = " ".join(e.text.split())
     preview = label(first[:90], "thought-who")
@@ -174,8 +213,24 @@ def timeline_row(st: ViewState, e: Event) -> Gtk.ListBoxRow | None:
     name = st.name_of(e.actor)
     style = LINE_STYLE.get(k)
     if k in ("thought", "reasoning") and e.actor is not None:
-        row.set_child(thought_note(e) if k == "thought" else reasoning_note(e))
+        row.set_child(thought_note(e, name) if k == "thought" else reasoning_note(e, name))
         row.add_css_class("thought-row")
+        return row
+    if k == "action" and e.actor is not None:  # an ability used, with whose and which role
+        mine = st.viewer is not None and e.actor == st.viewer
+        text = _("You: {what}").format(what=line_text(e, "what")) if mine else line_text(e)
+        line = hbox(6, avatar(name, 22), chip(role_label(d.get("role")), team_class(d.get("role"))),
+                    label(text, "action-text", wrap=True))
+        line.add_css_class("action-line")
+        line.set_halign(Gtk.Align.CENTER)
+        row.set_child(line)
+        return row
+    if k == "god" and d.get("god_effect") and st.viewer is None and not d.get("answer"):
+        return None  # the god view reads the god's own record line of this power instead
+    god = god_line(st, e)
+    if god is not None:
+        row.set_child(god)
+        row.add_css_class("god-row")
         return row
     if k in SPEECH and e.actor is not None and style is not None:
         if k == "mafia" and not e.text:
@@ -189,12 +244,16 @@ def timeline_row(st: ViewState, e: Event) -> Gtk.ListBoxRow | None:
             head.append(chip(_(style[0]), "mafia"))
             if d.get("pick"):
                 head.append(label(_("Pick: {name}").format(name=d["pick"]), "channel", "mafia"))
-        elif k in ("lover", "dead"):
+        elif k in ("lover", "dead", "cult"):
             head.append(label(_(style[0]), "channel"))
         elif d.get("defense"):
             head.append(label(_("Last defense"), "channel"))
         elif d.get("intro"):
             head.append(label(_("Introduction"), "channel"))
+        if d.get("god_effect") and st.viewer is None:  # only the god view learns the god made this line
+            mark = hbox(4, god_icon(), chip(_("Forged") if k == "whisper" else _("Possessed"), "god"))
+            mark.set_tooltip_text(_("The players read this as real"))
+            head.append(mark)
         bubble = vbox(2, head, label(e.text, "bubble-text", wrap=True, selectable=True))
         bubble.add_css_class("bubble")
         if k != "say":
@@ -236,32 +295,37 @@ def timeline_row(st: ViewState, e: Event) -> Gtk.ListBoxRow | None:
         return row
     if k in ("vote_result", "verdict_result"):
         title = _("Vote result") if k == "vote_result" else _("Verdict result")
-        body = e.text.split(": ", 1)[1] if ": " in e.text[:12] else e.text
+        text = line_text(e)
+        body = text.split(": ", 1)[1] if ": " in text[:16] else text
         card = vbox(4, label(title, "section-title"), label(body, "tally", wrap=True))
         card.add_css_class("card")
         card.add_css_class("result-card")
         row.set_child(card)
         return row
     if k == "end":
-        card = vbox(4, label(d.get("result", {}).get("label") or _("Game over"), "title-3"), label(e.text, wrap=True))
+        title = result_text(d.get("result") or {}, "label") or _("Game over")
+        body = result_text(d.get("result") or {}, "reason") or line_text(e)
+        if body.startswith(title):  # the end line opens with the result the card's title already says
+            body = body[len(title):].lstrip(" .:,")
+        if body and body[-1] not in ".!?":
+            body += "."
+        card = vbox(4, label(title, "title-3"))
+        if body:
+            card.append(label(body, wrap=True))
         card.add_css_class("card")
         card.add_css_class("result-card")
         row.set_child(card)
         return row
     if k in ("system", "death", "god", "moderator", "private", "saved", "contact", "would_end", "error", "route", "role",
-             "seduce"):
+             "seduce", "frog", "spare", "trick", "convert"):
         if not e.text:
             return None
-        text = e.text
+        text = shown = line_text(e)
         if k == "private":
             who = st.name_of(min(e.to) if e.to else None)
-            text = (_("Only {name} knows").format(name=who) if st.viewer is None else _("Only you know")) + ": " + e.text
+            text = (_("Only {name} knows").format(name=who) if st.viewer is None else _("Only you know")) + ": " + shown
         elif k == "moderator":
-            text = _("Moderator") + ": " + e.text
-        elif k == "god" and d.get("power") == "공지":
-            text = _("God") + ": " + e.text
-        elif k == "god" and d.get("power") == "계시":
-            text = _("God to {name}").format(name=st.name_of(e.target)) + ": " + e.text
+            text = _("Moderator") + ": " + shown
         lb = label(text, "system-line", wrap=True, xalign=0.5)
         lb.set_justify(Gtk.Justification.CENTER)
         lb.set_halign(Gtk.Align.CENTER)
@@ -269,17 +333,52 @@ def timeline_row(st: ViewState, e: Event) -> Gtk.ListBoxRow | None:
             lb.add_css_class("death")
         elif k in ("god", "moderator"):
             lb.add_css_class("god")
-        elif k == "system" and e.text in SYSTEM_STRONG:
+        elif k == "system" and ((d.get("msg") or {}).get("k") or e.text) in SYSTEM_STRONG:
             lb.add_css_class("strong")
         row.set_child(lb)
         return row
     return None
 
 
+def god_line(st: ViewState, e: Event) -> Gtk.Widget | None:
+    """A power's line in the god colour, with the god's sun icon and the power's name; it glows once when new.
+    The god view gets the god's own record line, the answer to a 심문 and a delivered 거짓 결과 with the truth
+    beside it. A player's screen gets what the power showed that player, which never says who the 신 is."""
+    k, d = e.kind, e.data
+    if not (k == "god" or k == "private" and d.get("false_result") and st.viewer is None):
+        return None
+    if not e.text:
+        return None
+    power = d.get("power")
+    me = st.viewer is not None
+    shown = line_text(e)  # the interface language, from the message the record keeps
+    if k == "private":
+        head = _("False result")
+        text = _("Only {name} knows").format(name=st.name_of(min(e.to) if e.to else None))
+        text += ": " + shown + " (" + _("true: {result}").format(result=result_word(d.get("real_result", ""))) + ")"
+    elif d.get("answer"):
+        who = _("You") if me else st.name_of(e.target)
+        head, text = power_label(power), _("{name} to the god").format(name=who) + ": " + shown
+    elif power == "공지":
+        head, text = _("God"), shown
+    elif me and power in ("계시", "심문") and e.to:
+        head, text = (_("Revelation to you") if power == "계시" else _("God's question to you")), shown
+    else:
+        head, text = power_label(power) if power else _("God"), shown
+    lb = label(text, "god-text", wrap=True, xalign=0.5)
+    lb.set_justify(Gtk.Justification.CENTER)
+    box = hbox(8, god_icon(), chip(head, "god"), lb)
+    box.add_css_class("god-line")
+    box.set_halign(Gtk.Align.CENTER)
+    if d.get("record") and d.get("used_by") not in (None, "관전자"):
+        box.set_tooltip_text(_("Used by {name}").format(name=st.name_of(d["used_by"])))
+    return box
+
+
 def _filter_kind(e: Event) -> str:
     if e.kind == "whisper":
         return "whisper"
-    if e.kind in ("mafia", "lover", "dead"):  # the night chats
+    if e.kind in ("mafia", "lover", "dead", "cult"):  # the night chats
         return "mafia"
     if e.kind in ("thought", "reasoning"):
         return e.kind

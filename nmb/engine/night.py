@@ -12,8 +12,10 @@ from collections import Counter
 from typing import TYPE_CHECKING
 
 from .abilities import Attack, NightContext, ability_for, ability_of, in_mafia_team
+from .abilities.base import announce, choose_text
 from .parse import clean_speech
 from .state import Player
+from .text import Msg, T, lines
 from .turn import TurnRequest
 
 if TYPE_CHECKING:
@@ -23,14 +25,14 @@ if TYPE_CHECKING:
 async def run_night(game: "Game") -> None:
     """Night N follows day N (the game starts in the day); its morning opens day N+1."""
     game.phase, game.step = "night", ""
-    game.emit("phase", f"{game.day}번째 밤", key=True, phase="night", banner="밤이 되었습니다", sound="night")
+    game.emit("phase", T("{n}번째 밤", n=game.day), key=True, phase="night", banner=game.t(T("밤이 되었습니다")), sound="night")
     game.snapshot()
     ctx = NightContext(night=game.day)
     ctx.blocked |= game.blocked_next
     game.blocked_next = set()
     for p in game.players:
         if p.state.pop("frog", None):
-            game.private(p, "개구리에서 풀려났다. 다시 직업 능력을 쓸 수 있다.")
+            game.private(p, T("개구리에서 풀려났다. 다시 직업 능력을 쓸 수 있다."))
     for p in game.alive():
         ability_for(p).nightfall(game, p, ctx)
 
@@ -41,7 +43,7 @@ async def run_night(game: "Game") -> None:
             ab = ability_for(p)
             if ab.blockable and p.name in ctx.blocked:
                 if ab.night_request(game, p) is not None:
-                    game.private(p, "유혹당해 오늘 밤 능력을 쓰지 못한다.")
+                    game.private(p, T("유혹당해 오늘 밤 능력을 쓰지 못한다."))
                 continue
             req = ab.night_request(game, p)
             if req is not None:
@@ -51,7 +53,9 @@ async def run_night(game: "Game") -> None:
     async def one(p: Player, req: TurnRequest) -> tuple[Player, str | None]:
         obj = await game.ask(p, req)
         ctx.answers[p.seat] = obj
-        return p, game.pick(obj, req)
+        t = game.pick(obj, req)
+        announce(game, p, choose_text(ability_for(p).acting(p), game, t), game.by_name(t))  #
+        return p, t
 
     (target, picks), chosen = await asyncio.gather(mafia_meeting(game), abilities())
     await game.checkpoint()
@@ -82,10 +86,10 @@ async def run_night(game: "Game") -> None:
 async def night_act(game: "Game", p: Player, target: str | None, ctx: NightContext) -> None:
     ab = ability_for(p)
     if ab.blockable and p.name in ctx.blocked:
-        game.private(p, "유혹당해 오늘 밤 능력을 쓰지 못했다.")
+        game.private(p, T("유혹당해 오늘 밤 능력을 쓰지 못했다."))
         return
     await ab.act(game, p, target, ctx)
-    if target and p.seat not in ctx.used_on:  # what a 사립탐정 sees
+    if target and p.seat not in ctx.used_on and game.by_name(target) is not None:  # what a 미행꾼 sees (기록관 names a role)
         ctx.used_on[p.seat] = target
 
 
@@ -96,11 +100,11 @@ def resolve_attacks(game: "Game", ctx: NightContext) -> None:
         if q is None or not q.alive or q.name in dead:
             continue
         if q.name in game.god_protect:
-            game.observe("saved", f"신의 보호로 {q.name}님이 살았습니다.", target=q.seat, source=a.source)
+            game.observe("saved", T("신의 보호로 {name}님이 살았습니다.", name=q.name), target=q.seat, source=a.source)
             continue
         if a.source == "mafia" and q.name in ctx.protected and not a.pierce:
-            ctx.morning.append(f"의사의 치료로 {q.name}님이 살아났습니다.")
-            game.observe("saved", f"의사가 {q.name}님을 살렸습니다.", target=q.seat, source=a.source)
+            ctx.morning.append(T("의사의 치료로 {name}님이 살아났습니다.", name=q.name))
+            game.observe("saved", T("의사가 {name}님을 살렸습니다.", name=q.name), target=q.seat, source=a.source)
             continue
         outcome = "die" if a.pierce else ability_for(q).on_attack(game, q, a, ctx)
         if outcome == "die":
@@ -112,18 +116,19 @@ def morning(game: "Game", ctx: NightContext) -> None:
     game.day += 1
     game.phase, game.step = "day", ""
     game._end_day = asyncio.Event()
-    game.emit("phase", f"{game.day}번째 낮", key=True, phase="day", banner=f"{game.day}번째 낮", sound="day")
+    today = T("{n}번째 낮", n=game.day)
+    game.emit("phase", today, key=True, phase="day", banner=game.t(today), sound="day")
     game.set_step("아침")
-    for p in game.alive():
-        ability_for(p).morning(game, p, ctx)
+    for p, ab in [(p, ability_for(p)) for p in game.alive()]:  # a frog made tonight (마녀) still has its morning
+        ab.morning(game, p, ctx)
     for line in ctx.morning:
         game.system(line, sound="save")
     for name, cause in ctx.deaths:
         q = game.by_name(name)
         if q and q.alive:
-            game.kill(q, f"밤사이 {q.name}님이 죽었습니다.", cause, ctx)
+            game.kill(q, T("밤사이 {name}님이 죽었습니다.", name=q.name), cause, ctx)
     if not ctx.deaths and not ctx.morning:
-        game.system("조용하게 밤이 지나갔습니다.")
+        game.system(T("조용하게 밤이 지나갔습니다."))
 
 
 async def mafia_meeting(game: "Game") -> tuple[str | None, dict[int, str | None]]:
@@ -134,31 +139,62 @@ async def mafia_meeting(game: "Game") -> tuple[str | None, dict[int, str | None]
         return None, {}
     game.rng.shuffle(members)
     team = frozenset(p.seat for p in members) | frozenset(p.seat for p in game.players if not p.alive)
-    opts = [q.name for q in game.alive() if not in_mafia_team(q)]
-    picks: list[tuple[Player, str | None]] = []
-    for p in members:
-        if p in killers:
-            req = TurnRequest("mafia", "마피아 회의다. 마피아 팀에게만 들린다. say는 마피아 팀에게만 하는 말이다. 오늘 밤 죽일 사람을 고른다. "
-                              "마피아끼리 표가 갈리면 가장 많이 나온 사람, 같으면 먼저 말한 쪽의 선택으로 정해진다.",
-                              field="target", options=opts, say=True)
-        else:
-            req = TurnRequest("mafia", "마피아 회의다. 마피아 팀에게만 들린다. say는 마피아 팀에게만 하는 말이다. 죽일 사람은 마피아가 정한다.",
-                              say=True)
-        obj = await game.ask(p, req)
-        pick = game.pick(obj, req) if req.field else None
-        say = clean_speech(obj.get("say"))
-        game.emit("mafia", say, actor=p.seat, to=team, key=True, pick=pick, sound="mafia")
-        if req.field:
-            picks.append((p, pick))
-        await game.pace(bool(say))
-    counts = Counter(t for _, t in picks if t)
+    opts = [q.name for q in game.alive()]  # a teammate or oneself too
+    picks: dict[int, str] = {}
+    game.meeting = team  # a person on the team may also type into the meeting
+    game.emit("meeting", to=team, log=False, on=True)
+    try:
+        for rnd in range(1, MEETING_ROUNDS + 1):
+            for p in members:
+                if not p.alive:
+                    continue
+                killer = p in killers
+                req = TurnRequest("mafia", meeting_task(rnd, killer, picks.get(p.seat)), say=True,
+                                  **({"field": "target", "options": opts} if killer else {}))
+                obj = await game.ask(p, req)
+                pick = game.pick(obj, req) if killer else None
+                if pick:
+                    picks[p.seat] = pick  # no answer keeps the earlier pick
+                say = clean_speech(obj.get("say"))
+                game.emit("mafia", say, actor=p.seat, to=team, key=True, pick=picks.get(p.seat) if killer else None,
+                          round=rnd, sound="mafia")
+                await game.pace(bool(say))
+            final = {picks.get(k.seat) for k in killers if k.alive}
+            if len(members) == 1 or (None not in final and len(final) == 1):
+                break  # everyone who kills agrees (a lone mafia states its pick once)
+    finally:
+        game.meeting = None
+        game.emit("meeting", to=team, log=False, on=False)
+    ordered = [(p, picks[p.seat]) for p in members if p.seat in picks]
+    counts = Counter(t for _, t in ordered)
     if not counts:
+        announce(game, killers[0], T("아무도 노리지 않았습니다"), to=team, role="마피아")
         return None, {}
     top = max(counts.values())
     tied = {t for t, c in counts.items() if c == top}
-    choice = next(t for _, t in picks if t in tied)
-    game.emit("mafia", f"오늘 밤 죽일 사람: {choice}", to=team, key=True, decided=choice)
-    return choice, {p.seat: t for p, t in picks}
+    who, choice = next((p, t) for p, t in ordered if t in tied)
+    game.emit("mafia", T("오늘 밤 죽일 사람: {name}", name=choice), to=team, key=True, decided=choice)
+    announce(game, who, T("{t}님을 노립니다", t=choice), game.by_name(choice), to=team, role="마피아")
+    return choice, dict((p.seat, t) for p, t in ordered)
+
+
+MEETING_ROUNDS, CHAT_ROUNDS = 3, 2
+
+
+def meeting_task(rnd: int, killer: bool, mine: str | None) -> Msg:
+    """The rules of the meeting as rules: rounds, agreement, the fallback."""
+    parts = [T("마피아 회의다. 마피아 팀에게만 들린다. say는 마피아 팀에게만 하는 말이다.")]
+    if rnd > 1:
+        parts.append(T("회의 {n}번째 바퀴다. 위의 회의 내용을 보고 말한다.", n=rnd))
+    if not killer:
+        parts.append(T("죽일 사람은 마피아가 정한다."))
+    else:
+        if mine:
+            parts.append(T("지금 네 선택: {name}. 바꾸거나 그대로 둔다.", name=mine))
+        parts.append(T("오늘 밤 죽일 사람을 target에 적는다. 살아 있는 누구든 된다(같은 마피아 팀이나 너 자신도). "
+                       "회의는 차례대로 최대 {n}바퀴 돈다. 한 바퀴가 끝났을 때 죽일 사람을 고르는 모두의 선택이 같으면 회의가 끝나고, "
+                       "{n}바퀴가 지나도 갈리면 가장 많이 나온 사람, 같으면 먼저 말한 쪽의 선택으로 정해진다.", n=MEETING_ROUNDS))
+    return lines(*parts)
 
 
 async def lover_chat(game: "Game") -> None:
@@ -168,13 +204,15 @@ async def lover_chat(game: "Game") -> None:
         return
     game.rng.shuffle(pair)
     to = frozenset(p.seat for p in pair) | frozenset(p.seat for p in game.players if not p.alive)
-    for p in pair:
-        other = next(q for q in pair if q is not p)
-        req = TurnRequest("lover", f"연인 대화다. 연인 {other.name}님과 너만 듣는다. 하고 싶은 말이 없으면 say를 비운다.", say=True)
-        say = clean_speech((await game.ask(p, req)).get("say"))
-        if say:
-            game.emit("lover", say, actor=p.seat, to=to, key=True, sound="whisper")
-        await game.pace(bool(say))
+    for rnd in range(1, CHAT_ROUNDS + 1):  # two rounds, so each can answer the other
+        for p in pair:
+            other = next(q for q in pair if q is not p)
+            req = TurnRequest("lover", T("연인 대화다({rnd}/{n}번째 바퀴). 연인 {name}님과 너만 듣는다. "
+                                         "하고 싶은 말이 없으면 say를 비운다.", rnd=rnd, n=CHAT_ROUNDS, name=other.name), say=True)
+            say = clean_speech((await game.ask(p, req)).get("say"))
+            if say:
+                game.emit("lover", say, actor=p.seat, to=to, key=True, sound="whisper", round=rnd)
+            await game.pace(bool(say))
 
 
 async def dead_chat(game: "Game") -> None:
@@ -185,14 +223,17 @@ async def dead_chat(game: "Game") -> None:
     if not medium or not dead:
         return
     to = frozenset(p.seat for p in medium) | frozenset(p.seat for p in game.players if not p.alive)
-    names = ", ".join(p.name for p in dead)
+    names = [p.name for p in dead]
     speakers = medium + dead
-    for p in speakers:
-        if p.alive:
-            task = f"죽은 사람 대화다. 영매인 너와 죽은 사람들({names})만 듣는다. 하고 싶은 말이 없으면 say를 비운다."
-        else:
-            task = "죽은 사람 대화다. 죽은 사람들과 영매만 듣는다. 산 사람에게는 들리지 않는다. 하고 싶은 말이 없으면 say를 비운다."
-        say = clean_speech((await game.ask(p, TurnRequest("dead", task, say=True))).get("say"))
-        if say:
-            game.emit("dead", say, actor=p.seat, to=to, key=True, sound="whisper")
-        await game.pace(bool(say))
+    for rnd in range(1, CHAT_ROUNDS + 1):
+        for p in speakers:
+            if p.alive:
+                task = T("죽은 사람 대화다({rnd}/{n}번째 바퀴). 영매인 너와 죽은 사람들({names})만 듣는다. 하고 싶은 말이 없으면 say를 비운다.",
+                         rnd=rnd, n=CHAT_ROUNDS, names=names)
+            else:
+                task = T("죽은 사람 대화다({rnd}/{n}번째 바퀴). 죽은 사람들과 영매만 듣는다. 산 사람에게는 들리지 않는다. "
+                         "하고 싶은 말이 없으면 say를 비운다.", rnd=rnd, n=CHAT_ROUNDS)
+            say = clean_speech((await game.ask(p, TurnRequest("dead", task, say=True))).get("say"))
+            if say:
+                game.emit("dead", say, actor=p.seat, to=to, key=True, sound="whisper", round=rnd)
+            await game.pace(bool(say))

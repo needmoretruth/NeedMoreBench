@@ -13,7 +13,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, GLib, Gtk, Pango  # noqa: E402
 
-from ..i18n import _  # noqa: E402
+from ..i18n import _, counted  # noqa: E402
 from ..view import Row, SeatView, ViewState, role_label, team_class  # noqa: E402
 from .own import OwnLedgerLine, OwnNotes  # noqa: E402
 from .widgets import avatar, chip, clear, hbox, label, vbox  # noqa: E402
@@ -37,7 +37,10 @@ class LedgerLine(Gtk.Box):
         self.bar.set_hexpand(True)
         self.bar.set_valign(Gtk.Align.CENTER)
         self.note = label("", "meta", wrap=True)
-        self.append(hbox(8, self.who, self.guess))
+        self.sure = label(_("Confirmed"), "known-tag")
+        self.sure.set_tooltip_text(_("The game told this player the other's team and role"))
+        self.sure.set_visible(False)
+        self.append(hbox(8, self.who, self.sure, self.guess))
         self.append(hbox(8, self.bar, self.num))
         self.append(self.note)
         self._shown = 50.0
@@ -45,6 +48,7 @@ class LedgerLine(Gtk.Box):
         self._seen = -1
 
     def update(self, row: Row) -> None:
+        self.sure.set_visible(row.known)
         self.guess.set_label(role_label(row.guess))
         for c in ("mafia", "town", "cult", "plain"):
             self.guess.remove_css_class(c)
@@ -90,6 +94,7 @@ class Inspector(Gtk.Box):
         self.send_edit: Callable[[dict], None] | None = None
         self.guesses: list[str] = []
         self.own_notes: OwnNotes | None = None
+        self._page_key: tuple | None = None
         self.head_avatar = avatar("?", 44)
         self.head_name = label("", "title-4")
         self.head_name.set_ellipsize(Pango.EllipsizeMode.END)
@@ -151,7 +156,7 @@ class Inspector(Gtk.Box):
         self.head_name.set_label(v.name)
         meta = v.model_line if (st.owner_sees_models or st.result is not None) else ""
         if v.calls:
-            meta = (meta + ", " if meta else "") + _("{n} calls").format(n=v.calls) + (", " + _("{n} failed").format(n=v.failed) if v.failed else "")
+            meta = (meta + ", " if meta else "") + counted(v.calls, "{n} call", "{n} calls") + (", " + _("{n} failed").format(n=v.failed) if v.failed else "")
         self.head_meta.set_label(meta)
         show = st.role_visible(v) and bool(v.role)
         self.head_role.set_visible(show)
@@ -176,18 +181,13 @@ class Inspector(Gtk.Box):
         if editable:
             if self.own_notes is None:
                 clear(self.notes_box)
+                self._page_key = None
                 self.own_notes = OwnNotes(self._send)
                 self.notes_box.append(self.own_notes)
-            self.own_notes.update(v.notes)
+            self.own_notes.update(v.page)
         else:
             self.own_notes = None
-            clear(self.notes_box)
-            if not v.notes:
-                self.notes_box.append(label(_("No notes."), "dim"))
-            for nid, text in sorted(v.notes.items()):
-                n = vbox(2, label(f"#{nid}", "note-id"), label(text, wrap=True, selectable=True))
-                n.add_css_class("note-row")
-                self.notes_box.append(n)
+            self._page(v)
         self._whispers(st, v)
         clear(self.thought_box)
         if not v.thoughts:
@@ -205,6 +205,33 @@ class Inspector(Gtk.Box):
             t = vbox(2, label(when + (", " + _("Summary") if summarized else ""), "note-id"), label(text, wrap=True, selectable=True))
             t.add_css_class("note-row")
             self.reasoning_box.append(t)
+
+    def _page(self, v: SeatView) -> None:
+        """The notebook page now, then the earlier versions newest first. Drawn again only when a
+        version is added, so an open list of versions stays open."""
+        key = (v.seat, len(v.pages), v.page)
+        if key == self._page_key:
+            return
+        self._page_key = key
+        clear(self.notes_box)
+        if not v.page:
+            self.notes_box.append(label(_("No notes."), "dim"))
+        else:
+            when = v.pages[-1][0] if v.pages else ""
+            n = vbox(2, label(when, "note-id"), label(v.page, wrap=True, selectable=True))
+            n.add_css_class("note-row")
+            self.notes_box.append(n)
+        older = v.pages[:-1]
+        if not older:
+            return
+        box = vbox(6)
+        for when, text in reversed(older):
+            t = vbox(2, label(when, "note-id"), label(text or _("(empty)"), "meta", wrap=True, selectable=True))
+            t.add_css_class("note-row")
+            box.append(t)
+        exp = Gtk.Expander(label=_("Earlier versions ({n})").format(n=len(older)), child=box)
+        exp.set_margin_top(8)
+        self.notes_box.append(exp)
 
     def _whispers(self, st: ViewState, v: SeatView) -> None:
         """This player's whispers as one conversation per partner, in order (pair view)."""

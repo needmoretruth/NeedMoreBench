@@ -17,7 +17,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk  # noqa: E402
 
-from ..engine.roles import COMPLEX, DEFAULT_PLAYERS, GAME_ROLES, PLAYER_RANGE, SIMPLE, simple_lineup  # noqa: E402
+from ..engine.roles import COMPLEX, DEFAULT_PLAYERS, GAME_ROLES, PLAYER_RANGE, SIMPLE  # noqa: E402
 from ..engine.names import line_of  # noqa: E402
 from ..engine.setup import GameSetup, SeatSpec, playable  # noqa: E402
 from ..i18n import _  # noqa: E402
@@ -25,6 +25,7 @@ from ..pools import pool_models, seat_cost  # noqa: E402
 from ..presets import put_model  # noqa: E402
 from ..providers.base import ModelRef  # noqa: E402
 from ..view import effort_label, role_label  # noqa: E402
+from . import lineup  # noqa: E402
 from .picker import POOLS, Picker, place_text, route_menu, seat_price, seat_routes, why_not  # noqa: E402
 from .widgets import avatar, chip, hbox, label, vbox  # noqa: E402
 
@@ -99,13 +100,15 @@ class HomePage(Adw.NavigationPage):
         bench = Gtk.Button(label=_("Bench"), tooltip_text=_("Many games without you, for the standings"))
         bench.connect("clicked", lambda *_a: self._open("bench"))
         header.pack_start(bench)
-        menu = Gtk.MenuButton(icon_name="open-menu-symbolic", tooltip_text=_("Menu"))
+        self.menu_btn = menu = Gtk.MenuButton(icon_name="open-menu-symbolic", tooltip_text=_("Menu"))
         pop = vbox(2)
         for name, text in self._menu_items():
             b = Gtk.Button(label=text)
             b.add_css_class("flat")
             b.connect("clicked", lambda btn, n=name: (btn.get_ancestor(Gtk.Popover).popdown(), self._open(n)))
             pop.append(b)
+        pop.append(Gtk.Separator(margin_top=4, margin_bottom=4))
+        pop.append(self.app.sound.controls())  # 소리 and 음량
         menu.set_popover(Gtk.Popover(child=pop))
         header.pack_end(menu)
         view.add_top_bar(header)
@@ -130,12 +133,14 @@ class HomePage(Adw.NavigationPage):
         view.add_bottom_bar(bar)
         self.set_child(view)
         app.on_models(self.rebuild)
+        self.lineup_note = ""
+        lineup.fit(self)  # a saved lobby whose seats and counts disagree opens agreeing, and says what moved
         self.rebuild()
 
     def _menu_items(self) -> list[tuple[str, str]]:
         items = [("settings", _("Settings"))] if self.app.settings_ready else []
         items += [("standings", _("Standings"))] if self.app.standings_ready else []
-        return items + [("about", _("About NeedMoreBench"))]
+        return items + [("help", _("Help")), ("about", _("About NeedMoreBench"))]
 
     # ---- state ------------------------------------------------------------------------------------------
     def _ready_setup(self) -> GameSetup:
@@ -159,7 +164,8 @@ class HomePage(Adw.NavigationPage):
                                    "allow_repeat": self.allow_repeat}
         self.app.settings.save()
 
-    def changed(self) -> None:
+    def changed(self, fresh: bool = True, seat: SeatSpec | None = None) -> None:
+        lineup.fit(self, fresh=fresh, seat=seat)  # the newest action wins (AL1); fresh drops an older note
         self.save()
         self.rebuild()
 
@@ -185,9 +191,11 @@ class HomePage(Adw.NavigationPage):
             child = nxt
         if not self.connected:
             self.body.append(self._connect_first())
-        self.start_btn.set_label(_("Start game") if self.connected else _("Connect a model"))
-        self.body.append(self._numbers())
+        from .lineup import LineupGroup, numbers
+        self.strip = numbers(self)
+        self.body.append(self.strip)
         self.body.append(self._game_group())
+        self.body.append(LineupGroup(self).box)  # also sets the start button
         self.body.append(self._seats_group())
         self.body.append(self._me_group())
         self.body.append(self._names_group())
@@ -207,25 +215,17 @@ class HomePage(Adw.NavigationPage):
         lb.append(row)
         return lb
 
-    def _numbers(self) -> Gtk.Widget:
-        n = self.count
-        if self.setup.kind == SIMPLE:
-            lineup = simple_lineup(n)
-            items = [(n, _("Players")), (lineup["마피아"], role_label("마피아")), (lineup["경찰"], role_label("경찰")),
-                     (lineup["의사"], role_label("의사")), (lineup["시민"], role_label("시민"))]
-        else:
-            from ..engine.roles import COMPLEX_SLOTS
-            sl = COMPLEX_SLOTS[n]
-            items = [(n, _("Players")), (sl[0], role_label("마피아")), (sl[1], _("Helpers")), (sl[2] + sl[3], _("Police, doctor")),
-                     (sl[4] + sl[5], _("Others"))]
-        box = hbox(10)
-        box.add_css_class("lobby-numbers")
-        box.set_homogeneous(True)
-        for value, text in items:
-            cell = vbox(0, label(str(value), "value", xalign=0.5), label(text, "label", xalign=0.5))
-            cell.add_css_class("lobby-number")
-            box.append(cell)
-        return box
+    def lineup_changed(self) -> None:
+        """A role count moved: the strip on top follows, and the start button says why a lineup cannot start."""
+        from .lineup import numbers
+        old = getattr(self, "strip", None)
+        if old is not None and old.get_parent() is self.body:
+            self.strip = numbers(self)
+            self.body.insert_child_after(self.strip, old.get_prev_sibling())
+            self.body.remove(old)
+        problem = self.full_setup().problem() if self.connected else None
+        self.start_btn.set_sensitive(problem is None)
+        self.start_btn.set_label(problem or (_("Start game") if self.connected else _("Connect a model")))
 
     def _game_group(self) -> Gtk.Widget:
         kind = Adw.ActionRow(title=_("Game"))
@@ -275,7 +275,11 @@ class HomePage(Adw.NavigationPage):
 
     def _human_row(self) -> Gtk.Widget:
         row = Adw.ActionRow(title=self._human_title(), subtitle=_("You"))
-        row.add_prefix(avatar(self._human_title(), 32))
+        # a random name is not known yet: the avatar says so, as a random seat's does (「랜덤 이름」 read 「랜이」)
+        # and a disguise shows the model's initial as that model's seat would, not 「C척」 from 「…인 척」
+        face = "?" if not self.setup.named else line_of(self.human.disguise_name or self.human.disguise_key or "") \
+            if self.human.disguise_key else self._human_title()
+        row.add_prefix(avatar(face, 32))
         row.add_suffix(self._role_dropdown(self.human))
         return row
 
@@ -301,12 +305,14 @@ class HomePage(Adw.NavigationPage):
         ways = len(seat_routes(self.app.routes, s.model_key)) if s.model_key and info else 0
         if ways > 1 and not why:
             sub += ", " + _("{n} routes").format(n=ways)
+        bare = self.app.routes.no_reasoning(s.model_key) if s.model_key and info and not why else ""
+        sub += "\n" + bare if bare else ""  # a seat whose reasoning cannot be recorded says so, and why
         row = Adw.ActionRow(title=title, subtitle=sub, activatable=ways > 1)
         if ways > 1:  # seat detail: the user may take another route than the order picks
             row.set_tooltip_text(_("Choose the route"))
             row.connect("activated", lambda r, s=s: route_menu(r, self.app.routes, s.model_key or "", lambda k, s=s: self._route(s, k)))
         row.set_title_lines(1)
-        row.set_subtitle_lines(1)
+        row.set_subtitle_lines(2 if bare else 1)
         row.add_prefix(avatar(line_of(title) if s.model_key else "?", 32))
         if not s.model_key:
             row.add_prefix(chip(_("Random"), "plain"))
@@ -337,7 +343,8 @@ class HomePage(Adw.NavigationPage):
 
         def set_role(k: int) -> None:
             s.role = roles[k - 1] if k > 0 else None
-            self.save()
+            from gi.repository import GLib
+            GLib.idle_add(lambda: (self.changed(seat=s), False)[1])  # the seat just set wins (AL1)
         return _dropdown(items, cur, set_role)
 
     def _me_group(self) -> Gtk.Widget:
@@ -428,6 +435,7 @@ class HomePage(Adw.NavigationPage):
         for s in self.setup.seats:
             if s.role and s.role not in GAME_ROLES[kind]:
                 s.role = None
+        self.setup.counts = {r: c for r, c in self.setup.counts.items() if r in GAME_ROLES[kind]}
         self._set_count(max(self.count, DEFAULT_PLAYERS[kind]) if kind == COMPLEX else self.count)
 
     def _mode(self, mode: str | None) -> None:
@@ -572,6 +580,9 @@ class HomePage(Adw.NavigationPage):
         elif what == "settings":
             from .settings import SettingsDialog
             SettingsDialog(self.app).present(self.app.window)
+        elif what == "help":
+            from .help import open_help
+            open_help(self.app.window)
         else:
             about = Adw.AboutDialog(application_name="NeedMoreBench", application_icon=self.app.get_application_id(),
                                     developer_name="needmoretruth", version=_version(),

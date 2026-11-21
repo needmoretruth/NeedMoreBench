@@ -1,0 +1,13 @@
+{
+ "about": "The opencode release NMB ships for its own server (Y1). MIT. Checksums from the release's own asset digests; the Flatpak manifest repeats the Linux ones (tests/test_opencode_bundled.py keeps them equal).",
+ "version": "2.3.2",
+ "license": {"file": "LICENSE", "sha256": "625f0f619133f89bbbb2abe37369613dfa1885eba1e50d02170deb62bb42cb6b"},
+ "assets": {
+  "linux-x64": {"file": "opencode-linux-x64.tar.gz", "sha256": "563b5d663637226b6e3bb4bb6803281bc39b0d2cd88db06d674b6420aab009b0"},
+  "linux-arm64": {"file": "opencode-linux-arm64.tar.gz", "sha256": "9d10185acdb72336e086e699ca363a6065f410fd3c1caed0dc8046e95ac06ccb"},
+  "windows-x64": {"file": "opencode-windows-x64.zip", "sha256": "8ad59f1992a0594d8bd72b5ed3be1f5bfffcd9d1756853eec7e5d3141c25be1f"},
+  "windows-arm64": {"file": "opencode-windows-arm64.zip", "sha256": "13dabbf6874c8abfc7ff44bee0e64c3758e918a0e27f56f74173c353d56a842d"},
+  "darwin-x64": {"file": "opencode-darwin-x64.zip", "sha256": "1875a6d1106702f04c9468831563c061bd00337f891a1b4a6cd151155e6aaf5c"},
+  "darwin-arm64": {"file": "opencode-darwin-arm64.zip", "sha256": "31ab5a06a29edc7e49b895f35c2b64ebfe7c7f0437b0f2581b006efcd79fee1a"}
+ }
+}

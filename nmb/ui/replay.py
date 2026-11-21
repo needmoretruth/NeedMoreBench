@@ -16,7 +16,7 @@ from ..store import Saved, event_from_record  # noqa: E402
 from ..i18n import _  # noqa: E402
 from ..view import ViewState  # noqa: E402
 from .game_page import GamePage  # noqa: E402
-from .widgets import hbox, label  # noqa: E402
+from .widgets import chip, hbox, label  # noqa: E402
 
 SPEEDS = [("0.5×", 1.6), ("1×", 0.8), ("2×", 0.4), ("4×", 0.15)]
 
@@ -81,6 +81,10 @@ class Replay:
         self.where = label("", "meta")
         self.where.set_width_chars(16)
         bits = [prev_btn, self.play_btn, next_btn, self.scale, self.where, speed]
+        if self.saved.intervened:  # marked where the replay is driven, left out of the standings
+            mark = chip(_("God intervened"), "god")
+            mark.set_tooltip_text(_("The god used powers in this game, so it is left out of the standings."))
+            bits.insert(4, mark)
         if self.blind_for_owner:
             sw = Gtk.Switch(active=self.reveal, valign=Gtk.Align.CENTER)
             sw.connect("notify::active", lambda s, _p: self._set_reveal(s.get_active()))
@@ -90,7 +94,8 @@ class Replay:
         bar.set_margin_start(6)
         bar.set_margin_end(6)
         self.page.bottom_bar.append(bar)
-        status = _("Finished game") if self.saved.finished else _("Stopped game, shown up to where it stopped")
+        status = (_("Finished game") if self.saved.finished else _("Game in progress, shown up to now") if self.saved.live
+                  else _("Stopped game, shown up to where it stopped"))
         self.page.cost_label.set_label(status)
         self.seek(len(self.events) if not self.saved.finished else 0)
 
@@ -138,7 +143,7 @@ class Replay:
             e = self.events[self.pos]
             self.pos += 1
             self.page.feed(e)
-            if e.kind in ("say", "whisper", "mafia", "lover", "dead", "system", "death", "vote_result", "verdict_result", "phase", "god", "end"):
+            if e.kind in ("say", "whisper", "mafia", "lover", "dead", "cult", "system", "death", "vote_result", "verdict_result", "phase", "god", "end"):
                 break
         self._sync()
         if self.pos >= len(self.events):

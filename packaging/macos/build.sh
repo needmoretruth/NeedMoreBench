@@ -24,6 +24,8 @@ VPY=build/venv/bin/python
 
 "$VPY" packaging/licenses.py --brew --out build/licenses
 "$VPY" packaging/icons.py
+# opencode for free models out of the box (Y1): the pinned release, checksum checked, next to the app as opencode/
+"$VPY" packaging/fetch_opencode.py "darwin-$([ "$ARCH" = "arm64" ] && echo arm64 || echo x64)" build/opencode
 "$VPY" -m PyInstaller --noconfirm --log-level WARN --distpath dist --workpath build/pyinstaller packaging/needmorebench.spec
 
 # smoke: the built app opens its screens, saves a picture of each and exits with 0

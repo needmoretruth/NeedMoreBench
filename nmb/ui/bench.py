@@ -12,7 +12,7 @@ from gi.repository import Adw, Gtk  # noqa: E402
 from .. import bench  # noqa: E402
 from ..bench import Entry, Plan, Run  # noqa: E402
 from ..engine.roles import COMPLEX, DEFAULT_PLAYERS, PLAYER_RANGE, SIMPLE  # noqa: E402
-from ..i18n import _  # noqa: E402
+from ..i18n import _, counted  # noqa: E402
 from ..pools import pool_models  # noqa: E402
 from ..providers.base import ModelRef  # noqa: E402
 from ..view import effort_label  # noqa: E402
@@ -211,7 +211,7 @@ class BenchPage(Adw.NavigationPage):
             self.estimate.set_label(_("Free models only") if p.daily_limit == 0 else
                                     _("Up to ${limit:.2f} a day, about ${per:.3f} a game").format(limit=p.daily_limit, per=per))
         else:
-            self.estimate.set_label(_("{n} games, estimate ${cost:.2f}").format(n=run.total(), cost=whole))
+            self.estimate.set_label(counted(run.total(), "{n} game, estimate ${cost:.2f}", "{n} games, estimate ${cost:.2f}", cost=whole))
         msg = self._problem()
         self.problem.set_label(msg)
         self.problem.set_visible(bool(msg))

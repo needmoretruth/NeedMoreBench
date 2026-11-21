@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from typing import Any, Callable
 
-from .base import Completion, ModelInfo, ModelRef, ProviderError, Timer
+from .base import REASONING_ROOM, Completion, ModelInfo, ModelRef, ProviderError, Timer
 from .lists import parse_anthropic
 from ..i18n import _
 
@@ -99,6 +99,7 @@ class AnthropicRoute:
             kwargs["output_config"] = {"effort": ref.variant}
         if adaptive(ref.id):
             kwargs["thinking"] = {"type": "adaptive", "display": "summarized"}
+            kwargs["max_tokens"] = max_tokens + REASONING_ROOM  # the limit counts the thinking too
         t = Timer()
         try:
             resp = await self._c(key).messages.create(**kwargs)

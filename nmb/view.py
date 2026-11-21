@@ -9,10 +9,35 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from .engine.god import EN as GOD_EN, LIFT
 from .engine.roles import EN as ROLE_EN, ROLES, TEAM_EN
 from .engine.setup import display_name
 from .engine.state import Event
+from .engine.text import LANGS, Msg, say
+from . import i18n
 from .i18n import _
+
+
+def _ui_lang() -> str:
+    return i18n.current if i18n.current in LANGS else "en"
+
+
+def line_text(e: Event, part: str | None = None) -> str:
+    """An engine line in the interface language: the record keeps the message, so a Korean game reads in
+    English on an English screen and the other way round. `part` is one parameter (an action's 「what」). Records
+    from before messages, and the players' own words, show as written."""
+    m = Msg.load(e.data.get("msg"))
+    if m is None:
+        return str(e.data.get(part, "")) if part else e.text
+    if part:
+        return say(_ui_lang(), m.params.get(part, e.data.get(part, "")))
+    return m.render(_ui_lang())
+
+
+def result_text(result: dict[str, Any], part: str) -> str:
+    """A result's label or reason in the interface language, from the message the record keeps."""
+    m = Msg.load((result.get("msg") or {}).get(part))
+    return m.render(_ui_lang()) if m is not None else str(result.get(part) or "")
 
 TEAM_CLASS = {"마피아": "mafia", "시민": "town", "교주": "cult"}
 STEP_EN = {"소개": "Introductions", "아침": "Morning", "토론": "Discussion", "귓속말 시간": "Whispers", "투표": "Vote", "최후의 반론": "Last defense",
@@ -28,6 +53,7 @@ LINE_STYLE: dict[str, tuple[str, str] | None] = {
     "mafia": ("Mafia night chat", "mafia"),
     "lover": ("Lovers", "lover"),
     "dead": ("The dead", "dead"),
+    "cult": ("Cult leader's word", "cult"),
     "thought": ("Thought", "thought"),
     "reasoning": ("Reasoning", "reasoning"),  # the model's own reasoning, its own view, not in 전체
     "phase": ("", "phase-line"),
@@ -47,15 +73,31 @@ LINE_STYLE: dict[str, tuple[str, str] | None] = {
     "route": ("", "route"),
     "role": ("", "role-change"),
     "seduce": ("", "seduce"),
+    **{k: ("", "seduce") for k in ("frog", "spare", "trick", "convert")},  # the full pool's hidden effects (god view)
+    "action": ("", "action"),  # an ability used (or passed), seen by the actor and the god view
     **{k: None for k in ("start", "step", "turns", "poll", "ledger", "note", "call", "thinking", "pause", "human_turn",
-                         "contact_hidden", "revive")},
+                         "human_done", "queued", "contact_hidden", "revive", "talk", "meeting")},
 }
-SPEECH = ("say", "whisper", "mafia", "lover", "dead", "thought")
+SPEECH = ("say", "whisper", "mafia", "lover", "dead", "cult", "thought")
 
 
 def role_label(role: str | None) -> str:
     """A role in the interface language (roles are Korean identifiers inside the engine)."""
     return _(ROLE_EN[role]) if role in ROLE_EN else (role or "")
+
+
+POWER_EN = {**GOD_EN, LIFT: "Lift revelation"}
+
+
+def result_word(value: Any) -> str:
+    """An ability result (a role, or a police verdict) in the interface language: the truth beside a 거짓 결과."""
+    from .engine.god import result_word as as_msg
+    return say(_ui_lang(), as_msg(value))
+
+
+def power_label(power: str | None) -> str:
+    """A god power in the interface language."""
+    return _(POWER_EN[power]) if power in POWER_EN else (power or "")
 
 
 def step_label(step: str) -> str:
@@ -77,6 +119,7 @@ class Row:
     suspicion: int = 50
     guess: str = "모름"
     note: str = ""
+    known: bool = False  # 확인됨
     changed: int = -1  # id of the event that last changed it (for the flash)
 
 
@@ -91,7 +134,8 @@ class SeatView:
     alive: bool = True
     thinking: bool = False
     ledger: dict[str, Row] = field(default_factory=dict)
-    notes: dict[int, str] = field(default_factory=dict)
+    page: str = ""  # the notebook page now
+    pages: list[tuple[str, str]] = field(default_factory=list)  # every version: (when, text)
     thoughts: list[tuple[str, str]] = field(default_factory=list)  # (when, text)
     reasonings: list[tuple[str, str, bool]] = field(default_factory=list)  # (when, text, summarized)
     polls: int = 0
@@ -100,6 +144,8 @@ class SeatView:
     calls: int = 0
     cost: float = 0.0
     failed: int = 0
+    talk: str = ""  # in 토론: speaking, thinking, hand, done, failed
+    talk_why: str = ""  # the failed call's reason code
 
 
 @dataclass
@@ -118,6 +164,7 @@ class ViewState:
     paused: bool = False
     would_end: bool = False
     vote_next: bool = True  # False in the first day's discussion: it ends into night
+    meeting: bool = False  # the mafia meeting is running and this viewer may read it
     lines: list[Event] = field(default_factory=list)  # whispers the viewer may read, for the pair view
     last: Event | None = None
 
@@ -177,6 +224,8 @@ class ViewState:
         elif k == "step":
             self.step = d.get("step", e.text)
             self.vote_next = d.get("vote_next", True)
+            for v in self.seats:
+                v.talk, v.talk_why = "", ""
             if self.step == "투표":
                 for v in self.seats:
                     v.votes, v.voters = None, []
@@ -194,13 +243,21 @@ class ViewState:
             row = actor.ledger.setdefault(d.get("name", e.text), Row())
             new = d.get("new", {})
             row.suspicion, row.guess, row.note = new.get("suspicion", row.suspicion), new.get("guess", row.guess), new.get("note", row.note)
+            row.known = bool(new.get("known", row.known))
             row.changed = e.id
             return False
         elif k == "note" and actor:
-            if d.get("op") == "delete":
-                actor.notes.pop(d.get("id"), None)
+            if "op" in d:  # a game saved before the page: the old numbered notes, as lines
+                lines = dict(line.split(" ", 1) for line in actor.page.splitlines() if " " in line)
+                key = f"#{d.get('id')}"
+                if d["op"] == "delete":
+                    lines.pop(key, None)
+                else:
+                    lines[key] = e.text
+                actor.page = "\n".join(f"{k2} {t}" for k2, t in lines.items())
             else:
-                actor.notes[d.get("id")] = e.text
+                actor.page = e.text
+            actor.pages.append((self.when(e), actor.page))
             return False
         elif k == "thought" and actor:
             actor.thoughts.append((self.when(e), e.text))
@@ -223,9 +280,12 @@ class ViewState:
             target.alive = True
         elif k == "role" and target and d.get("role") in ROLES:
             target.role = d["role"]
-        elif k == "god" and d.get("power") == "역할 바꾸기" and target:
+        elif k == "god" and d.get("power") in ("역할 바꾸기", "역할 맞바꾸기") and target:
             if d.get("role") in ROLES:
                 target.role = d["role"]
+            for s, r in ((d.get("changed") or {}).get("roles") or {}).items():  # 역할 맞바꾸기, both seats
+                if r in ROLES and 0 <= int(s) < len(self.seats):
+                    self.seats[int(s)].role = r
         elif k == "vote_result":
             counts = d.get("counts", {})
             voters = d.get("voters", {}) if (d.get("public") or self.viewer is None) else {}
@@ -251,7 +311,15 @@ class ViewState:
                 v = self.seats[info["seat"]]
                 v.role = info.get("role") or v.role
             return False
-        elif k in ("human_turn", "contact_hidden"):
+        elif k == "meeting":
+            self.meeting = bool(d.get("on"))
+            return False
+        elif k == "talk":
+            states, why = d.get("states") or {}, d.get("why") or {}
+            for v in self.seats:
+                v.talk, v.talk_why = states.get(str(v.seat), ""), why.get(str(v.seat), "")
+            return False
+        elif k in ("human_turn", "human_done", "queued", "contact_hidden"):
             return False
         return e.kind not in ("turns", "step")
 
@@ -304,7 +372,10 @@ def effort_label(variant: str | None) -> str:
 def _real_line(s: dict[str, Any], named: bool) -> str:
     """The line under a seat's name: the full model name (the call name is short), maker, country, effort."""
     if s.get("kind") == "human":
-        return _("Person") + (", " + _("as {model}").format(model=s["shown"]) if s.get("disguise") else "")
+        # only the model's name: 「…, 미국인 척」 read as pretending to be American. In a blind game the disguise
+        # changes nothing anyone sees, so it is not shown.
+        model = str(s.get("shown") or "").split(", ")[0]
+        return _("Person") + (", " + _("as {model}").format(model=model) if s.get("disguise") and named and model else "")
     bits = [display_name(s.get("model_name"), s.get("model"))]
     if s.get("maker"):
         bits.append(s["maker"])

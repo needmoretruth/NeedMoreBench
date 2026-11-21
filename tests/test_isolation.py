@@ -17,13 +17,15 @@ def marking(game, p, req):
     others = [q.name for q in game.alive() if q is not p]
     r = random.Random(p.seat * 1000 + len(game.events))
     obj = {"thought": f"속마음표식{p.seat}", "ledger": [{"name": others[0], "suspicion": 70, "note": f"비고표식{p.seat}"}],
-           "notes": {"add": [f"노트표식{p.seat}"]}}
+           "notes": f"노트표식{p.seat}"}
     if req.say:
         obj["say"] = f"{req.kind}발언표식{p.seat}"
     if req.whispers and others:
         obj["whispers"] = [{"to": others[0], "text": f"귓속말표식{p.seat}_{len(game.events)}"}]
-    if req.field:
+    if req.field and req.options:
         obj[req.field] = r.choice(req.options)
+    if req.extra_field and req.extra_options:  # a role's second choice (모방자, 관상가, 암살자, 자경단원)
+        obj[req.extra_field] = r.choice(req.extra_options)
     if req.hand:
         obj["hand"] = 2
     return obj

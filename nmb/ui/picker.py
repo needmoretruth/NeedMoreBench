@@ -11,7 +11,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, GLib, Gtk  # noqa: E402
 
 from ..choose import kept, route_key, seat_routes  # noqa: E402
-from ..i18n import _  # noqa: E402
+from ..i18n import _, counted  # noqa: E402
 from ..providers.base import ModelInfo, ModelRef  # noqa: E402
 from ..providers.health import words  # noqa: E402
 from ..providers.merge import keys_of, rank, route_name  # noqa: E402
@@ -25,9 +25,14 @@ POOLS = [("all", "All models"), ("free", "Free models"), ("latest", "Latest mode
 
 
 def route_label(m: ModelInfo) -> str:
-    """The route as the user names it, so Zen free and Zen paid are told apart."""
+    """The route as the user names it, so Zen free and Zen paid are told apart. One rule for every free
+    entry: it says free and where it runs (OpenCode 무료, OpenCode Go 무료, OpenRouter 무료)."""
     name = route_name(m)
-    return {"OpenCode free": _("OpenCode free"), "Venice (OpenCode)": _("Venice (OpenCode)")}.get(name, name)
+    if name == "OpenCode free":
+        return _("OpenCode free")
+    if name == "Venice (OpenCode)":
+        return _("Venice (OpenCode)")
+    return _("{route} free").format(route=name) if m.free else name
 
 
 def price_text(m: ModelInfo | None) -> str:
@@ -49,8 +54,12 @@ def seat_price(m: ModelInfo | None) -> str:
 
 
 def place_text(m: ModelInfo) -> str:
-    unknown = _("Unknown")
-    return ", ".join([m.maker or unknown, country_label(m.country) if m.country else unknown, route_label(m)])
+    """Maker, country and route. What is not known is left out rather than shown as 모름, and a route named like
+    its maker (Anthropic, Anthropic) is said once."""
+    bits = [m.maker, country_label(m.country) if m.country and m.country != "알 수 없음" else None]
+    bits = [b for b in bits if b and b != _("Unknown")]
+    route = route_label(m)
+    return ", ".join(bits + ([route] if route not in bits else []))
 
 
 def why_not(routes: Routes, m: ModelInfo) -> str:
@@ -108,7 +117,8 @@ class Picker(Adw.Dialog):
         view = Adw.ToolbarView()
         view.add_top_bar(Adw.HeaderBar())
         self.search = Gtk.SearchEntry(placeholder_text=_("Search models"), hexpand=True)
-        self.search.connect("search-changed", lambda *_a: self.list.invalidate_filter())
+        self.search.connect("search-changed", lambda *_a: (self.list.invalidate_filter(), self._pools_shown()))
+        self.pool_box: Gtk.Box | None = None
         self.chips = chips = Adw.ToggleGroup()
         for name, text in FILTERS:
             chips.add(Adw.Toggle(name=name, label=_(text)))
@@ -126,8 +136,10 @@ class Picker(Adw.Dialog):
             self.pool_list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
             self.pool_list.add_css_class("boxed-list")
             self._fill_pools()
-            body.append(label(_("Random"), "section-title"))
-            body.append(self.pool_list)
+            self.pool_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+            self.pool_box.append(label(_("Random"), "section-title"))
+            self.pool_box.append(self.pool_list)
+            body.append(self.pool_box)
         self.list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         self.list.add_css_class("boxed-list")
         self.list.set_filter_func(self._keep)
@@ -188,6 +200,12 @@ class Picker(Adw.Dialog):
                 row.tag.set_label(price_text(own))
             row = row.get_next_sibling()
         self.list.invalidate_filter()
+        self._pools_shown()
+
+    def _pools_shown(self) -> None:
+        """The random pools step aside while the user searches or picks a chip, so the models fill the view."""
+        if self.pool_box is not None:
+            self.pool_box.set_visible(self.flt == "all" and not self.search.get_text().strip())
 
     def _pick_model(self, m: ModelInfo) -> None:
         """Under a route chip the seat takes that route; otherwise the entry's chosen route."""
@@ -203,7 +221,7 @@ class Picker(Adw.Dialog):
             lst.remove(child)
         for name, text in POOLS:
             n = len(pool_models(self.models, name, self.routes.usable))
-            row = Adw.ActionRow(title=_(text), subtitle=_("{n} models now").format(n=n), activatable=n > 0)
+            row = Adw.ActionRow(title=_(text), subtitle=counted(n, "{n} model now", "{n} models now"), activatable=n > 0)
             row.add_prefix(Gtk.Image.new_from_icon_name("media-playlist-shuffle-symbolic"))
             row.connect("activated", self._pick_pool, name)
             lst.append(row)
@@ -211,7 +229,7 @@ class Picker(Adw.Dialog):
             return
         for name, d in self.user_pools.items():
             n = len(pool_models(self.models, "user", self.routes.usable, d))
-            row = Adw.ActionRow(title=name, subtitle=_("My pool, {n} models now").format(n=n), activatable=n > 0)
+            row = Adw.ActionRow(title=name, subtitle=counted(n, "My pool, {n} model now", "My pool, {n} models now"), activatable=n > 0)
             row.add_prefix(Gtk.Image.new_from_icon_name("media-playlist-shuffle-symbolic"))
             edit = Gtk.Button(icon_name="document-edit-symbolic", valign=Gtk.Align.CENTER, tooltip_text=_("Edit"))
             edit.add_css_class("flat")
