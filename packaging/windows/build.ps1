@@ -8,6 +8,8 @@ $PSNativeCommandUseErrorActionPreference = $true
 
 $env:PATH = "$Gtk\bin;$env:PATH"
 $env:XDG_DATA_DIRS = "$Gtk\share"
+# Python does not search PATH for the DLLs an extension needs; PyGObject adds this folder itself
+$env:PYGI_DLL_PATH = "$Gtk\bin"
 
 python -m pip install --quiet --upgrade pip
 python -m pip install --quiet (Get-ChildItem "$Gtk\wheels\*.whl").FullName

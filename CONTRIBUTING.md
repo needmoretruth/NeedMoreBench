@@ -21,7 +21,7 @@ python3 -m venv --system-site-packages .venv
 
 **macOS.** `brew install gtk4 libadwaita pygobject3 adwaita-icon-theme`, then make the virtual environment with Homebrew's Python (`$(brew --prefix pygobject3)/libexec/bin/python3` or the `python3` that `brew info pygobject3` names) and `--system-site-packages` as above.
 
-**Windows.** The simplest way is the GTK build from [gvsbuild](https://github.com/wingtk/gvsbuild): unpack its release zip, add its `bin` folder to `PATH`, and install the PyGObject and pycairo wheels it carries into a Python of the same version. `packaging/windows/build.ps1` shows every step.
+**Windows.** The simplest way is the GTK build from [gvsbuild](https://github.com/wingtk/gvsbuild): unpack its release zip, add its `bin` folder to `PATH`, set `PYGI_DLL_PATH` to that same folder, and install the PyGObject and pycairo wheels it carries into a Python of the same version. `packaging/windows/build.ps1` shows every step.
 
 ## Tests
 

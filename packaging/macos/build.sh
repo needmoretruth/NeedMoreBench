@@ -9,9 +9,11 @@ ARCH="${2:-$(uname -m)}"
 export HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_ANALYTICS=1
 brew install --quiet gtk4 libadwaita pygobject3 adwaita-icon-theme
 
-# the newest Python that Homebrew's PyGObject is built for
-PYDEP="$(brew deps --direct pygobject3 | grep '^python@' | sort -V | tail -1)"
-PY="$(brew --prefix "$PYDEP")/bin/python3"
+# the newest Python that Homebrew's PyGObject is installed for (its keg holds lib/python3.N/site-packages)
+PYVER="$(find "$(brew --prefix pygobject3)/lib" -maxdepth 1 -name 'python3.*' -exec basename {} \; | sort -V | tail -1)"
+[ -n "$PYVER" ] || { echo "no Python found in Homebrew's pygobject3" >&2; exit 1; }
+PY="$(brew --prefix "python@${PYVER#python}")/bin/$PYVER"
+echo "Python for the venv: $PY"
 "$PY" -m venv --system-site-packages build/venv
 VPY=build/venv/bin/python
 "$VPY" -m pip install --quiet --upgrade pip
