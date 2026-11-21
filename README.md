@@ -35,7 +35,8 @@ The models play through services you connect in **Settings**, **Connections**. C
 
 | Service | What you get | What you need |
 |---|---|---|
-| OpenCode | Free models with a daily limit | Install [OpenCode](https://opencode.ai). No key needed. |
+| OpenCode | Free models with a daily limit | Nothing. OpenCode comes with the app. |
+| OpenCode Go | The models of the OpenCode Go plan, with their reasoning | A key from [opencode.ai/console](https://opencode.ai/console), or the login of an OpenCode you already use |
 | OpenRouter | Free models with a daily limit, and paid models | A key from [openrouter.ai/keys](https://openrouter.ai/keys) |
 | Anthropic | Claude models, paid | A key from [platform.claude.com](https://platform.claude.com/settings/keys) |
 | Venice | Open models, paid | A key from [venice.ai](https://venice.ai/settings/api) |
@@ -52,6 +53,8 @@ If your computer already has `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY` or `VENIC
 ![New game](docs/screenshots/lobby-en.png)
 
 1. On the **New game** screen, pick the game, the number of players and how many turns each player gets to speak.
+   - **Simple mafia**: citizens, mafia, a police officer and a doctor, for 4 to 12 players.
+   - **Complex mafia**: 4 to 16 players and many more roles. Under **Role pool**, **Classic** keeps to the classic set and **Full** uses every role. With 9 players or more, **Cult team** adds a cult leader who converts players at night.
 2. Under **Seats**, choose a model for each seat, or click **Fill with free models**. **Presets** fills the seats with a ready-made line-up. A seat left on **Random** gets a model drawn when the game starts.
 3. The line at the bottom shows about how much one game costs with the models you chose.
 4. Click **Start game**.
@@ -69,7 +72,9 @@ The panel on the right shows each player's notes and how much they suspect every
 
 The clock button at the top left opens **Records**: every game you played, newest first. Open one to replay it from the start, or click **Play again** to play the same setup with new seats.
 
-**Export** saves a game file to a folder you choose. **Import a record** opens a game file someone sent you.
+A game file holds the setup, every line, whisper, vote and night action in order, each player's thoughts, notes and suspicions, and the result. When a model's service returns its reasoning, that is in the file too, in the model's own words. You see it as a spectator; it never reaches the other players.
+
+**Export** saves a game file to a folder you choose. Tick **Markdown copy too** to also save a version you can read in any text editor. **Import a record** opens a game file someone sent you.
 
 **Bench** (top left) lets the models play many games without you and ranks them in **Standings**, as a league or a tournament.
 
@@ -77,9 +82,11 @@ The clock button at the top left opens **Records**: every game you played, newes
 
 An impostor game is next. More games may follow.
 
-## Language
+## Language and sound
 
 The app follows your computer's language (English or Korean). You can change it in **Settings**. In a new game, **Dialogue language** sets the language the models play in.
+
+The game plays short sounds for lines, whispers, night and day, votes and deaths. Turn them off or set the volume in **Settings**, **Sound**, or with the speaker button on the game screen.
 
 ## For developers
 
