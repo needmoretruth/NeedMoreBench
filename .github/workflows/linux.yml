@@ -43,9 +43,9 @@ jobs:
 
       - name: Tests (inside the app, on the runtime's Python)
         # the checkout belongs to the runner's user and the sandbox drops root's right to write anywhere,
-        # so the folders the sandbox writes are made writable for everyone first
+        # so the checkout and the folders the sandbox writes are made writable for everyone first
         run: |
-          mkdir -p .ci-site smoke && chmod a+rwx .ci-site smoke
+          mkdir -p .ci-site smoke && chmod a+rwx . .ci-site smoke
           flatpak run --command=pip3 --share=network --filesystem="$PWD" org.gnome.Sdk//51 \
             install --no-cache-dir --target "$PWD/.ci-site" pytest==9.2.0
           dbus-run-session -- flatpak run --command=python3 --filesystem="$PWD" --cwd="$PWD" \

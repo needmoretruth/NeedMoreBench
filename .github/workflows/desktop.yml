@@ -7,7 +7,8 @@ on:
     branches: ["**"]
     paths:
       - "packaging/**"
-      - ".github/**"
+      - ".github/workflows/desktop.yml"
+      - ".github/workflows/release.yml"
       - "requirements*.txt"
   workflow_dispatch:
   workflow_call:
