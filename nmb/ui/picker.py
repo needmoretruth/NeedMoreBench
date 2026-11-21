@@ -193,9 +193,14 @@ class Picker(Adw.Dialog):
             if m is not None:
                 key = route_key(m, self.flt) if self.flt not in ("all", "free") else None
                 own = (self.routes.info(key) if key else None) or m
+                # that route's own problem: the entry may answer through another route while this one has no
+                # key, no credit or no free use left, and picking here seats this route
+                reason = why_not(self.routes, own)
                 row.set_title(own.name)
-                row.set_subtitle(row.reason or place_text(own))
+                row.set_subtitle(reason or place_text(own))
                 row.tag.set_label(price_text(own))
+                row.set_sensitive(not reason)
+                row.set_activatable(not reason)
             row = row.get_next_sibling()
         self.list.invalidate_filter()
         self._pools_shown()

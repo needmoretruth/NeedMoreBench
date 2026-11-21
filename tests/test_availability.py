@@ -210,6 +210,25 @@ def test_every_automatic_choice_skips_known_problems_and_lm_studio():
     assert not automatic(LM) and automatic(OR_LING)
 
 
+def test_a_route_without_a_key_offers_nothing_until_a_key_is_there():
+    """A new user online: OpenRouter's list is public, so its free models came without a key and were drawn into
+    random seats that could not answer. The status check's 「no key」 now holds for every model of that route."""
+    r = world()
+    r.routes["openrouter"] = OpenRouterRoute(lambda: None, lambda: False)
+    r.learn_statuses({"openrouter": ("nokey", "No OpenRouter key"), "opencode": ("ok", "")})
+    entries = r.entries()
+    keys = {x.key for x in fill_free(entries, 20, r.usable, random.Random(1))}
+    assert keys and not any(k.startswith("openrouter:") for k in keys)
+    assert r.problem(OR_LING).kind == "nokey" and words("Ling", r.problem(OR_LING), "openrouter")
+    assert r.entry(GO_DS.key).key == GO_DS.key and r.others(GO_DS.key) == []
+    # under the OpenRouter chip the Go entry's row is OpenRouter's own model, and that one is the one that is out
+    from nmb.choose import route_key
+    own = r.info(route_key(r.entry(GO_DS.key), "openrouter") or "")
+    assert own is not None and own.key == OR_DS.key and r.problem(own).kind == "nokey"
+    r.learn_statuses({"openrouter": ("ok", "")})  # a key stored any way counts at the next check
+    assert r.usable(OR_LING) and r.others(GO_DS.key) == [OR_DS.key]
+
+
 def test_random_seats_and_redraws_never_take_lm_studio_but_a_hand_seated_one_stays():
     r = world()
     setup = GameSetup(seats=[SeatSpec(model_key=LM.key)] + [SeatSpec(pool="free") for _ in range(5)] +

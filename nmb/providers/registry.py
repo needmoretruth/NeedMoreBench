@@ -19,6 +19,7 @@ class Routes:
         self._models: dict[str, ModelInfo] = {}
         self.errors: dict[str, ProviderError] = {}
         self.received: dict[str, int] = {}  # models each route returned on the last load (check)
+        self.keyless: set[str] = set()  # routes the last status check found without a key
         self._entries: tuple[tuple[int, int, bool], list[ModelInfo]] | None = None
         self._loads = 0
 
@@ -64,6 +65,12 @@ class Routes:
         import time
         from .health import Problem, next_utc_midnight
         now = time.time()
+        # a route with no key at all: its models are listed (OpenRouter's list is public) but none can answer; a
+        # fact of this check only, never kept on disk, so a key stored any way counts at the next check
+        keyless = {n for n, (code, _t) in statuses.items() if code == "nokey" and n in self.routes}
+        if keyless != self.keyless:
+            self.keyless = keyless
+            self.health.version += 1
         for name, (code, text) in statuses.items():
             if code == "auth" and name in self.routes:  # a refused Go key only turns the direct calls off
                 self.health.set(f"{name}:*", Problem("auth", now + 86400, text, now))
@@ -163,6 +170,8 @@ class Routes:
             return Problem("trains", None)
         if m.status.startswith("너무 커서"):
             return Problem("big", None, m.status)
+        if m.ref.route in self.keyless:
+            return Problem("nokey", None)
         return self.health.problem(m)
 
     def usable(self, m: ModelInfo) -> bool:
