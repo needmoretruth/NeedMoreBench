@@ -55,7 +55,8 @@ class Window(Adw.ApplicationWindow):
         self.nav = Adw.NavigationView()
         self.toasts.set_child(self.nav)
         self.set_content(self.toasts)
-        bp = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("max-width: 1100sp"))
+        # sp grows with large text; px holds on macOS, where text is read at 72 dpi and 1100sp is only 825 px
+        bp = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("max-width: 1100px or max-width: 1100sp"))
         bp.connect("apply", lambda *_: self._narrow(True))
         bp.connect("unapply", lambda *_: self._narrow(False))
         self.add_breakpoint(bp)
