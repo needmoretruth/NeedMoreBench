@@ -120,6 +120,9 @@ def run(argv: list[str]) -> int:
             self.set_flags(Gio.ApplicationFlags.NON_UNIQUE)  # never reach a copy the user has open
 
         def do_activate(self) -> None:
+            from gi.repository import Gtk
+            # pages are pictured at rest: on macOS the Settings dialog was caught halfway through fading in
+            Gtk.Settings.get_default().set_property("gtk-enable-animations", False)
             queue = list(shots)
             self.hold()
             GLib.timeout_add_seconds(120, lambda: (failures.append("timed out"), self.quit())[1] or False)
