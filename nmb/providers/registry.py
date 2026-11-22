@@ -63,7 +63,7 @@ class Routes:
     def learn_statuses(self, statuses: dict[str, tuple[str, str]]) -> None:
         """Route-wide facts read up front: a wrong key, no credit, no free requests left today."""
         import time
-        from .health import Problem, next_utc_midnight
+        from .health import RECHECK, Problem
         now = time.time()
         # a route with no key at all: its models are listed (OpenRouter's list is public) but none can answer; a
         # fact of this check only, never kept on disk, so a key stored any way counts at the next check
@@ -77,8 +77,8 @@ class Routes:
             elif code == "credit" and name == "openrouter":
                 self.health.set("openrouter:*paid", Problem("credit", now + 3600, text, now))
         orr = self.routes.get("openrouter")
-        if getattr(orr, "free_left", None) == 0:
-            self.health.set("openrouter:*free", Problem("quota", next_utc_midnight(now), "free_model_daily_requests", now))
+        if getattr(orr, "free_left", None) == 0:  # /key gives no reset time: held an hour, read again at the next check
+            self.health.set("openrouter:*free", Problem("quota", now + RECHECK, "free_model_daily_requests", now, recheck=True))
 
     def add(self, route: Route) -> None:
         self.routes[route.name] = route

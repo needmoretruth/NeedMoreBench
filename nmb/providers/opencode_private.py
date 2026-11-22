@@ -96,7 +96,10 @@ def _error(err: dict[str, Any]) -> ProviderError:
     message = str(err.get("message") or err.get("type") or "")[:300]
     if reason in ("provider", "auth") and any(w in message.lower() for w in ("insufficient balance", "credit", "billing")):
         reason = "credit"  # paid Zen with no credits left (2026-11-22 real call): said as no credit, kept a day
-    return ProviderError(reason, message, status)
+    # Zen's own wait (its free limit has no published reset; the server passes retryAfterMs on, 2026-11-22 record)
+    ms = err.get("retryAfterMs")
+    wait = float(ms) / 1000 if isinstance(ms, (int, float)) and not isinstance(ms, bool) and ms > 0 else None
+    return ProviderError(reason, message, status, wait)
 
 
 def merged(extra: dict[str, Any] | None, signins: dict[str, Any]) -> dict[str, Any]:

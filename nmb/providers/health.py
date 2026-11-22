@@ -1,6 +1,7 @@
 """What the app has learned about each model's availability, kept across restarts.
 
-A route's answer tells more than "it failed": a used-up daily quota (until the reset the provider names), a data
+A route's answer tells more than "it failed": a used-up free quota (until the reset the provider names; when it
+names none, an hour and then the model is tried again, and no reset time is ever guessed on screen), a data
 policy that refuses the model, a wrong key or no credit, a model the route no longer has. Each is kept per model
 key (without the effort), or for a whole group of a route ("openrouter:*free" when the account's free requests
 for the day are spent, "openrouter:*paid" with no credit, "anthropic:*" with a wrong key), until the time it
@@ -12,10 +13,11 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import threading
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from .base import ModelInfo, ModelRef, ProviderError
@@ -34,6 +36,20 @@ class Problem:
     until: float | None = None  # epoch seconds; None: until something changes (a key, a setting)
     message: str = ""
     at: float = 0.0
+    recheck: bool = False  # `until` is our own time to try again, not a reset the service gave
+
+
+RECHECK = 3600.0  # a quota with no reset from the service: held this long, then the model is tried again
+_IN = re.compile(r"\b(?:in|after)\s+(\d+(?:\.\d+)?)\s*(seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h)\b", re.I)
+_UNIT = {"s": 1.0, "m": 60.0, "h": 3600.0}
+
+
+def told_wait(err: ProviderError) -> float | None:
+    """Seconds until the service says the limit clears: its retry hint, or a span written in its message."""
+    if err.retry_after is not None and err.retry_after > 0:
+        return err.retry_after
+    m = _IN.search(str(err))
+    return float(m.group(1)) * _UNIT[m.group(2)[0].lower()] if m else None
 
 
 def classify(err: ProviderError, now: float | None = None) -> Problem:
@@ -42,10 +58,14 @@ def classify(err: ProviderError, now: float | None = None) -> Problem:
     low = str(err).lower()
     reason = err.reason
     if reason == "rate_limit":
-        if any(w in low for w in _QUOTA_WORDS) or (err.retry_after or 0) > 3600:
-            until = now + err.retry_after if err.retry_after and err.retry_after > 60 else next_utc_midnight(now)
-            return Problem("quota", until, str(err)[:300], now)
-        return Problem("busy", now + min(300.0, err.retry_after or 60.0), str(err)[:300], now)
+        wait = told_wait(err)
+        if any(w in low for w in _QUOTA_WORDS) or (wait or 0) > 3600:
+            # the service's own reset when it gives one; otherwise no guess (Zen's free reset is not published and
+            # was not 09:00 KST, 2026-11-22): held an hour, then tried again
+            if wait is not None and wait > 60:
+                return Problem("quota", now + wait, str(err)[:300], now)
+            return Problem("quota", now + RECHECK, str(err)[:300], now, recheck=True)
+        return Problem("busy", now + min(300.0, wait or 60.0), str(err)[:300], now)
     if reason in ("invalid", "refused", "provider") and any(w in low for w in _POLICY_WORDS):
         return Problem("policy", now + DAY, str(err)[:300], now)
     if reason == "invalid" and (err.status == 404 or any(w in low for w in _GONE_WORDS)):
@@ -60,11 +80,6 @@ def classify(err: ProviderError, now: float | None = None) -> Problem:
 
 
 KEPT = ("quota", "policy", "gone", "auth", "credit")  # kinds that hold beyond the next call
-
-
-def next_utc_midnight(now: float) -> float:
-    d = datetime.fromtimestamp(now, timezone.utc)
-    return (d.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)).timestamp()
 
 
 def base_key(key: str) -> str:
@@ -200,7 +215,11 @@ def words(name: str, p: Problem, route: str = "", now: float | None = None) -> s
     rw = ROUTE_WORD.get(route, route)
     when = when_text(p.until, now)
     if p.kind == "quota":
-        text = _("{name}: today's free use is used up. It opens again at {when}") if when else _("{name}: today's free use is used up")
+        if p.recheck:  # the service gave no reset time: say so, and when the app tries again
+            text = (_("{name}: the free use is used up. No reset time is given, so it is tried again at {when}")
+                    if when else _("{name}: the free use is used up. No reset time is given"))
+        else:
+            text = _("{name}: the free use is used up. It opens again at {when}") if when else _("{name}: the free use is used up")
     elif p.kind == "policy":
         text = _("{name}: this free model works only when training on prompts is allowed")
     elif p.kind == "auth":

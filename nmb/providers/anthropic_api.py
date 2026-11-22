@@ -46,7 +46,8 @@ def _map(e: Exception) -> ProviderError:
     if "credit balance" in low or "billing" in low:
         return ProviderError("credit", _("{who}: no credit").format(who="Anthropic"), getattr(e, "status_code", None))
     if isinstance(e, anthropic.RateLimitError):
-        return ProviderError("rate_limit", msg, 429)
+        ra = str(getattr(getattr(e, "response", None), "headers", {}).get("retry-after") or "")
+        return ProviderError("rate_limit", msg, 429, float(ra) if ra.replace(".", "", 1).isdigit() else None)
     if isinstance(e, anthropic.APIConnectionError):
         return ProviderError("network", msg)
     if isinstance(e, anthropic.InternalServerError) or getattr(e, "status_code", 0) in (529, 503):

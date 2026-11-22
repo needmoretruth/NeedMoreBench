@@ -21,7 +21,7 @@ from nmb.engine.setup import GameSetup, SeatSpec
 from nmb.harness import AIController
 from nmb.pools import automatic, fill_free, pool_models, preset_models
 from nmb.providers.base import Completion, ModelInfo, ModelRef, ProviderError
-from nmb.providers.health import Health, classify, next_utc_midnight, words
+from nmb.providers.health import Health, classify, words
 from nmb.providers.opencode import OpenCodeRoute
 from nmb.providers.openai_compat import POLICY, OpenRouterRoute, _error
 from nmb.providers.registry import Routes
@@ -53,6 +53,11 @@ def test_recorded_failures_are_read_as_their_kind():
     daily = _error(OR_DAILY, "OpenRouter")
     d = classify(daily, time.time())
     assert d.kind == "quota" and d.until is not None
+    soon = time.time() + 7200  # OpenRouter's own reset, X-RateLimit-Reset in epoch milliseconds
+    own = _error(httpx.Response(429, json={"error": {"message": "Rate limit exceeded: free-models-per-day"}},
+                                headers={"x-ratelimit-reset": str(int(soon * 1000))}), "OpenRouter")
+    o = classify(own, time.time())
+    assert o.until == pytest.approx(soon, abs=5) and not o.recheck
     b = classify(_error(OR_BUSY, "OpenRouter"), NOW)
     assert b.kind == "busy" and b.until is not None and b.until <= NOW + 300
     assert classify(ProviderError("auth", "OpenRouter: wrong key", 401), NOW).kind == "auth"
@@ -70,12 +75,38 @@ def test_error_words_are_plain_sentences_in_both_languages():
     finally:
         i18n.setup("en")
     en = words("DeepSeek", p, "opencode", now=NOW)
-    assert ko.startswith("DeepSeek: 오늘 무료 사용량을 다 썼습니다.") and "에 풀립니다" in ko
+    assert ko.startswith("DeepSeek: 무료 사용량을 다 썼습니다.") and "에 풀립니다" in ko
     assert pol == "Nemotron Ultra: 학습을 허용해야 쓸 수 있는 무료 모델입니다"
-    assert en.startswith("DeepSeek: today's free use is used up. It opens again at")
+    assert en.startswith("DeepSeek: the free use is used up. It opens again at")
     for text in ko_all:  # a Korean sentence, never a reason code
         body = text.split(": ", 1)[1]
         assert body.endswith("니다") and not any(k in body for k in kinds), text
+
+
+def test_a_reset_time_is_shown_only_when_the_service_gave_one():
+    """2026-11-22: Zen's free limit was still on at 09:07 KST, so the 09:00 the app showed was a guess. The service's own
+    wait is used (Zen through NMB's server passes retryAfterMs on; a span in the message counts); with none the
+    words say the time is not published, and the model is held an hour, then tried again."""
+    from nmb.providers.opencode_private import _error as private_error
+    zen = private_error({"type": "provider.free-limit", "message": "Free usage limit reached.", "status": 429,
+                         "retryAfterMs": 33_603_000})
+    assert classify(zen, NOW).until == pytest.approx(NOW + 33_603) and not classify(zen, NOW).recheck
+    said = classify(ProviderError("rate_limit", "Daily quota exceeded, try again in 3 hours", 429), NOW)
+    assert said.kind == "quota" and said.until == pytest.approx(NOW + 3 * 3600) and not said.recheck
+    bare = classify(private_error({"type": "provider.free-limit", "message": "Free usage limit reached.", "status": 429}), NOW)
+    assert bare.kind == "quota" and bare.recheck and bare.until == pytest.approx(NOW + 3600)
+    try:
+        i18n.setup("ko")
+        ko = words("DeepSeek", bare, "opencode", now=NOW)
+    finally:
+        i18n.setup("en")
+    en = words("DeepSeek", bare, "opencode", now=NOW)
+    assert ko.startswith("DeepSeek: 무료 사용량을 다 썼습니다. 풀리는 시간을 알려 주지 않아 ") and ko.endswith("에 다시 써 봅니다")
+    assert "No reset time is given" in en and "09:00" not in ko + en
+    h = Health()
+    h.learn("opencode:opencode/deepseek-v4.1-flash-free", ProviderError("rate_limit", "Free usage limit reached.", 429), now=NOW)
+    assert h.problem("opencode:opencode/deepseek-v4.1-flash-free", now=NOW + 3500) is not None
+    assert h.problem("opencode:opencode/deepseek-v4.1-flash-free", now=NOW + 3700) is None  # back for the next try
 
 
 def test_learned_problems_survive_a_restart_and_clear_on_time(tmp_path):
@@ -325,7 +356,6 @@ def test_mid_game_with_no_route_left_the_default_applies_in_plain_words():
         asyncio.run(ctl.call(table, P(), "s", "u"))
     shown = [t for _r, t in table.errors if t]
     assert len(shown) == 1 and "training" in shown[0] and "invalid" not in shown[0]
-    assert next_utc_midnight(NOW) > NOW
 
 
 def test_a_policy_blocked_seat_reaches_the_check_instead_of_stopping_the_start():
